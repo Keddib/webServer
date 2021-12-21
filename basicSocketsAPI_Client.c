@@ -8,7 +8,7 @@
 int main()
 {
 	int sfd, rc;
-	char buff[100] = "Hello Eddib";
+	char buff[100] = "";
 	sfd = socket(AF_INET, SOCK_STREAM, 0);
 	if ( sfd < 0 )
 	{

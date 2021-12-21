@@ -1,12 +1,2 @@
 WHAT TO DO!!
-
-
-What is a HTTP server ?
-	- what is OSI model?
-	- what is TCP/IP ?
-	- To implement HTTP, we only care about 4th Layer: Transport Layer // I am not sure yet...
-	- what the heck is RFC!??? should we read them all ?
-	- HTTP/1.1 →Initially it is RFC 2616 but later replaced by RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235.
-	So, do we need to read from RFC 7230 to RFC 7235 to implement a HTTP server? // https://www.ietf.org/rfc/rfc2616.txt
-	- what are TCP and UDP?
-	- should we build it on top of TCP or UDP?
+// ??
