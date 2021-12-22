@@ -1,2 +1,14 @@
 WHAT TO DO!!
 // ??
+
+we can split the tasks into to parts:
+-------------------------------------
+|	1 - manage connections and parse requests
+	- create socket & listen for connections
+	- read data and parse it
+	- take response to send it
+
+|	2 - parse config file and create response for each requeste
+	- parse config file
+	- take requests and create resposes
+	- hundle CGI
