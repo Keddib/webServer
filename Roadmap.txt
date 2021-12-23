@@ -12,3 +12,45 @@ we can split the tasks into to parts:
 	- parse config file
 	- take requests and create resposes
 	- hundle CGI
+
+
+port 8000;
+host localhost
+root /
+
+server {
+	listen  localhost 8080
+	server_name server 1;
+
+	location / {
+		http_methods get post
+		index index.html
+
+	}
+
+	location /hello {
+		http_methods get post
+		index index.html
+
+	}
+
+	location /create {
+		http_methods get post
+		index index.html
+
+	}
+}
+
+
+server {
+	listen  localhost 8080;
+	server_name serve1;
+}
+
+server {
+	listen  192.168.1.2 8080
+}
+
+server {
+	listen 192.168.10.12 8080
+}
