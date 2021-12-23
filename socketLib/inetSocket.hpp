@@ -1,8 +1,12 @@
 #ifndef INET_SOCKET_2021_HPP
 #define INET_SOCKET_2021_HPP
 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <cstdio>
+#include <cstring>
+#include <fcntl.h>
 
 
 /*
@@ -15,6 +19,18 @@ int inetListen(const char *host, const char *service, int backlog);
 // Returns a file descriptor on success, or –1 on error
 //  backlog pending connectionss for listen
 // addrlen
+
+
+
+
+// because Partial Reads and Writes on Stream Sockets may accure we need
+// rewrite and reread until we reach the size that we want
+ssize_t readn(int fd, void *buffer, size_t count);
+//Returns number of bytes read, 0 on EOF, or –1 on error
+ssize_t writen(int fd, void *buffer, size_t count);
+//Returns number of bytes written, or –1 on error
+
+
 
 /*
 	1.0 communication domains see (see sock domains in TCP/IP folder)
@@ -33,7 +49,7 @@ int inetListen(const char *host, const char *service, int backlog);
 2.3 others... (SOCK_RAW) -> IP layer
 */
 
-struct sockaddr_storage test;
+// struct sockaddr_storage test;
 //struct in_addr {					/* IPv4 4-byte address */
 //	in_addr_t s_addr;				/* Unsigned 32-bit integer */
 //};

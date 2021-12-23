@@ -1,8 +1,5 @@
 // #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
+#include "inetSocket.hpp"
 
 #define PORT 8080
 
