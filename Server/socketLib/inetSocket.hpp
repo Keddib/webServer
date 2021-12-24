@@ -4,11 +4,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <cstdio>
 #include <cstring>
 #include <fcntl.h>
 
+fd_set test;
 
+// FD_SETSIZE tes;
 /*
 The inetListen()  function  creates  a  listening  stream  (SOCK_STREAM)  socket  bound
 to  the  wildcard  IP  address  on  the  TCP  port  specified  by  service.  This  function  is
