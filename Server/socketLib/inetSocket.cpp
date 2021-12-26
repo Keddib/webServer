@@ -2,6 +2,7 @@
 
 int create_socket(char *addr, uint16_t port)
 {
+	addr = (char *)addr;
 	int sfd(-1), rc(-1);
 	struct sockaddr_in local;
 
@@ -16,4 +17,5 @@ int create_socket(char *addr, uint16_t port)
 	rc = bind(sfd, (struct sockaddr *)&local, sizeof(local));
 	if (rc  < 0)
 		return -1;
+	return sfd;
 }
