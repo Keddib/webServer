@@ -1,64 +1,72 @@
+#include "StreamSocket.hpp"
 #include <time.h>
-#include "./socketLib/inetSocket.hpp"
+#include <sys/select.h>
+#include <vector>
+
+#define response  "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: text/plain\r\n\r\nLocal time is: 10:20"
 
 int main()
 {
-	std::cout << "opening socket... \n";
-	SOCKET listenSocket = create_socket((char *)"localhost", 8080);
-	if (listenSocket < 0)
+	// set up servers
+	char host[100] = "127.0.0.1";
+	StreamSocket sockTest(host, 9090);
+
+	if (sockTest.SockBind() < 0)
 	{
-		std::cout << "listenSocket fialed\n";
+		std::cout << "Bind error\n";
 		return -1;
 	}
 
-	std::cout << "listening on connections... \n";
-	if (listen(listenSocket, 10) < 0)
+	if (sockTest.SockListen() < 0)
 	{
-		std::cout << "listen() fialed\n";
+		std::cout << "Listen error\n";
 		return -1;
 	}
-	std::cout << "accepting connections... \n";
-	struct sockaddr_storage clientAddress;
-	socklen_t sockAddressLen = sizeof(clientAddress);
-	SOCKET clientSocket = accept(listenSocket,
-						(struct sockaddr *)&clientAddress, &sockAddressLen);
-	if (clientSocket < 0)
-		std::cout << "accept failed... :(\n";
-	std::cout << "client adress connected...\n";
-	char clientBuffer[100];
-	getnameinfo((struct sockaddr *)&clientAddress,
-		sockAddressLen, clientBuffer, sizeof(clientBuffer),
-		0, 0, NI_NUMERICHOST);
-	std::cout << clientBuffer << "\n";
 
-	std::cout << "reading request... \n";
-	char request[1024];
-	int bytesRead = recv(clientSocket, request, 1024, 0);
-	if (bytesRead < 1024)
-		request[bytesRead] = '\0';
-	std::cout << "bytes read: " << bytesRead << "\n";
-	std::cout << request;
+	std::vector<SOCKET> masterVec;
+	masterVec.push_back(sockTest.getFD());
+	int fdMax = sockTest.getFD();
 
-	std::cout << "sending response... \n";
-	const char *response = "HTTP/1.1 200 OK\r\n"
-	"Connection: close\r\n"
-	"Content-Type: text/plain\r\n\r\n"
-	"Local time is: ";
-	size_t responseSize = strlen(response);
-	int byteSent = send(clientSocket ,response, responseSize, 0);
-	std::cout << "Sent " << byteSent << " of " << responseSize << '\n';
-	time_t timer;
-	time(&timer);
-	char *timeStr = ctime(&timer);
-	responseSize = strlen(timeStr);
-	byteSent = send(clientSocket, timeStr, responseSize, 0);
-	std::cout << "Sent " << byteSent << " of " << responseSize << '\n';
-
-	std::cout << "closing connection... \n";
-	close(clientSocket);
-	close(listenSocket);
-
-	std::cout << "finished... \n";
-
+	fd_set master;
+	FD_ZERO(&master);
+	FD_ZERO(&master);
+	FD_SET(sockTest.getFD(), &master);
+	// accept connextions, read requests and write responses
+	std::cout << "check for connections... \n";
+	while (1)
+	{
+		fd_set servTmp = master;
+		select(fdMax + 1, &servTmp, 0, 0, 0);
+		for (size_t i = 0; i < masterVec.size(); i++)
+		{
+			if (FD_ISSET(masterVec[i], &servTmp))
+			{
+				if (masterVec[i] == sockTest.getFD()) // accept new connextion
+				{
+					std::cout << " a connection to accept... \n";
+					SOCKET cFD = sockTest.SockAccept();
+					if (cFD < 0)
+						std::cout << "accept error\n";
+					FD_SET(cFD, &master);
+					if (cFD > fdMax)
+						fdMax = cFD;
+					masterVec.push_back(cFD);
+				}
+				else
+				{
+					if (FD_ISSET(masterVec[i], &servTmp))
+						std::cout << masterVec[i] << "is ready to read\n";
+					// read request if it's complete get response, otherwise continue
+					char buff[100];
+					int readBuff = recv(masterVec[i], buff, 100, 0);
+					buff[readBuff] = 0x00;
+					std::cout << "bytes read = " << readBuff << " :" << buff << '\n';
+					exit(0);
+					// int sendBuff = send(masterVec[i], response, 100, 0);
+					// std::cout << "bytes writen = " << sendBuff << "\n";
+				}
+			}
+		}
+	}
 	return 0;
 }

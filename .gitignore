@@ -1,0 +1,5 @@
+.vscode
+a.out
+server
+client
+*.dSYM
