@@ -29,7 +29,6 @@ int main()
 
 	fd_set master;
 	FD_ZERO(&master);
-	FD_ZERO(&master);
 	FD_SET(sockTest.getFD(), &master);
 	// accept connextions, read requests and write responses
 	std::cout << "check for connections... \n";
@@ -37,7 +36,8 @@ int main()
 	{
 		fd_set servTmp = master;
 		select(fdMax + 1, &servTmp, 0, 0, 0);
-		for (size_t i = 0; i < masterVec.size(); i++)
+		size_t size = masterVec.size();
+		for (size_t i = 0; i < size; i++)
 		{
 			if (FD_ISSET(masterVec[i], &servTmp))
 			{
@@ -54,14 +54,23 @@ int main()
 				}
 				else
 				{
-					if (FD_ISSET(masterVec[i], &servTmp))
-						std::cout << masterVec[i] << "is ready to read\n";
+					std::cout << masterVec[i] << " is ready to read\n";
+					char buff[2064];
+					int readBuff = recv(masterVec[i], buff, 2064, 0);
+					if (readBuff == 0)
+					{
+						close(masterVec[i]);
+						masterVec.erase(masterVec.begin() + i);
+						FD_CLR(masterVec[i], &master);
+						size--;
+					}
+					else
+					{
+						buff[readBuff] = 0x00;
+						std::cout << "bytes read = " << readBuff << " :\n" << buff << '\n';
+					}
 					// read request if it's complete get response, otherwise continue
-					char buff[100];
-					int readBuff = recv(masterVec[i], buff, 100, 0);
-					buff[readBuff] = 0x00;
-					std::cout << "bytes read = " << readBuff << " :" << buff << '\n';
-					exit(0);
+					// exit(0);
 					// int sendBuff = send(masterVec[i], response, 100, 0);
 					// std::cout << "bytes writen = " << sendBuff << "\n";
 				}
