@@ -5,6 +5,9 @@
 
 #define response  "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Type: text/plain\r\n\r\nLocal time is: 10:20"
 
+
+
+
 int main()
 {
 	// set up servers
