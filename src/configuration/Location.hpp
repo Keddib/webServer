@@ -21,13 +21,15 @@ class Location
 	private:
 		std::string _prefix;
 		std::string _root;
-		bool _autoIndex;
+		std::string CGI;
 		std::pair<int, std::string> _ret;
 		std::vector<std::string> _index;
 		std::vector<std::string> _methods;
-		std::string CGI;
+		unsigned int _client_max_body_size;
+		bool _autoIndex;
+		// add upload path
 	public:
-		Location( std::string prefix );
+		Location( const std::string &prefix );
 		~Location();
 		void setRoot( const std::string &path );
 		void setAutoIndex( bool x=0 );
@@ -35,6 +37,15 @@ class Location
 		void setIndex( const std::string& );
 		void setMethods( const std::string& );
 		void setCGI( const std::string& );
+		void setMaxBodySize( const std::string &);
+		void setUploadPath(const std::string &);
+		// set default values from server
+		void setDefualtValues(
+				const std::string &root,
+				const std::vector<std::string> &indexes,
+				const unsigned int &MaxBodySize,
+				bool autoIndex
+			);
 
 };
 

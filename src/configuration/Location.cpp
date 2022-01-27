@@ -1,6 +1,10 @@
 #include "Location.hpp"
 
-Location::Location( std::string prefix) : _prefix(prefix), _autoIndex(0) {}
+Location::Location( const std::string &prefix)
+: _prefix(prefix), _autoIndex(0)
+{
+
+}
 
 Location::~Location() {}
 
@@ -55,7 +59,25 @@ void Location::setCGI( const std::string &CGIpath )
 	CGI = CGIpath;
 }
 
-std::ostream& operator<<(std::ostream &out, const Location &obj)
+void Location::setMaxBodySize( const std::string &max)
+{
+	_client_max_body_size = std::atol(max.c_str());
+}
+
+void Location::setDefualtValues(
+		const std::string &root,
+		const std::vector<std::string> &indexes,
+		const unsigned int &MaxBodySize,
+		bool autoIndex
+)
+{
+	_root = root;
+	_index = indexes;
+	_client_max_body_size = MaxBodySize;
+	_autoIndex = autoIndex;
+}
+
+std::ostream& operator<<(std::ostream &out, const Location &)
 {
 	return out;
 }

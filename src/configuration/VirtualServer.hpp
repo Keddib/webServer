@@ -4,7 +4,7 @@
 #include "Location.hpp"
 #include <utility>
 #include <iostream>
-
+#include <arpa/inet.h>
 
 /*
 
@@ -15,10 +15,12 @@ server {
 		server_name _;
 		error_page 404 /404.html
 		client_max_body_size 1000000 #bytes
+		root /tmp/www;
+		index pop.hmlt index.html index.htm;
 
 	#directives specific to location;
-		index pop.hmlt index.html index.htm;
 		root /tmp/www;
+		index pop.hmlt index.html index.htm;
 		accepted_medthos POST DELETE GET
 		autoindex off
 		return 301 127.0.0.1:9000/data
@@ -43,21 +45,24 @@ class VirtualServer
 {
 	private:
 		std::pair<unsigned int, int> aServerInfo;// ip , port in this order
-		// vec of locations
-		std::string _host;
-		std::string _port;
 		std::string _serverName;
-		unsigned int _client_max_body_size;
 		std::vector<ErrorPage> _errorPages;
 		std::vector<Location> _locations;
+		unsigned int _client_max_body_size; // default 1048576Bytes = 1MB
 
 	public:
 		VirtualServer(const std::pair<unsigned int, int> &);
 		bool	operator==(const VirtualServer &rhs);
 		std::pair<unsigned int, int>	GetHostAndPort() const;
+		std::vector<Location>& getLocationsToEdit();
 		void	Display() const;
+		void addLocation(const Location &location);
+		void setHostValue(unsigned int);
+		void setPortValue(int);
+		void setServerNameValue(const std::string &s);
+		void setMaxBodySize(unsigned long long);
 		// const Loaction& wichLocation( const std::string &Path)
-		// return which location  bash on the path requested
+		// return which location  based on the path requested
 };
 
 #endif

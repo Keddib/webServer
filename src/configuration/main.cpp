@@ -1,17 +1,15 @@
-#include "headers.hpp"
+#include "ConfigParser.hpp"
 
 
-int parseConfigFile( std::string file = "" );
-
-
-int main(int argc, char **argv)
+int main()
 {
-	if (argc > 2)
-	{
-		std::cout << "WebServ/1.0 : too many arguments\n";
-		return 1;
+	try {
+		ConfigParser parser;
+		parser.parse();
+	} catch(std::string &s) {
+		std::cout << s;
 	}
-	if (argc < 2)
-		parseConfigFile();
+	ServersInterface srvs;
+	parser.getServers(srvs);
 	return 0;
 }
