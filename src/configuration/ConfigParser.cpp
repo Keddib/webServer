@@ -29,6 +29,7 @@ void ConfigParser::parse()
 		{
 			_Vsrvs.push_back(std::pair<unsigned int, int>(0, D_PORT));
 			_insideServer = 1;
+			_insideLocation = 0;
 			continue;
 		}
 		else if (_insideServer)
@@ -57,7 +58,7 @@ void ConfigParser::serverBlock(std::string &line)
 	int dir = whichDirective(tokens[0]);
 	// if it's not valid or specific for location throw error
 	if (dir == NONE)
-		throwException(tokens[0] + " unknown directive\n");
+		throwException(tokens[0] + "] unknown directive\n");
 	// if it's a location add alocation add  a location object and go to next line
 	else if (dir == LOCATION)
 	{
@@ -70,7 +71,7 @@ void ConfigParser::serverBlock(std::string &line)
 	// if i's valid and a loction added passit to location to add it
 	else if (_insideLocation)
 	{
-		if (dir < ROOT)
+		if (dir < LOCATION)
 			throwException(tokens[0] + " specific for server\n");
 		// check which directive and add it to location
 		addDirectiveToLocation(dir, tokens);
@@ -91,12 +92,6 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path)\n");
 		_Vsrvs.back().getLocationsToEdit().back().setRoot(tokens[1]);
-	}
-	else if (dir == CMBS)
-	{
-		if (tokens.size() != 2)
-			throwException(tokens[0] + " needs one value (size in Bytes)\n");
-		_Vsrvs.back().getLocationsToEdit().back().setMaxBodySize(tokens[1]);
 	}
 	else if (dir == AUTO)
 	{
@@ -119,31 +114,30 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 		for(size_t i = 1; i < tokens.size(); i++)
 		{
 			if (isValidMethod(tokens[i]))
-				_Vsrvs.back().getLocationsToEdit().back().setIndex(tokens[i]);
+				_Vsrvs.back().getLocationsToEdit().back().setMethods(tokens[i]);
 			else
-				std::cout << "warning: " << std::to_string(_lineNum) <<
-					" not a supported method. ignored\n";
+				std::cout << "warning: " << std::to_string(_lineNum) << " [" <<
+					tokens[i] + "] not a supported method. ignored\n";
 		}
 	}
 	else if (dir == CGI)
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path to CGI)\n");
-		if (tokens[1] == "on")
-			_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1]);
+		_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1]);
 
 	}
 	else if (dir == UPLD)
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path to upload)\n");
-		if (tokens[1] == "on")
-			_Vsrvs.back().getLocationsToEdit().back().setUploadPath(tokens[1]);
+		// if (tokens[1] == "on")
+			// _Vsrvs.back().getLocationsToEdit().back().setUploadPath(tokens[1]);
 	}
-	else if (dir == RET)
-	{
+	// else if (dir == RET)
+	// {
 
-	}
+	// }
 }
 
 void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &tokens)
@@ -153,7 +147,7 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (IPv4 address)\n");
 		// check if valid host;
-		unsigned int addr = std::atol(tokens[1]);
+		unsigned int addr = std::atol(tokens[1].c_str());
 		_Vsrvs.back().setHostValue(addr);
 	}
 	else if (dir == PORT)
@@ -161,7 +155,7 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (Port)\n");
 		// check if valid port
-		int port = std::atol(tokens[1])
+		int port = std::atol(tokens[1].c_str());
 		_Vsrvs.back().setPortValue(port);
 	}
 	else if (dir == S_NAME)
@@ -175,7 +169,7 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (size in Bytes)\n");
 		// check if valid
-		unsigned int max = std::atol(tokens[1]);
+		unsigned int max = std::atol(tokens[1].c_str());
 		_Vsrvs.back().setMaxBodySize(max);
 	}
 	// need a way to add error_page
@@ -215,7 +209,7 @@ int ConfigParser::whichDirective(const std::string &dir) const
 
 void ConfigParser::throwException(std::string message) const
 {
-	throw std::string("ConfigFile: ") + std::to_string(_lineNum) +" : " + message;
+	throw std::string("ConfigFile: ") + std::to_string(_lineNum) +" : [" + message;
 }
 
 void ConfigParser::removeSpacesFromStart(std::string &s)

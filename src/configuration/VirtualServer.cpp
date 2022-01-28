@@ -2,7 +2,7 @@
 
 VirtualServer::VirtualServer(const std::pair<unsigned int, int> &srv)
 : _serverName("_"),
-_client_max_body_size(1048576),
+_client_max_body_size(1048576)
 {
 	aServerInfo = srv;
 }
@@ -22,7 +22,12 @@ std::pair<unsigned int, int>	VirtualServer::GetHostAndPort() const
 
 void	 VirtualServer::Display() const
 {
-	std::cout << "Host :" << aServerInfo.first << " Port: " << aServerInfo.second << std::endl;
+	std::cout << "server :\n";
+	std::cout << "\tHost :" << aServerInfo.first << " Port: " << aServerInfo.second << '\n';
+	std::cout << "\tserver name: " << _serverName + "\n" <<
+	"\t_MaxBodySize: " << std::to_string(_client_max_body_size) + "\n";
+	for (size_t i = 0; i < _locations.size(); i++)
+		_locations[i].Display();
 }
 
 
@@ -46,16 +51,14 @@ void VirtualServer::setServerNameValue(const std::string &sName)
 	_serverName = sName;
 }
 
-void VirtualServer::setMaxBodySize(const std::string &max)
+void VirtualServer::setMaxBodySize(unsigned long long max)
 {
-	_client_max_body_size = std::atol(max.c_str());
+	_client_max_body_size = max;
 }
 
 void VirtualServer::addLocation(const Location &loc)
 {
 	_locations.push_back(loc);
-	_locations.back().
-	setDefualtValues(_root, _index, _client_max_body_size, _autoIndex);
 }
 
 std::vector<Location>& VirtualServer::getLocationsToEdit()

@@ -22,13 +22,13 @@
 #define HOST 1
 #define PORT 2
 #define S_NAME 3
-#define ROOT 4
-#define INDEX 5
-#define AUTO 6
-#define CMBS 7
-#define ERRPG 8
-#define ACCMETH 9
-#define LOCATION 10
+#define CMBS 4
+#define ERRPG 5
+#define LOCATION 6
+#define ROOT 7
+#define INDEX 8
+#define AUTO 9
+#define ACCMETH 10
 #define RET 11
 #define UPLD 12
 #define CGI 13
@@ -40,5 +40,7 @@ bool notSpace(unsigned char ch);
 void ft_split(const std::string &s, std::vector<std::string> &strs);
 void simpleTokenizer(std::string &line, std::vector<std::string> &strs);
 bool isValidMethod(const std::string &meth);
+// add helper func to check valid ip address
+// add helper func to check valid port
 
 #endif

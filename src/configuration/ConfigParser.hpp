@@ -24,8 +24,8 @@ class ConfigParser
 	private:
 		void removeSpacesFromStart(std::string &s);
 		void removeSpacesFromEnd(std::string &s);
-		ConfigParser(const ConfigParser &other);
-		ConfigParser& operator=(const ConfigParser &other);
+		ConfigParser(const ConfigParser &);
+		ConfigParser& operator=(const ConfigParser &);
 		void serverBlock(std::string &line);
 		int whichDirective(const std::string &dir) const;
 		void throwException(std::string message) const;

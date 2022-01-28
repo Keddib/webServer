@@ -11,6 +11,7 @@ class ServersInterface
 
 	public:
 		typedef	std::vector<CommonServers>::iterator	iterator;
+		ServersInterface();
 		ServersInterface(const std::vector<VirtualServer> &srvs);
 		void	AddServer(const VirtualServer &srv);
 		void	Display() const;

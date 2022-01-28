@@ -19,6 +19,10 @@ void	ServersInterface::AddServer(const VirtualServer &srv)
 }
 
 
+ServersInterface::ServersInterface()
+{
+
+}
 ServersInterface::ServersInterface(const std::vector<VirtualServer> &srvs)
 {
 	std::vector<VirtualServer>::const_iterator first, last;

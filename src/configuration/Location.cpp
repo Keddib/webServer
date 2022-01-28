@@ -56,28 +56,24 @@ void Location::setMethods( const std::string &method )
 
 void Location::setCGI( const std::string &CGIpath )
 {
-	CGI = CGIpath;
+	_CGI = CGIpath;
 }
 
-void Location::setMaxBodySize( const std::string &max)
+void Location::Display() const
 {
-	_client_max_body_size = std::atol(max.c_str());
-}
+	std::cout << "Location: \n" <<
+	"\tPrefix : " << _prefix + "\n" <<
+	"\tRoot : " << _root + "\n" <<
+	"\tCGI : " << _CGI + "\n";
+	std::cout << "\tRet : " << std::to_string(_ret.first) + " " << _ret.second + "\n";
+	std::cout << "\tIndex: ";
+	for (size_t i = 0; i < _index.size(); i++)
+		std::cout << _index[i] << " | ";
+	std::cout << "\n";
+	std::cout << "\tMethods: ";
+	for (size_t i = 0; i < _methods.size(); i++)
+		std::cout << _methods[i] << " | ";
+	std::cout << "\n";
+	std::cout << "\tauto index : " << std::to_string(_autoIndex) + "\n";
 
-void Location::setDefualtValues(
-		const std::string &root,
-		const std::vector<std::string> &indexes,
-		const unsigned int &MaxBodySize,
-		bool autoIndex
-)
-{
-	_root = root;
-	_index = indexes;
-	_client_max_body_size = MaxBodySize;
-	_autoIndex = autoIndex;
-}
-
-std::ostream& operator<<(std::ostream &out, const Location &)
-{
-	return out;
 }

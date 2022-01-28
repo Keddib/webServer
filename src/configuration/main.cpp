@@ -3,13 +3,14 @@
 
 int main()
 {
+	ServersInterface srvs;
 	try {
 		ConfigParser parser;
 		parser.parse();
+		parser.getServers(srvs);
 	} catch(std::string &s) {
-		std::cout << s;
+		std::cerr << "Error -> " << s;
 	}
-	ServersInterface srvs;
-	parser.getServers(srvs);
+	srvs.Display();
 	return 0;
 }
