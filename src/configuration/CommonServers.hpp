@@ -17,11 +17,12 @@ class	CommonServers
 		bool	operator==(const std::pair<unsigned int, int> &id);
 		std::pair<unsigned int, int> GetIpPortCommonServer() const;
 		void	Display() const;
-		// const VirtualServer&  whichServer( const std::string &serverName ) const;
+		const VirtualServer&  whichServer( const std::string &) const;
 		// return the server to hundle the request based on serverName
 	private:
 		CommonServers() {}
 		CommonServers& operator=(const CommonServers &){return *this;}
+		bool ifServerNameNotExist(const std::string&) const;
 };
 
 #endif

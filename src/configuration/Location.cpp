@@ -59,6 +59,11 @@ void Location::setCGI( const std::string &CGIpath )
 	_CGI = CGIpath;
 }
 
+const std::string& Location::getPrefix() const
+{
+	return _prefix;
+}
+
 void Location::Display() const
 {
 	std::cout << "Location: \n" <<

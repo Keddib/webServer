@@ -1,10 +1,10 @@
 #include "VirtualServer.hpp"
 
 VirtualServer::VirtualServer(const std::pair<unsigned int, int> &srv)
-: _serverName("_"),
-_client_max_body_size(1048576)
+: _serverName("_"), _client_max_body_size(1048576),  _errLocation("")
 {
 	aServerInfo = srv;
+	_errLocation.setRoot(ERROR_ROOT);
 }
 
 
@@ -26,24 +26,25 @@ void	 VirtualServer::Display() const
 	std::cout << "\tHost :" << aServerInfo.first << " Port: " << aServerInfo.second << '\n';
 	std::cout << "\tserver name: " << _serverName + "\n" <<
 	"\t_MaxBodySize: " << std::to_string(_client_max_body_size) + "\n";
+
+	for (size_t i = 0; i < _errorPages.size(); i++)
+		std::cout << "\t error_page : " << std::to_string(_errorPages[i].first) + " " << _errorPages[i].second + "\n";
 	for (size_t i = 0; i < _locations.size(); i++)
 		_locations[i].Display();
 }
 
 
-void VirtualServer::setHostValue(unsigned int Addr)
+void VirtualServer::setHostValue(std::string &host)
 {
 	// inet_addr resolve adress string to binary representation
 	// of address in net byte order
-	// aServerInfo.first = inet_addr(host.c_str());
-	aServerInfo.first = Addr;
+	aServerInfo.first = inet_addr(host.c_str());
 }
 
 void VirtualServer::setPortValue(int port)
 {
 	// htons return network byte order format
-	// aServerInfo.second = htons(std::atol(port.c_str()));
-	aServerInfo.second = port;
+	aServerInfo.second = htons(port);
 }
 
 void VirtualServer::setServerNameValue(const std::string &sName)
@@ -56,6 +57,14 @@ void VirtualServer::setMaxBodySize(unsigned long long max)
 	_client_max_body_size = max;
 }
 
+void VirtualServer::setErrorPage(int code, const std::string& path)
+{
+	std::pair<int, std::string> err;
+	err.first = code;
+	err.second = path;
+	_errorPages.push_back(err);
+}
+
 void VirtualServer::addLocation(const Location &loc)
 {
 	_locations.push_back(loc);
@@ -64,4 +73,44 @@ void VirtualServer::addLocation(const Location &loc)
 std::vector<Location>& VirtualServer::getLocationsToEdit()
 {
 	return _locations;
+}
+
+
+const std::string& VirtualServer::getServerName() const
+{
+	return _serverName;
+}
+
+
+int findLocationURL(const std::string &path, const std::string &prefix)
+{
+	size_t psize = prefix.size();
+	if (path.size() < psize)
+		return -1;
+	size_t i = 0;
+	for (;i < psize; i++)
+	{
+		if (path[i] != prefix[i])
+			return -1;
+	}
+	return i;
+}
+const Location& VirtualServer::wichLocation( const std::string &Path) const
+{
+	int max(0);
+	int tmp_max(0);
+	int index(-1);
+	size_t size = _locations.size();
+	for (size_t i = 0; i < size; i++)
+	{
+		tmp_max = findLocationURL(Path, _locations[i].getPrefix());
+		if (tmp_max > max)
+		{
+			max = tmp_max;
+			index = i;
+		}
+	}
+	if (index == -1)
+		return _errLocation;
+	return _locations[index];
 }

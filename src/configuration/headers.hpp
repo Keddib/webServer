@@ -13,6 +13,8 @@
 #include <arpa/inet.h>
 
 #define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/WebServ/config/default.conf"
+#define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
+#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
 #define D_PORT 8000
 
 /*

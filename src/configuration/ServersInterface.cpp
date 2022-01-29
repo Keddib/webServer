@@ -9,6 +9,9 @@ void	ServersInterface::AddServer(const VirtualServer &srv)
 	{
 		if (*first == srv)
 		{
+			// if server_name is identical this server get ignored
+			// display a warning message like:
+			// nginx: [warn] conflicting server name "_" on 0.0.0.0:80, ignored
 			first->AddServer(srv);
 			return ;
 		}

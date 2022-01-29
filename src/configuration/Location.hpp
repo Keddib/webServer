@@ -40,8 +40,7 @@ class Location
 		void setMethods( const std::string& );
 		void setCGI( const std::string& );
 		// void setUploadPath(const std::string &);
-		// set default values from server
-
+		const std::string& getPrefix() const;
 };
 
 #endif

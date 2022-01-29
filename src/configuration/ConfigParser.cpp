@@ -116,7 +116,7 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 			if (isValidMethod(tokens[i]))
 				_Vsrvs.back().getLocationsToEdit().back().setMethods(tokens[i]);
 			else
-				std::cout << "warning: " << std::to_string(_lineNum) << " [" <<
+				std::cout << "WebServ/1.0: [warn] " << std::to_string(_lineNum) << " [" <<
 					tokens[i] + "] not a supported method. ignored\n";
 		}
 	}
@@ -134,10 +134,16 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 		// if (tokens[1] == "on")
 			// _Vsrvs.back().getLocationsToEdit().back().setUploadPath(tokens[1]);
 	}
-	// else if (dir == RET)
-	// {
-
-	// }
+	else if (dir == RET)
+	{
+		if (tokens.size() != 3)
+			throwException(tokens[0] + " needs two values (redirect code and URI)\n");
+		// check if redirect code valid
+		int code = std::atoi(tokens[1].c_str());
+		if (code > 308 || code < 300)
+			throwException(tokens[1] + " it's not a valid redirect code (300-308)\n");
+		_Vsrvs.back().getLocationsToEdit().back().setReturn(code, tokens[2]);
+	}
 }
 
 void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &tokens)
@@ -146,9 +152,8 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (IPv4 address)\n");
-		// check if valid host;
-		unsigned int addr = std::atol(tokens[1].c_str());
-		_Vsrvs.back().setHostValue(addr);
+		// check if valid host; conver to unsigned int
+		_Vsrvs.back().setHostValue(tokens[1]);
 	}
 	else if (dir == PORT)
 	{
@@ -172,7 +177,15 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 		unsigned int max = std::atol(tokens[1].c_str());
 		_Vsrvs.back().setMaxBodySize(max);
 	}
-	// need a way to add error_page
+	else if (dir == ERRPG)
+	{
+		if (tokens.size() != 3)
+			throwException(tokens[0] + " needs two values (error code | path)\n");
+		int code = std::atoi(tokens[1].c_str());
+		if (code < 400 || code > 511)
+			throwException(tokens[1] + " it's not a valid error code (400-511)\n");
+		_Vsrvs.back().setErrorPage(code, tokens[2]);
+	}
 }
 
 int ConfigParser::whichDirective(const std::string &dir) const

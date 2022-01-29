@@ -6,6 +6,8 @@
 #include <iostream>
 #include <arpa/inet.h>
 
+#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
+
 /*
 
 server {
@@ -31,24 +33,15 @@ server {
 */
 
 
-class ErrorPage {
-	public:
-		const std::pair<int, std::string> err;
-		const std::string& getPath() const;
-		// ErrorPage(int errCode, std::string path) : err.first(errCode), err.second(path) {}
-		int getErrCode() const { return err.first; }
-		// void setPath(std::string path) { err.second = path; }
-};
-
-
 class VirtualServer
 {
 	private:
 		std::pair<unsigned int, int> aServerInfo;// ip , port in this order
 		std::string _serverName;
-		std::vector<ErrorPage> _errorPages;
+		std::vector<std::pair<int, std::string> > _errorPages;
 		std::vector<Location> _locations;
 		unsigned int _client_max_body_size; // default 1048576Bytes = 1MB
+		Location _errLocation;
 
 	public:
 		VirtualServer(const std::pair<unsigned int, int> &);
@@ -57,12 +50,14 @@ class VirtualServer
 		std::vector<Location>& getLocationsToEdit();
 		void	Display() const;
 		void addLocation(const Location &location);
-		void setHostValue(unsigned int);
+		void setHostValue(std::string &);
 		void setPortValue(int);
 		void setServerNameValue(const std::string &s);
 		void setMaxBodySize(unsigned long long);
-		// const Loaction& wichLocation( const std::string &Path)
+		void setErrorPage(int , const std::string& );
 		// return which location  based on the path requested
+		const Location& wichLocation( const std::string &Path) const;
+		const std::string& getServerName() const;
 };
 
 #endif
