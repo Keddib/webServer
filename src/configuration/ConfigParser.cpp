@@ -81,8 +81,8 @@ void ConfigParser::serverBlock(std::string &line)
 		throwException(tokens[0] + " is specific for loaction\n");
 	// if valid and not spisefic for location add it to the last server on the vector
 	else
-		addDirectiveToServer(dir, tokens);
 		// check which directive and add it to server
+		addDirectiveToServer(dir, tokens);
 }
 
 void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tokens)
@@ -131,8 +131,7 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path to upload)\n");
-		// if (tokens[1] == "on")
-			// _Vsrvs.back().getLocationsToEdit().back().setUploadPath(tokens[1]);
+			_Vsrvs.back().getLocationsToEdit().back().setUpload(tokens[1]);
 	}
 	else if (dir == RET)
 	{
@@ -159,8 +158,11 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (Port)\n");
+		// 1,024 – 49,151 registered ports.
 		// check if valid port
 		int port = std::atol(tokens[1].c_str());
+		if (port < 1024 || port > 49151)
+			throwException(tokens[0] + " Invalid port (1024–49151 registered ports only)\n");
 		_Vsrvs.back().setPortValue(port);
 	}
 	else if (dir == S_NAME)

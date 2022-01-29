@@ -3,7 +3,6 @@
 Location::Location( const std::string &prefix)
 : _prefix(prefix), _autoIndex(0)
 {
-
 }
 
 Location::~Location() {}
@@ -57,6 +56,11 @@ void Location::setMethods( const std::string &method )
 void Location::setCGI( const std::string &CGIpath )
 {
 	_CGI = CGIpath;
+}
+
+void Location::setUpload( const std::string &UPpath )
+{
+	_upload = UPpath;
 }
 
 const std::string& Location::getPrefix() const

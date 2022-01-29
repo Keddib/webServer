@@ -1,0 +1,32 @@
+We splited the work into two parts:
+1 -> managing sockets: read request and parse it. sending response to client (non-blocking).
+2 -> pasrsing config file and and hundling requests based on configuration & CGI.
+
+2Part Todolist:
+
+- [x] read config file;
+	- [x] set a data structres to store virtual servers
+	- [x] handle errors;
+	- [x] set default dirivtives to default values if not defined on condig file
+	- [x] create Servers interface that holds all valid Virtual servers
+	- [x] add "return" to location and "error_page" to server
+	- [x] add upload path to location
+
+- [x] Server and Location Block Selection
+	- [x] select which Server block will handle a request based
+	on IP:PORT and SERVER_NAME
+	- [x] select which Location block will serve a request based on path
+
+- [] handle requests
+	- [] create a Response class
+	- [] handle each request and create a response object
+	- [] implement a Reqhandler class that takes request and create a response
+	based on configuation
+	- [] if the requested resource is a CGI script just print CGI on output.
+	CGI will be handled later.
+
+- [] handle CGI
+	- [] add request headers to envirment variables wih "setenv(n,v,or)"
+	- [] create a new process
+	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
+	- [] get out put and create a response

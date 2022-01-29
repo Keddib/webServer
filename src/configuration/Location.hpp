@@ -24,11 +24,11 @@ class Location
 		std::string _prefix;
 		std::string _root;
 		std::string _CGI;
+		std::string _upload;
 		std::pair<int, std::string> _ret;
 		std::vector<std::string> _index;
 		std::vector<std::string> _methods;
 		bool _autoIndex;
-		// add upload path
 	public:
 		Location( const std::string &prefix );
 		~Location();
@@ -39,7 +39,7 @@ class Location
 		void setIndex( const std::string& );
 		void setMethods( const std::string& );
 		void setCGI( const std::string& );
-		// void setUploadPath(const std::string &);
+		void setUpload( const std::string& );
 		const std::string& getPrefix() const;
 };
 
