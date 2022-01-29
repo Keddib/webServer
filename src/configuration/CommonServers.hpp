@@ -1,7 +1,6 @@
 #ifndef COMMON_SERVERS_HPP
 #define COMMON_SERVERS_HPP
 
-#include <vector>
 #include "VirtualServer.hpp"
 
 class	CommonServers

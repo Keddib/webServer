@@ -81,20 +81,6 @@ const std::string& VirtualServer::getServerName() const
 	return _serverName;
 }
 
-
-int findLocationURL(const std::string &path, const std::string &prefix)
-{
-	size_t psize = prefix.size();
-	if (path.size() < psize)
-		return -1;
-	size_t i = 0;
-	for (;i < psize; i++)
-	{
-		if (path[i] != prefix[i])
-			return -1;
-	}
-	return i;
-}
 const Location& VirtualServer::wichLocation( const std::string &Path) const
 {
 	int max(0);

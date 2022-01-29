@@ -2,8 +2,6 @@
 #define VIRTUALSERVER_001_HPP
 
 #include "Location.hpp"
-#include <utility>
-#include <iostream>
 #include <arpa/inet.h>
 
 #define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
@@ -59,5 +57,7 @@ class VirtualServer
 		const Location& wichLocation( const std::string &Path) const;
 		const std::string& getServerName() const;
 };
+
+int findLocationURL(const std::string &path, const std::string &prefix);
 
 #endif

@@ -1,18 +1,12 @@
 #ifndef HEADERS_001_HPP
 #define HEADERS_001_HPP
 
-#include "VirtualServer.hpp"
-#include "CommonServers.hpp"
 #include "ServersInterface.hpp"
-#include "Location.hpp"
-#include <utility>
-#include <vector>
-#include <string>
 #include <sstream>
 #include <fstream>
 #include <arpa/inet.h>
 
-#define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/WebServ/config/default.conf"
+#define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/WebServ/src/config/default.conf"
 #define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
 #define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
 #define D_PORT 8000
