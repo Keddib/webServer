@@ -1,7 +1,7 @@
 #include "ConfigParser.hpp"
 
 ConfigParser::ConfigParser(std::string file)
-: _cFile(file), _lineNum(0), _insideServer(0), _insideLocation(0)
+: _cFile(file.c_str()), _lineNum(0), _insideServer(0), _insideLocation(0)
 {
 	if (!_cFile.is_open())
 		throw std::string(

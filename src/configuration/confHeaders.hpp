@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <arpa/inet.h>
+#include <algorithm>
 
 #define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/WebServ/src/config/default.conf"
 #define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
