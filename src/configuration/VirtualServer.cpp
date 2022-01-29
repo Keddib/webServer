@@ -81,7 +81,7 @@ const std::string& VirtualServer::getServerName() const
 	return _serverName;
 }
 
-const Location& VirtualServer::wichLocation( const std::string &Path) const
+const Location& VirtualServer::whichLocation( const std::string &Path) const
 {
 	int max(0);
 	int tmp_max(0);

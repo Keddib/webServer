@@ -39,9 +39,9 @@ void Location::setIndex( const std::string &index )
 	_index.push_back(index);
 }
 
-void Location::setMethods( const std::string &method )
+void Location::setMethods( int method )
 {
-	std::vector<std::string>::const_iterator start, end;
+	std::vector<int>::const_iterator start, end;
 	start = _methods.begin();
 	end = _methods.end();
 	while (start != end )

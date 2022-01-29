@@ -36,7 +36,7 @@
 bool notSpace(unsigned char ch);
 void ft_split(const std::string &s, std::vector<std::string> &strs);
 void simpleTokenizer(std::string &line, std::vector<std::string> &strs);
-bool isValidMethod(const std::string &meth);
+int isValidMethod(const std::string &meth);
 // add helper func to check valid ip address
 // add helper func to check valid port
 

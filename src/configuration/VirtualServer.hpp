@@ -54,7 +54,7 @@ class VirtualServer
 		void setMaxBodySize(unsigned long long);
 		void setErrorPage(int , const std::string& );
 		// return which location  based on the path requested
-		const Location& wichLocation( const std::string &Path) const;
+		const Location& whichLocation( const std::string &Path) const;
 		const std::string& getServerName() const;
 };
 

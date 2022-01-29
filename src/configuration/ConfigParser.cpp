@@ -113,8 +113,9 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 			throwException(tokens[0] + " needs at least one value (GET|POST|DELETE)\n");
 		for(size_t i = 1; i < tokens.size(); i++)
 		{
-			if (isValidMethod(tokens[i]))
-				_Vsrvs.back().getLocationsToEdit().back().setMethods(tokens[i]);
+			int meth = isValidMethod(tokens[i]);
+			if (meth)
+				_Vsrvs.back().getLocationsToEdit().back().setMethods(meth);
 			else
 				std::cout << "WebServ/1.0: [warn] " << std::to_string(_lineNum) << " [" <<
 					tokens[i] + "] not a supported method. ignored\n";

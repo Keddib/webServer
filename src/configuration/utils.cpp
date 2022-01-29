@@ -31,9 +31,15 @@ void ft_split(const std::string &s, std::vector<std::string> &strs)
 	}
 }
 
-bool isValidMethod(const std::string &meth)
+int isValidMethod(const std::string &meth)
 {
-	return (meth == "GET" || meth == "POST" || meth == "DELETE");
+	if (meth == "GET")
+		return 20;
+	else if (meth == "POST")
+		return 21;
+	else if (meth == "DELETE")
+		return 22;
+	return 0;
 }
 
 int findLocationURL(const std::string &path, const std::string &prefix)

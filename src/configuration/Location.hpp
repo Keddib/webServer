@@ -27,7 +27,7 @@ class Location
 		std::string _upload;
 		std::pair<int, std::string> _ret;
 		std::vector<std::string> _index;
-		std::vector<std::string> _methods;
+		std::vector<int> _methods;
 		bool _autoIndex;
 	public:
 		Location( const std::string &prefix );
@@ -37,10 +37,11 @@ class Location
 		void setAutoIndex( bool x=0 );
 		void setReturn( int, const std::string& );
 		void setIndex( const std::string& );
-		void setMethods( const std::string& );
+		void setMethods( int );
 		void setCGI( const std::string& );
 		void setUpload( const std::string& );
 		const std::string& getPrefix() const;
+		
 };
 
 #endif
