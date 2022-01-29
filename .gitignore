@@ -1,3 +1,4 @@
+.DS*
 .vscode
 a.out
 *.dSYM
