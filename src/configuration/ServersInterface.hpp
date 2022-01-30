@@ -2,19 +2,20 @@
 #define SERVERS_INTERFACE_001_HPP
 
 #include "CommonServers.hpp"
-
+#define	MAX_BACK_LOG	20
+#include <unistd.h>
 class ServersInterface
 {
 	private:
 		std::vector<CommonServers>	aServers;
-
 	public:
 		typedef	std::vector<CommonServers>::iterator	iterator;
 		ServersInterface();
 		ServersInterface(const std::vector<VirtualServer> &srvs);
 		void	AddServer(const VirtualServer &srv);
 		void	Display() const;
-		// operator [] i will give it host , port pair and will return refernce
+		bool	LaunchServers(std::map<int, int> &) const;
+		std::pair<int, int>	StartServerAt(int, bool &) const;
 		CommonServers	&operator[](int index);
 		iterator	begin();
 		iterator	end();

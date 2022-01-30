@@ -1,6 +1,9 @@
 #ifndef LOCATION_001_HPP
 #define LOCATION_001_HPP
 
+#include <arpa/inet.h> //added
+#include <sys/socket.h> //added
+#include <map>
 #include <string>
 #include <vector>
 #include <utility>

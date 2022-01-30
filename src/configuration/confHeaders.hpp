@@ -5,9 +5,11 @@
 #include <sstream>
 #include <fstream>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <algorithm>
+#include <string>
 
-#define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/WebServ/src/config/default.conf"
+#define CONFIG_FILE "./src/config/default.conf"
 #define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
 #define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
 #define D_PORT 8000

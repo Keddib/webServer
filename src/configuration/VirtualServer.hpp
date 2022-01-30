@@ -2,8 +2,7 @@
 #define VIRTUALSERVER_001_HPP
 
 #include "Location.hpp"
-#include <arpa/inet.h>
-
+// i move header from here to location.hpp
 #define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
 
 /*
