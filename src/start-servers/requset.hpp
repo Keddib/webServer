@@ -8,7 +8,8 @@
 class	Request
 {
 	private:
-		unsigned int			bodySize;
+		int				isChuncked; // -1 default 0 means that the header Transfer-Encoding has past but not value not chuncked 1 means chuncked
+		long			bodySize; // keep eye on this type mybe body size will exceeds
 		std::string			tmpStr;
 		int				status;
 		int				srvFd; // this wil  help to identify which servers should handel this request you will give this srvFd to map and you will get index to right commonServers class
