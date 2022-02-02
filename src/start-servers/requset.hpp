@@ -21,10 +21,13 @@ class	Request
 	public:
 		const char			*first, *second;
 		char				methodHolder[LONGEST_METHOD + 1];
-		int				ProcessOneLine(char *str, int size);
-		int				ProcessHeaders(char *str, int size);
+		int					ProcessOneLine(char *str, int size);
+		int					ProcessHeaders(char *str, int size);
+		bool				IsHeadersDone(char **str);
+		void				FirstSecondFromHeaderLine();
+		void				TakeInfoFromHeaders(char **str);
 		bool				InitFromStartLine();
-		int				AddToRequest(char *str, int size);
+		int					AddToRequest(char *str, int size);
 		Request(int sFd);
 };
 

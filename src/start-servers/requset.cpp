@@ -22,8 +22,11 @@ int	Request::AddToRequest(char *str, int size)
 	// return 0 means requset not done yet
 	// return 1 means return is done
 	// return -1 something wron with this requset
+	// if's that are down don not change them to if else struct 
+	// they shoould stay if if if ...
 	if (status == -1)
 	{
+		// processing start line
 		status = ProcessOneLine(str, size);
 		if (status != -1)
 		{
@@ -36,21 +39,15 @@ int	Request::AddToRequest(char *str, int size)
 			tmpStr.clear();
 		}
 	}
-
 	if (!status)
 	{
+		// processing headers
 		status = ProcessHeaders(str, size);
-		if (status)
-		{
-			std::cout << "Method: " << method << std::endl;
-			std::cout << "path: " << aResourcPath << std::endl;
-			std::cout << "Host: " << aHostName << std::endl;
-			std::cout << "length: " << bodySize << std::endl;
-			std::cout << "rest of headers\n";
-			std::cout << "chuncked value: " << isChuncked << std::endl;
-			for (auto &v: aHeaders)
-				std::cout << v.first << " -> " << v.second << std::endl;
-		}
+	}
+	
+	if (status == 1)
+	{
+		// processing body
 	}
 	return 0;
 }
@@ -58,52 +55,86 @@ int	Request::AddToRequest(char *str, int size)
 // all down has to do with  headers and putting them into the vector
 int				Request::ProcessHeaders(char *str, int size)
 {
-	int tmp;
+	// return 1 means that headers are done
+	// return 0 means that headers not done yet
 	while (*str)
 	{
 		status = ProcessOneLine(str, size);
-		if (status != -1 && status <= 2 && tmpStr.size() <= 1) // means end of headers
-		{
-			str += 2; // step over "\r\n" that is at start of str
-			return 1; // means done
-		}
+		if (IsHeadersDone(&str))
+			return 1;
 		if (status != -1)
 		{
-			// means one header is done so let's creat pair from this tmpStr
-			// here i will look at first variable for hostname so i can stor it sepreatl and check body size
-			first = tmpStr.c_str();
-			tmp = IndexOf(first, ':');
-			tmpStr[tmp] = 0;
-			if (tmpStr[tmp - 1] == ' ')
-				tmpStr[tmp - 1] = 0; // maybe i will remove later for preformance
-			// here i need to check if first variable is equal to HostName and with body-size to set some variables ------
-			// and i need to test a lot with diffrent headers -------
-			second = first + tmp + 2; // what is after ":" character because i'm assuming that ther's always one space at first that's why i go over that one space maybe later optimiziation
-
-			if (str_cmp(first, "Host"))
-				aHostName = second;
-			else
-				aHeaders.push_back(std::make_pair(first, second));
-			if (str_cmp(first, "Content-Length"))
-				bodySize = GetBodySize(second);
-			if (bodySize == -1 && isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
-			{
-				// by the way that bodySize == -1 i'm saying i will care of Transfer-Encoding only if bodySize not found yet
-				// if bodySize were after Transfer-Encoding no problem bec whene time to get i will decide using bodySize
-				// if no bodySize = -1 means no Content-Length found i will use then Transfer-Encoding
-				// if isChuncked == 1 i will using chunk mode to read body otherwise i'll assume no body
-				if (str_cmp(second, "chunked"))
-					isChuncked = 1;
-				else
-					isChuncked = 0;
-			}
-			tmpStr.clear();
-			str += status;
+			FirstSecondFromHeaderLine();
+			TakeInfoFromHeaders(&str);
 		}
 		else
 			break ;
 	}
 	return 0; // means headers not done yet
+}
+
+
+bool				Request::IsHeadersDone(char **str)
+{
+	// this function will return true if we reach the end of headers
+	// which means that we got "\r\n"
+	// status = -1 means that there's no "\r\n"
+	// status <= 2 means that eather we found "\r\n" or "\n" at start
+	// tmpStr.size() <= 1 means if tmpStr=0 means empty line if 1 means that ther's tmpStr[0] = '\r'
+	/* EXMPLES */
+	// 1: tmpStr = '' and (status = 2 => str = "\r\n****")
+	// 2: tmpStr = '\r' and str = '\n**'
+	// these are the cases that this branch will be true
+	if (status != -1 && status <= 2 && tmpStr.size() <= 1)
+	{
+		(*str) += 2;
+		return true;
+	}
+	return false;
+}
+
+void				Request::TakeInfoFromHeaders(char **str)
+{
+	// this function will collect some informmation from header
+	// for in Request needed informmation like Content-Length
+	// or for respone info like Host
+	if (str_cmp(first, "Host"))
+		aHostName = second;
+	else
+		aHeaders.push_back(std::make_pair(first, second));
+	if (str_cmp(first, "Content-Length"))
+		bodySize = GetBodySize(second);
+	if (bodySize == -1 && isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
+	{
+		// by the way that bodySize == -1 i'm saying i will care of Transfer-Encoding only if bodySize not found yet
+		// if bodySize were after Transfer-Encoding no problem bec whene time to get i will decide using bodySize
+		// if no bodySize = -1 means no Content-Length found i will use then Transfer-Encoding
+		// if isChuncked == 1 i will using chunk mode to read body otherwise i'll assume no body
+		if (str_cmp(second, "chunked"))
+			isChuncked = 1;
+		else
+			isChuncked = 0;
+	}
+	tmpStr.clear();
+	(*str) += status;
+}
+
+
+void				Request::FirstSecondFromHeaderLine()
+{
+	// this function will change one tmpStr line
+	// to first second pointers sperated by ":"
+	/* EXAMPLE */
+	// Host: localhost
+	// first = Host
+	// second = localhost
+	int tmp;
+	first = tmpStr.c_str();
+	tmp = IndexOf(first, ':');
+	tmpStr[tmp] = 0;
+	if (tmpStr[tmp - 1] == ' ')
+		tmpStr[tmp - 1] = 0; // maybe i will remove later for preformance
+	second = first + tmp + 2; // what is after ":" character because i'm assuming that ther's always one space at first that's why i go over that one space maybe later optimiziation
 }
 
 // all down has to do with start line nothing more
