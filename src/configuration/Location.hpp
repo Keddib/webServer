@@ -35,7 +35,6 @@ class Location
 	public:
 		Location( const std::string &prefix );
 		~Location();
-		void Display() const;
 		void setRoot( const std::string &path );
 		void setAutoIndex( bool x=0 );
 		void setReturn( int, const std::string& );
@@ -45,6 +44,8 @@ class Location
 		void setUpload( const std::string& );
 		const std::string& getPrefix() const;
 		
+		void Display() const;
+
 };
 
 #endif

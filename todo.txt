@@ -18,8 +18,7 @@ We splited the work into two parts:
 	- [x] select which Location block will serve a request based on path
 
 - [] handle requests
-	- [] create a Response class
-	- [] handle each request and create a response object
+	- [x] create a Response class
 	- [] implement a Reqhandler class that takes request and create a response
 	based on configuation
 	- [] if the requested resource is a CGI script just print CGI on output.
