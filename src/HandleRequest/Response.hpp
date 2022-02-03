@@ -1,9 +1,11 @@
 #ifndef RESPONSE_001_HPP
 #define RESPONSE_001_HPP
 
+
 #include <string>
 #include <unistd.h>
 #include <fstream>
+#include <iostream>
 
 class Response
 {
@@ -18,11 +20,16 @@ class Response
 		Response();
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
-		void setHeader(const std::string&, const std::string&);
-		bool isKeepAlive();
-		unsigned int getBodySize();
-		const std::string& getBuffer();
+		void setHeader(const std::string&, const std::string&, bool end);
+		void addBodyToBuffer(const std::string &);
 		void setBodyfile(const std::string &path);
+		bool isKeepAlive() const;
+		unsigned int getBodySize() const;
+		const std::string& getBuffer()const ;
+		void display() const;
 };
+
+std::string getOsName();
+std::string getDate();
 
 #endif
