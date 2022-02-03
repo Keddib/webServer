@@ -78,3 +78,19 @@ Content-Length: 3495`
    (Section 9.4) and ought to be handled as an error.  A sender MUST
    remove the received Content-Length field prior to forwarding such
    a message downstream.
+
+Host: www.example.com
+   The "Host" header field in a request provides the host and port
+   information from the target URI, enabling the origin server to
+   distinguish among resources while servicing requests for multiple
+   host names on a single IP address.
+
+   Since the Host field-value is critical information for handling a
+   request, a user agent SHOULD generate Host as the first header field
+   following the request-line.
+
+
+   A server MUST respond with a 400 (Bad Request) status code to any
+   HTTP/1.1 request message that lacks a Host header field and to any
+   request message that contains more than one Host header field or a
+   Host header field with an invalid field-value.

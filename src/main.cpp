@@ -5,16 +5,15 @@
 
 int main()
 {
-	ServersInterface srvs;
 	try {
 		ConfigParser parser;
 		parser.parse();
-		parser.getServers(srvs);
+		parser.AddServersToServersInterface();
 	} catch(std::string &s) {
 		std::cerr << "Error -> " << s;
 		return 1;
 	}
-	ReqHandler hundler(srvs);
+	ReqHandler hundler;
 	Request req(0, POST, "/", 1);
 	Response *res = hundler.getResponse(req);
 	res = NULL;

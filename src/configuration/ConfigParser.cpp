@@ -41,11 +41,11 @@ void ConfigParser::parse()
 		_Vsrvs.push_back(std::pair<unsigned int, int>(0, D_PORT));
 }
 
-void ConfigParser::getServers(ServersInterface &SrvI)
+void ConfigParser::AddServersToServersInterface()
 {
 	for(size_t i = 0; i < _Vsrvs.size(); i++)
 	{
-		SrvI.AddServer(_Vsrvs[i]);
+		ServI.AddServer(_Vsrvs[i]);
 	}
 	_Vsrvs.clear();
 }

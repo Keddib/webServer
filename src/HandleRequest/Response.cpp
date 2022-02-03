@@ -1,14 +1,13 @@
 #include "Response.hpp"
 
 Response::Response()
-: _bodyFD(-1), _bSize(0), _keepAlive(1)
+: _bSize(0), _keepAlive(1), _bodyExcite(0)
 {
+
 }
 
 Response::~Response()
 {
-	if (_bodyFD > -1)
-		close(_bodyFD);
 }
 
 void Response::setStartLine(
@@ -16,34 +15,33 @@ void Response::setStartLine(
 	int code,
 	const std::string &message)
 {
-	_header += scheme + " " + std::to_string(code) + " " + message + "\r\n";
+	_buffer += scheme + " " + std::to_string(code) + " " + message + "\r\n";
 }
 
 void Response::setHeader(const std::string &key, const std::string &value)
 {
-	_header += key + ": " + value + "\r\n";
+	_buffer += key + ": " + value + "\r\n";
 }
 
-void Response::setBodyFD(int fd)
-{
-	_bodyFD = fd;
-}
 
 bool Response::isKeepAlive()
 {
 	return _keepAlive;
 }
 
-int Response::getBodyFD()
-{
-	return _bodyFD;
-}
 
 unsigned int Response::getBodySize()
 {
 	return _bSize;
 }
-const std::string& Response::getHeader()
+const std::string& Response::getBuffer()
 {
-	return _header;
+	return _buffer;
+}
+
+void Response::setBodyfile(const std::string &file)
+{
+	_body.open(file, std::fstream::in | std::fstream::binary);
+	_bodyExcite = 1;
+	_bSize = 10; // need to get the size of file
 }

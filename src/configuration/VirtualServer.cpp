@@ -100,3 +100,8 @@ const Location& VirtualServer::whichLocation( const std::string &Path) const
 		return _errLocation;
 	return _locations[index];
 }
+
+const std::vector<std::pair<int, std::string> >& VirtualServer::getErrorPages() const
+{
+	return _errorPages;
+}

@@ -55,6 +55,7 @@ class VirtualServer
 		// return which location  based on the path requested
 		const Location& whichLocation( const std::string &Path) const;
 		const std::string& getServerName() const;
+		const std::vector<std::pair<int, std::string> >& getErrorPages() const;
 };
 
 int findLocationURL(const std::string &path, const std::string &prefix);

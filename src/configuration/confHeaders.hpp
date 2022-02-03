@@ -35,6 +35,13 @@
 #define CGI 13
 #define NONE -1
 
+
+/*
+** global object of serversInterface it's used by almost every peace of code
+*/
+
+ServersInterface ServI;
+
 // helper functions
 
 bool notSpace(unsigned char ch);

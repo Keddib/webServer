@@ -3,7 +3,6 @@
 
 #include <arpa/inet.h> //added
 #include <sys/socket.h> //added
-#include <map>
 #include <string>
 #include <vector>
 #include <utility>
@@ -43,7 +42,7 @@ class Location
 		void setCGI( const std::string& );
 		void setUpload( const std::string& );
 		const std::string& getPrefix() const;
-		
+
 		void Display() const;
 
 };

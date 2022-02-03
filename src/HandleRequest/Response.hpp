@@ -3,27 +3,26 @@
 
 #include <string>
 #include <unistd.h>
+#include <fstream>
 
 class Response
 {
 	private:
 		/* data */
-		std::string _header;
-		/// fstream 
-		int _bodyFD;
+		std::fstream _body;
+		std::string _buffer;
 		unsigned int _bSize;
 		bool _keepAlive;
-		// is there a body or not
+		bool _bodyExcite;
 	public:
 		Response();
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
 		void setHeader(const std::string&, const std::string&);
-		void setBodyFD(int);
 		bool isKeepAlive();
-		int getBodyFD();
 		unsigned int getBodySize();
-		const std::string& getHeader();
+		const std::string& getBuffer();
+		void setBodyfile(const std::string &path);
 };
 
 #endif
