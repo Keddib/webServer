@@ -19,7 +19,7 @@ class ConfigParser
 		ConfigParser(std::string file = CONFIG_FILE);
 		~ConfigParser();
 		void parse();
-		void getServers(ServersInterface &SrvI); // called after parse;
+		void AddServersToServersInterface(); // called after parse;
 	private:
 		void removeSpacesFromStart(std::string &s);
 		void removeSpacesFromEnd(std::string &s);
