@@ -1,0 +1,7 @@
+if start line is in correct format but method not recognized 
+	-> return "not allowed" 405
+if Transfer-Encoding has not the value of chuncked
+	-> return "not implmented" 501
+if start line is not valid 
+	-> return "bad request" 400
+

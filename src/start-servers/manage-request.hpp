@@ -2,7 +2,7 @@
 #define	__MANAGE_REQUEST__
 
 #include "requset.hpp"
-#define	BUFFER_SIZE	1
+#define	BUFFER_SIZE	1024 // make sure that this number is fiting in int type
 class	ManageRequest
 {
 	private:

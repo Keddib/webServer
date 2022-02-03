@@ -1,18 +1,26 @@
 #include "requset.hpp"
 
-int	GetLocationOf(char *str, const char *target, int size);
+void	STOP_HERE();
+
+
+int	GetLocationOf(char *str, const char *target, long size);
 int	GetMethod(std::string &str, char *methodHolder, size_t &i);
 bool	str_cmp(const char *str, const char *against);
 void	InitRecoursePath(std::string &aRsp, std::string &line, size_t &size);
 int	GetHttpVersion(std::string &line, size_t index);
 int	IndexOf(const char *str, char c);
 long	GetBodySize(const char *str);
+void	fillFileName(int num, char* str);
 
 Request::Request(int srvFd) : srvFd(srvFd)
 {
 	status= -1;
 	bodySize = -1;
 	isChuncked = -1;
+	bodyFd = -1;
+	hasBeenRead = 0;
+	strcpy(fileName, "._req_body");
+	chunkedBodyState = true;
 }
 
 
@@ -24,6 +32,7 @@ int	Request::AddToRequest(char *str, int size)
 	// return -1 something wron with this requset
 	// if's that are down don not change them to if else struct 
 	// they shoould stay if if if ...
+	endStr = str + size;
 	if (status == -1)
 	{
 		// processing start line
@@ -35,37 +44,190 @@ int	Request::AddToRequest(char *str, int size)
 			status = 0;// means ready to start header
 			// extract from tmpStr data needed like method...
 			if (!InitFromStartLine())
-				return -1;
+				return -1; // i will change this bec in case if error i should return responce not immdiate answer
 			tmpStr.clear();
 		}
 	}
 	if (!status)
 	{
 		// processing headers
-		status = ProcessHeaders(str, size);
+		status = ProcessHeaders(&str, size);
+		if (status == -1)
+			return -1; // problem accured handel later
 	}
 	
 	if (status == 1)
 	{
 		// processing body
+		if (!hasBeenRead)
+		{
+			// here make sure that this branch will only be excuted once
+			if (bodySize < MAX_BODY_SWITCH)
+				bodyString.reserve(bodySize);
+			else {
+				fillFileName(srvFd, fileName);
+				bodyFileObj.open(fileName, std::fstream::out); // creating file
+			}
+		}
+		if (ProcessBody(str, endStr - str + 1)) {
+			bodyFileObj.close();
+			return true;
+		}
+		// working here check if you read the body correctly or not check chunked and with Content-Length
 	}
 	return 0;
 }
 
+// body processing
+
+bool				Request::ProcessBody(char *str, long size)
+{
+	// this function will return true if body is done if not it will return false
+	int tmp;
+
+	tmp = HowToReadBody();
+	if (tmp == 1)
+	{
+		if (ReadBody(str, size))
+			return true;
+	}
+	else if (tmp == -1)
+	{
+		if (ReadByChunck(str, size))
+			return true;
+	}
+	else
+		return true;
+	return false;
+}
+
+bool	Request::ReadBody(char *str, long size)
+{
+	// be carefull in case of file writing
+	// this is easy just read entire body and store it in file
+	// if Content-Length is under MAX_BODY_SWITCH body will be string
+	// if bigger will b stord and file 
+	if (bodySize < MAX_BODY_SWITCH)
+		return BodyStringCase(str, size);
+	// from here i will handle body as file
+	// will create file with srvFd as name
+	return BodyFileCase(str, size);
+}
+
+bool	Request::BodyStringCase(char *str, long size)
+{
+	// means that body small enough to be stored in string obj
+	if (hasBeenRead + size < bodySize)
+	{
+		bodyString += str;
+		hasBeenRead += size;
+		return false;
+	}
+	str[bodySize - hasBeenRead + 1]  = 0; /* in this case i'm gonna take just what is needed for example if str "bbaaaa" and only two are still needed so i will add only two and done*/
+	bodyString += str;
+	return true;
+}
+
+bool	Request::BodyFileCase(char *str, long size)
+{
+	if (hasBeenRead + size < bodySize)
+	{
+		bodyFileObj << str;
+		hasBeenRead += size;
+		return false;
+	}
+	str[bodySize - hasBeenRead + 1] = 0;
+	bodyFileObj << str;
+	return true;
+}
+
+bool	Request::ReadByChunck(char *str, long size)
+{
+	// working here ----------------------------------------------------------------------------
+	// chunked body will be stored in file
+	int tmp;
+	while (*str)
+	{
+		if (chunkedBodyState)
+		{
+			// if chunkedBodyState true means that
+			// i will be looking for how much client will supply of data
+			tmp = ProcessOneLine(str, size);
+			if (tmp != -1)
+			{
+				// this almost always will be true
+				// and it means that number that need to be read is stored in tmpStr variable
+				bodySize = strtol(tmpStr.c_str(), NULL, 16);
+				if (bodySize == 0)
+					return true; // which means that the body is done dealing with
+				tmpStr.clear();
+				str += tmp; // MOVING str after "\r\n"
+				size -= tmp;
+				chunkedBodyState = false;
+				hasBeenRead = 0;
+			}
+		}
+		if (!chunkedBodyState)
+		{
+			if (BodyFileCase(str, size)) 
+			{
+				chunkedBodyState = true; // swith again to wait for other data
+				str += (bodySize - hasBeenRead + 2); // this important
+				// example 
+				// bodySize = 7 and hasBeenRead = 0
+				// BODY WAS "*******78544\r\n********"
+				// BodyFileCase() will return true because read 7 but it still data after i should not just waste that
+				// so by (bodySize - hasBeenRead + 2) i'm moving str after first 7 so str will be (str = "78544\r\n********")
+			}
+			else
+				break ;
+		}
+	}
+	return false;
+}
+
+int					Request::HowToReadBody() const
+{
+	// return 1; if not chunked and should body exist
+	// return 0; if there's no body
+	// return -1; if body is chunked
+	if (isChuncked == 1)
+		return -1;
+	if (bodySize != -1)
+		return 1;
+	return 0;
+}
+
+
+
+
 // all down has to do with  headers and putting them into the vector
-int				Request::ProcessHeaders(char *str, int size)
+int				Request::ProcessHeaders(char **str, int size)
 {
 	// return 1 means that headers are done
 	// return 0 means that headers not done yet
+	// return -1 if problem ("Key ' ': value") that ' ' is the problem here it should not
+	bool	opfold;
 	while (*str)
 	{
-		status = ProcessOneLine(str, size);
-		if (IsHeadersDone(&str))
+		status = ProcessOneLine(*str, size);
+		if (IsHeadersDone(str))
 			return 1;
 		if (status != -1)
 		{
-			FirstSecondFromHeaderLine();
-			TakeInfoFromHeaders(&str);
+			if (!FirstSecondFromHeaderLine(opfold))
+				return -1;
+			if (!opfold)
+				TakeInfoFromHeaders(str);
+			else
+			{
+				// by the way this entire branch has not been tested yet
+				std::string &opStr = aHeaders.back().second;
+				opStr += ", ";
+				opStr += first;
+				(*str) += tmpStr.size();
+				tmpStr.clear();
+			}
 		}
 		else
 			break ;
@@ -102,25 +264,21 @@ void				Request::TakeInfoFromHeaders(char **str)
 		aHostName = second;
 	else
 		aHeaders.push_back(std::make_pair(first, second));
-	if (str_cmp(first, "Content-Length"))
-		bodySize = GetBodySize(second);
-	if (bodySize == -1 && isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
+	if (isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
 	{
-		// by the way that bodySize == -1 i'm saying i will care of Transfer-Encoding only if bodySize not found yet
-		// if bodySize were after Transfer-Encoding no problem bec whene time to get i will decide using bodySize
-		// if no bodySize = -1 means no Content-Length found i will use then Transfer-Encoding
-		// if isChuncked == 1 i will using chunk mode to read body otherwise i'll assume no body
 		if (str_cmp(second, "chunked"))
 			isChuncked = 1;
 		else
-			isChuncked = 0;
+			isChuncked = 0; // here mybe error bec Transfer-Encoding: gzip for example which we do not support
 	}
+	else if (isChuncked != 1 && str_cmp(first, "Content-Length"))
+		bodySize = GetBodySize(second);
 	tmpStr.clear();
 	(*str) += status;
 }
 
 
-void				Request::FirstSecondFromHeaderLine()
+bool	Request::FirstSecondFromHeaderLine(bool &opfold)
 {
 	// this function will change one tmpStr line
 	// to first second pointers sperated by ":"
@@ -129,12 +287,19 @@ void				Request::FirstSecondFromHeaderLine()
 	// first = Host
 	// second = localhost
 	int tmp;
+	opfold = false;
 	first = tmpStr.c_str();
 	tmp = IndexOf(first, ':');
+	if (tmp == -1)
+	{
+		opfold = true;
+		return true;
+	}
 	tmpStr[tmp] = 0;
 	if (tmpStr[tmp - 1] == ' ')
-		tmpStr[tmp - 1] = 0; // maybe i will remove later for preformance
+		return false;
 	second = first + tmp + 2; // what is after ":" character because i'm assuming that ther's always one space at first that's why i go over that one space maybe later optimiziation
+	return true;
 }
 
 // all down has to do with start line nothing more
@@ -177,7 +342,7 @@ bool	Request::InitFromStartLine()
 	return true;
 }
 
-int				Request::ProcessOneLine(char *str, int size)
+int				Request::ProcessOneLine(char *str, long size)
 {
 	int tmp;
 	tmp = tmpStr.size();
@@ -229,7 +394,7 @@ int	GetHttpVersion(std::string &line, size_t index)
 	
 }
 
-int	GetLocationOf(char *str, const char *target, int size)
+int	GetLocationOf(char *str, const char *target, long size)
 {
 	for (int i = 0; i < size - 1; ++i)
 	{
@@ -259,7 +424,7 @@ int	IndexOf(const char *str, char c)
 			return i;
 		++i;
 	}
-	return -100; // not found i'm returning bif negative number so if it happend it will give me segv signla and i can spot that in debugging
+	return -1; // not found i'm returning bif negative number so if it happend it will give me segv signla and i can spot that in debugging
 }
 
 
@@ -279,4 +444,47 @@ int	GetMethod(std::string &str, char *methodHolder, size_t &i)
 	else if (str_cmp(methodHolder, DELETE_STR))
 		return DELETE;
 	return UKNOWNMETHOD;
+}
+
+
+void	fillFileName(int num, char* str)
+{
+	// will be used to genrate name for the file that i'm creating
+	// given 32 returns ./req-files/23 as char*
+    int i = 10; // this number is dependent on what is already in str variable
+
+    while (num != 0)
+    {
+        int rem = num % 10;
+        str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        num = num/10;
+    }
+    str[i] = '\0';
+}
+
+
+void	AVAILABLE_COMMANDS()
+{
+	std::cout << "exit: to exit from process\n";
+	std::cout << "cont: to continue excution\n";
+	std::cout << "id: print pid of this proccess\n";
+}
+
+
+void	STOP_HERE()
+{
+	std::string str;
+
+	do {
+		str.clear();
+		std::cout << ">> ";
+		std::cin >> str;
+		if (str == "help")
+			AVAILABLE_COMMANDS();
+
+		if (str == "exit")
+			exit(10);
+		if (str == "id")
+			std::cout << getpid() << std::endl;
+	}while (str != "cont");
 }

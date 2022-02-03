@@ -1,2 +1,9 @@
 tomorow start process the body
 and maybe orgnize a little bit ProccessHeaderFunction
+
+
+solve in processHeaders example Host: 11\r\nrew\r\n to be Host: 11, rew
+
+
+there's problem in creating file in case if body is bigger than MAX_BODY_SWITCH
+	the problem is "./" thing and i'm running on  / ./ is relative
