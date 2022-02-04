@@ -3,7 +3,7 @@
 
 
 #include "../configuration/confHeaders.hpp"
-#include "methods.hpp"
+#include "../MACROS.hpp"
 #include <cstring>
 #include <map>
 class	Request

@@ -10,10 +10,7 @@
 /*
 ** default error pages
 */
-
-#define ERR400 "<!DOCTYPE html>\n<html>\n<head><title>400 Bad Request</title></head>\n<body><center><h1>400 Bad Request</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
-#define ERR501 "<!DOCTYPE html>\n<html>\n<head><title>501 not implemented</title></head>\n<body><center><h1>501 not implemented</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
-#define ERR405 "<!DOCTYPE html>\n<html>\n<head><title>405 not allowed</title></head>\n<body><center><h1>405 not allowed</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
+#include "../MACROS.hpp"
 
 bool isFileExiste(const std::string &path)
 {

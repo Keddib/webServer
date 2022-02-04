@@ -11,30 +11,7 @@
 #include <algorithm>
 #include <string>
 
-#define CONFIG_FILE "./src/config/default.conf"
-#define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
-#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
-#define D_PORT 8000
-
-/*
-** define allowed directives
-*/
-
-#define HOST 1
-#define PORT 2
-#define S_NAME 3
-#define CMBS 4
-#define ERRPG 5
-#define LOCATION 6
-#define ROOT 7
-#define INDEX 8
-#define AUTO 9
-#define ACCMETH 10
-#define RET 11
-#define UPLD 12
-#define CGI 13
-#define NONE -1
-
+#include "../MACROS.hpp"
 
 /*
 ** global object of serversInterface it's used by almost every peace of code

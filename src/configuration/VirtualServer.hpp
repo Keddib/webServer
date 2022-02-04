@@ -3,8 +3,7 @@
 
 #include "Location.hpp"
 // i move header from here to location.hpp
-#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
-
+#include "../MACROS.hpp"
 /*
 
 server {
