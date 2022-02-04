@@ -7,6 +7,8 @@
 #include <string>
 #include <unistd.h>
 
+extern ServersInterface ServI;
+
 class ReqHandler
 {
 	private:

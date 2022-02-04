@@ -5,13 +5,15 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 /*
 ** default error pages
 */
 
 #define ERR400 "<!DOCTYPE html>\n<html>\n<head><title>400 Bad Request</title></head>\n<body><center><h1>400 Bad Request</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
-
+#define ERR501 "<!DOCTYPE html>\n<html>\n<head><title>501 not implemented</title></head>\n<body><center><h1>501 not implemented</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
+#define ERR405 "<!DOCTYPE html>\n<html>\n<head><title>405 not allowed</title></head>\n<body><center><h1>405 not allowed</h1></center><hr><center>webserv/1.0</center></body>\n</html>"
 
 bool isFileExiste(const std::string &path)
 {
@@ -36,6 +38,10 @@ const char *getErrorPage(int error)
 {
 	if (error == 400)
 		return ERR400;
+	if (error == 405)
+		return ERR405;
+	if (error == 501)
+		return ERR501;
 	return "";
 }
 
@@ -44,6 +50,10 @@ const char* getErrorMessage(int error)
 {
 	if (error == 400)
 		return "Bad Request";
+	if (error == 501)
+		return "not implemented";
+	if (error)
+		return "not allowed";
 	return "Bad Request";
 }
 

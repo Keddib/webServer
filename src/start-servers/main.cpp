@@ -1,7 +1,7 @@
 #include "global.hpp"
 #include "../configuration/ConfigParser.hpp"
 #include "./manage-request.hpp"
-
+#include "../HandleRequest/ErrorGen.hpp"
 
 int main()
 {
@@ -23,6 +23,12 @@ int main()
 	else
 		exit(1);
 
+
+	ErrorGen p;
+
+	Response *l = p.getResponse(0, 405);
+	l->display();
+exit(1);
 	ManageRequest manage(FdToIndex);
 
 

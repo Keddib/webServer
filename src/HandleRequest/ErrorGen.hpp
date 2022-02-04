@@ -6,6 +6,8 @@
 #include <string>
 #include <cstring>
 
+extern ServersInterface ServI;
+
 /*
 ** this class is used when an error accured during request parsing
 ** before sending error response to client we check if there is a user defined
