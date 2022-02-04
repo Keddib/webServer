@@ -3,6 +3,8 @@
 
 #include "confHeaders.hpp"
 
+extern	ServersInterface ServI;
+
 /*
 ** ConfigParser throw exception on error (std::string) contain the error message
 */

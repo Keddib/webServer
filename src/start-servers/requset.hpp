@@ -5,7 +5,7 @@
 #include "../configuration/confHeaders.hpp"
 #include "methods.hpp"
 #include <cstring>
-
+#include <map>
 class	Request
 {
 	private:

@@ -4,6 +4,9 @@
 #include "CommonServers.hpp"
 #define	MAX_BACK_LOG	20
 #include <unistd.h>
+#include <map>
+
+
 class ServersInterface
 {
 	private:

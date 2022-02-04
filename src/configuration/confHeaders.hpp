@@ -40,7 +40,6 @@
 ** global object of serversInterface it's used by almost every peace of code
 */
 
-ServersInterface ServI;
 
 // helper functions
 
