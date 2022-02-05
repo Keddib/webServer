@@ -10,7 +10,7 @@ int main()
 
 	std::map<int, int>	FdToIndex; // map from fd to index in common servers vector that is inside ServersInterface
 	try {
-		ConfigParser parser;
+		ConfigParser parser("/Users/keddib/Desktop/Keddib/42Projects/webServer/src/config/default.conf");
 		parser.parse();
 		parser.AddServersToServersInterface();
 	} catch(std::string &s) {
@@ -31,6 +31,6 @@ int main()
 
 
 	manage.StartListening();
-	
+
 	return 0;
 }

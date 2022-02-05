@@ -116,6 +116,7 @@ std::pair<int, int>	ServersInterface::StartServerAt(int index, bool &status) con
 	int			fd;
 	struct sockaddr_in	tmp_addr;
 
+	bzero(&tmp_addr, sizeof(tmp_addr));
 	tmp_addr.sin_family = AF_INET;
 	tmp_addr.sin_port = info.second;
 	tmp_addr.sin_addr.s_addr = info.first;

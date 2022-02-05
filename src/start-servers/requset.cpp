@@ -446,6 +446,7 @@ int	GetHttpVersion(std::string &line, size_t index)
 	if (str_cmp(tmp, "HTTP/"))
 	{
 		tmp[5] = c;
+		tmp += 5;
 		if (str_cmp(tmp, "1.1"))
 			return HTTP_VERSION_SUPPORTED + 1;
 		else if (str_cmp(tmp, "1.0"))
@@ -505,7 +506,7 @@ int	GetMethod(std::string &str, char *methodHolder, size_t &i)
 		return POST;
 	else if (str_cmp(methodHolder, DELETE_STR))
 		return DELETE;
-	else if (strcmp(methodHolder, OPTIONS_STR) || strcmp(methodHolder, HEAD_STR) || strcmp(methodHolder, PUT_STR) || strcmp(methodHolder, PATCH_STR))
+	else if (!strcmp(methodHolder, OPTIONS_STR) || !strcmp(methodHolder, HEAD_STR) || !strcmp(methodHolder, PUT_STR) || !strcmp(methodHolder, PATCH_STR))
 		return NOT_IMPLEMENTED;
 	return UKNOWNMETHOD;
 }
