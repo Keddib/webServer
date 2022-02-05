@@ -35,7 +35,7 @@ void	ManageRequest::StartListening()
 						maxFd = tmpfd + 1;
 					fcntl(tmpfd, F_SETFL, O_NONBLOCK);
 					FD_SET(tmpfd, &all_fds);
-					fdToRequest.insert(std::make_pair(tmpfd, Request(i)));
+					fdToRequest.insert(std::make_pair(tmpfd, Request(i, aFdToIndex[i]))); // this aFdToIndex[i] returns bad number
 					// the above line is saying in genral that this is tmpfd has relation with the request and in requset i store with sever should handel aka (i)
 				}
 				else
@@ -66,7 +66,7 @@ bool	ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter_to_r
 		tot += read_data;
 	}while (tot < read_nb);
 	buffer[tot] = 0;
-	status = iter_to_req->second.AddToRequest(buffer, tot);
+	/*status =*/ iter_to_req->second.AddToRequest(buffer, tot);
 	// status will determin if request is done or error or not done yet
 	return false;
 }

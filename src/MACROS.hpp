@@ -37,11 +37,25 @@
 #define GET 15
 #define POST 16
 #define DELETE 17
+#define NOT_IMPLEMENTED 2
+#define NOT_IMPLEMENTED_STATUS_CODE 501
 #define UKNOWNMETHOD -1
+#define SYNTAX_STATUS_CODE 400
+#define SYNTAX_ERROR 1000 // this is positive because there exist some cases when i use unsigned type to store it
 #define GET_STR "GET"
 #define POST_STR "POST"
 #define DELETE_STR "DELETE"
+
+#define OPTIONS_STR "OPTIONS"
+#define HEAD_STR "HEAD"
+#define PUT_STR "PUT"
+#define PATCH_STR "PATCH"
+
+#define HTTP_VERSION_SUPPORTED 0
+#define HTTP_VERSION_NOT_SUPPORTED 3
+#define HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE 505
+
 #define LONGEST_METHOD 7 // +1 is neccessary
-#define MAX_BODY_SWITCH 100 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
+#define MAX_BODY_SWITCH 10 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
 #endif

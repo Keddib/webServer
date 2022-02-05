@@ -12,70 +12,119 @@ int	IndexOf(const char *str, char c);
 long	GetBodySize(const char *str);
 void	fillFileName(int num, char* str);
 
-Request::Request(int srvFd) : srvFd(srvFd)
+Request::Request(int confd, int comServerIndex)
 {
-	status= -1;
+	INIT_AT_CONSTRUCTION(confd, comServerIndex);
+}
+
+void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
+{
+	this->comServerIndex = comServerIndex;
+	connFD = confd;
+	status = -1;
 	bodySize = -1;
 	isChuncked = -1;
-	bodyFd = -1;
 	hasBeenRead = 0;
 	strcpy(fileName, "._req_body");
 	chunkedBodyState = true;
+	booltmp = false;
 }
 
-
-
-int	Request::AddToRequest(char *str, int size)
+Request::Request(const Request &cp)
 {
-	// return 0 means requset not done yet
-	// return 1 means return is done
-	// return -1 something wron with this requset
-	// if's that are down don not change them to if else struct
-	// they shoould stay if if if ...
+	*this = cp;
+}
+
+Request&	Request::operator=(const Request &rhs)
+{
+	this->comServerIndex = rhs.comServerIndex;
+	connFD = rhs.connFD;
+	status = rhs.status;
+	bodySize = rhs.bodySize;
+	isChuncked = rhs.isChuncked;
+	hasBeenRead = rhs.hasBeenRead;
+	strcpy(fileName, "._req_body"); // stay like this not related here
+	chunkedBodyState = rhs.chunkedBodyState;
+	booltmp = rhs.booltmp;
+	return *this;
+}
+
+Response			*Request::StartLineParsing(char **str, int &size)
+{
+	// processing start line
+	status = ProcessOneLine(*str, size);
+	if (status != -1)
+	{
+		(*str) += status;
+		size -= status; // what left in string aka str variable
+		status = 0;// means ready to start header
+		// extract from tmpStr data needed like method...
+		/*if (!InitFromStartLine())
+			return NULL;
+			//return -1; // i will change this bec in case if error i should return responce not immdiate answer*/
+		Restmp = InitFromStartLine();
+		if (Restmp)
+			return Restmp;
+		tmpStr.clear();
+	}
+	return NULL;
+}
+
+Response	*Request::AddToRequest(char *str, int size)
+{
 	endStr = str + size;
+	Restmp = NULL;
 	if (status == -1)
 	{
-		// processing start line
-		status = ProcessOneLine(str, size);
-		if (status != -1)
-		{
-			str += status;
-			size -= status; // what left in string aka str variable
-			status = 0;// means ready to start header
-			// extract from tmpStr data needed like method...
-			if (!InitFromStartLine())
-				return -1; // i will change this bec in case if error i should return responce not immdiate answer
-			tmpStr.clear();
-		}
+		Restmp = StartLineParsing(&str, size);
+		Restmp->display();
+		if (Restmp)
+			return Restmp;
+		exit(1); /////// remove this line
 	}
 	if (!status)
 	{
 		// processing headers
 		status = ProcessHeaders(&str, size);
 		if (status == -1)
-			return -1; // problem accured handel later
+			return NULL;
+			//return -1; // problem accured handel later
 	}
 
 	if (status == 1)
 	{
 		// processing body
-		if (!hasBeenRead)
+		if (!booltmp)
 		{
+			booltmp = true;
 			// here make sure that this branch will only be excuted once
-			if (bodySize < MAX_BODY_SWITCH)
-				bodyString.reserve(bodySize);
-			else {
-				fillFileName(srvFd, fileName);
+			if (isChuncked == 1)
+			{
+				fillFileName(connFD, fileName);
 				bodyFileObj.open(fileName, std::fstream::out); // creating file
 			}
+			else if (bodySize != -1)
+			{
+				if (bodySize < MAX_BODY_SWITCH)
+					bodyString.reserve(bodySize);
+				else {
+					fillFileName(connFD, fileName);
+					bodyFileObj.open(fileName, std::fstream::out); // creating file
+				}
+			}
+			else // means no body
+				return NULL;
+				//return 1; // wich indacte done reading request
 		}
-		if (ProcessBody(str, endStr - str + 1)) {
+		if (ProcessBody(str, endStr - str)) {
 			bodyFileObj.close();
-			return true;
+			STOP_HERE();
+			return NULL;
+		//	return true;
 		}
 		// working here check if you read the body correctly or not check chunked and with Content-Length
 	}
-	return 0;
+	return NULL;
 }
 
 // body processing
@@ -110,7 +159,7 @@ bool	Request::ReadBody(char *str, long size)
 	if (bodySize < MAX_BODY_SWITCH)
 		return BodyStringCase(str, size);
 	// from here i will handle body as file
-	// will create file with srvFd as name
+	// will create file with comServerIndex as name
 	return BodyFileCase(str, size);
 }
 
@@ -136,7 +185,7 @@ bool	Request::BodyFileCase(char *str, long size)
 		hasBeenRead += size;
 		return false;
 	}
-	str[bodySize - hasBeenRead + 1] = 0;
+	str[bodySize - hasBeenRead] = 0;
 	bodyFileObj << str;
 	return true;
 }
@@ -162,15 +211,16 @@ bool	Request::ReadByChunck(char *str, long size)
 					return true; // which means that the body is done dealing with
 				tmpStr.clear();
 				str += tmp; // MOVING str after "\r\n"
-				size -= tmp;
+				size -= tmp; // this calc here is wrong-------------
 				chunkedBodyState = false;
 				hasBeenRead = 0;
 			}
 		}
 		if (!chunkedBodyState)
 		{
-			if (BodyFileCase(str, size))
+			if (BodyFileCase(str, size)) // and this call here is getting wrong str
 			{
+				//bodyFileObj<< "\n"; // i do not know now should add new line after or not
 				chunkedBodyState = true; // swith again to wait for other data
 				str += (bodySize - hasBeenRead + 2); // this important
 				// example
@@ -322,7 +372,7 @@ void	InitRecoursePath(std::string &aRsp, std::string &line, size_t &size)
 }
 
 
-bool	Request::InitFromStartLine()
+Response	*Request::InitFromStartLine()
 {
 	// this will make method // to  bet GET OR POST OR DELETE give each a number above -1
 	// and resourcPath string
@@ -331,15 +381,19 @@ bool	Request::InitFromStartLine()
 	// if start line valid return true otherwise return false
 	size_t	start;
 	method = GetMethod(tmpStr, methodHolder, start);
-	if (method == -1)
-		return false; // means method is uknown
+	if (method == NOT_IMPLEMENTED)
+		return errorRespo.getResponse(comServerIndex, NOT_IMPLEMENTED_STATUS_CODE);
+	if (method == UKNOWNMETHOD)
+		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	// i need now to get resource path
 	InitRecoursePath(aResourcPath, tmpStr, start);
 	start = GetHttpVersion(tmpStr, start);
-	if (start == 2)
-		return false;
+	if (start == HTTP_VERSION_NOT_SUPPORTED)
+		return errorRespo.getResponse(comServerIndex, HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE);
+	if (start == SYNTAX_ERROR)
+		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	version = start;
-	return true;
+	return NULL;
 }
 
 int				Request::ProcessOneLine(char *str, long size)
@@ -379,19 +433,26 @@ long	GetBodySize(const char *str)
 int	GetHttpVersion(std::string &line, size_t index)
 {
 	size_t s = line.size();
-	const char *tmp;
+	char c;
+	char *tmp;
 	for (; index < s; ++index)
 		if (!(line[index] == ' ' || line[index] == '\t'))
 			break ;
 	// now index has start of HTTP version
 
-	tmp = line.c_str() + index;
-	if (str_cmp(tmp, "HTTP/1.0"))
-		return 0;
-	else if (str_cmp(tmp, "HTTP/1.1"))
-		return 1;
-	return 2;
-
+	tmp = const_cast<char *>(line.c_str() + index);
+	c = tmp[5]; // if tmp = HTTP/F    c will be F
+	tmp [5] = 0; // tmp will be here tmp = HTTP/
+	if (str_cmp(tmp, "HTTP/"))
+	{
+		tmp[5] = c;
+		if (str_cmp(tmp, "1.1"))
+			return HTTP_VERSION_SUPPORTED + 1;
+		else if (str_cmp(tmp, "1.0"))
+			return HTTP_VERSION_SUPPORTED;
+		return HTTP_VERSION_NOT_SUPPORTED;
+	}
+	return SYNTAX_ERROR;
 }
 
 int	GetLocationOf(char *str, const char *target, long size)
@@ -431,7 +492,8 @@ int	IndexOf(const char *str, char c)
 int	GetMethod(std::string &str, char *methodHolder, size_t &i)
 {
 	// if methode not known will return -1
-	for (i = 0; i < LONGEST_METHOD; ++i){
+	for (i = 0; i < LONGEST_METHOD; ++i)
+	{
 		if (str[i] == ' ' || str[i] == '\t')
 			break ;
 		methodHolder[i] = str[i];
@@ -443,6 +505,8 @@ int	GetMethod(std::string &str, char *methodHolder, size_t &i)
 		return POST;
 	else if (str_cmp(methodHolder, DELETE_STR))
 		return DELETE;
+	else if (strcmp(methodHolder, OPTIONS_STR) || strcmp(methodHolder, HEAD_STR) || strcmp(methodHolder, PUT_STR) || strcmp(methodHolder, PATCH_STR))
+		return NOT_IMPLEMENTED;
 	return UKNOWNMETHOD;
 }
 
