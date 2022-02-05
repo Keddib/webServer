@@ -94,3 +94,31 @@ Host: www.example.com
    HTTP/1.1 request message that lacks a Host header field and to any
    request message that contains more than one Host header field or a
    Host header field with an invalid field-value.
+
+
+ErrGen -> ResGenerator
+| 400  | Bad Request                   | -> syntax error/ nonformated request...
+| 401  | Unauthorized                  |
+| 402  | Payment Required              |
+| 403  | Forbidden                     |
+| 404  | Not Found                     | -> resource not found
+| 405  | Method Not Allowed            | -> method known but not allowed on that resource
+| 406  | Not Acceptable                | -> content-negotiation: Encoding gzip....
+| 407  | Proxy Authentication Required | ??
+| 408  | Request Timeout               | -> connection opened but no request was sent after 50s
+| 409  | Conflict                      |
+| 410  | Gone                          |
+| 411  | Length Required               | -> post request not chunked and no content lenght
+| 412  | Precondition Failed           |
+| 413  | Payload Too Large             | -> post request with body bigger than CLIENT_MAX_BODY_SIZE;
+| 414  | URI Too Long                  |
+| 415  | Unsupported Media Type        |
+| 416  | Range Not Satisfiable         |
+| 417  | Expectation Failed            |
+| 426  | Upgrade Required              |
+| 500  | Internal Server Error         |
+| 501  | Not Implemented               | -> valid method but not implemented
+| 502  | Bad Gateway                   | -> cgi not accessible
+| 503  | Service Unavailable           |
+| 504  | Gateway Timeout               | -> cgi timeout
+| 505  | HTTP Version Not Supported    | -> http version other than 1.0/1.1
