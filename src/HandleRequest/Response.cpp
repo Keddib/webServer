@@ -1,7 +1,7 @@
 #include "Response.hpp"
 
 Response::Response()
-: _bSize(0), _keepAlive(1), _bodyExcite(0)
+: _bSize(0), _keepAlive(1)
 {
 
 }
@@ -37,8 +37,6 @@ void Response::addBodyToBuffer(const std::string &text)
 void Response::setBodyfile(const std::string &file)
 {
 	_body.open(file, std::fstream::in | std::fstream::binary);
-	_bodyExcite = 1;
-	_bSize = 10; // need to get the size of file
 }
 
 bool Response::isKeepAlive() const

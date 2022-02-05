@@ -10,7 +10,7 @@ ReqHandler::~ReqHandler()
 
 Response* ReqHandler::getResponse(const Request &req)
 {
-
+	(void )req;
 	// check if req.method is accepted on location
 	// check http version if 0 set connection to close/ KA to 0;
 	// if redirect return redirect response

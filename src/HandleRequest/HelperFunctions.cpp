@@ -33,25 +33,29 @@ int getFileSize(const std::string &filename) // path to file
 
 const char *getErrorPage(int error)
 {
-	if (error == 400)
-		return ERR400;
-	if (error == 405)
-		return ERR405;
-	if (error == 501)
-		return ERR501;
+	if (error == 400) return ERR400;
+	else if (error == 405) return ERR405;
+	else if (error == 406) return ERR406;
+	else if (error == 408) return ERR408;
+	else if (error == 411) return ERR411;
+	else if (error == 413) return ERR413;
+	else if (error == 501) return ERR501;
+	else if (error == 505) return ERR505;
 	return "";
 }
 
 
 const char* getErrorMessage(int error)
 {
-	if (error == 400)
-		return "Bad Request";
-	if (error == 501)
-		return "not implemented";
-	if (error)
-		return "not allowed";
-	return "Bad Request";
+	if (error == 400) return "Bad Request";
+	else if (error == 405) return "Method Not Allowed";
+	else if (error == 406) return "Not Acceptable";
+	else if (error == 408) return "Request Timeout";
+	else if (error == 411) return "Length Required";
+	else if (error == 413) return "Payload Too Large";
+	else if (error == 501) return "Not Implemented";
+	else if (error == 505) return "HTTP Version Not Supported";
+	return "Not Found";
 }
 
 std::string getOsName()
@@ -73,28 +77,25 @@ std::string getOsName()
 
 std::string getDate()
 {
-	time_t _tm =time(NULL );
-	struct tm * curtime = std::gmtime( &_tm );
-	char *timeStr = asctime(curtime);
-	size_t size = std::strlen(timeStr);
-	timeStr[size - 1] = '\0';
-	std::string time(std::string(timeStr) + " GTM");
-	return time;
+	char buf[100];
+	time_t now = std::time(0);
+	struct tm *tm = std::gmtime(&now);
+	std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", tm);
+	return std::string(buf);
 }
 
 std::string getFileLastModifiedTime(const std::string &fileName)
 {
 	struct stat result;
-	time_t mod_time;
 	std::string time;
 	if(stat(fileName.c_str(), &result)==0)
 	{
+		char buf[100];
+		time_t mod_time;
 		mod_time = result.st_mtime;
 		struct tm * curtime = std::gmtime( &mod_time );
-		char *timeStr = asctime(curtime);
-		size_t size = std::strlen(timeStr);
-		timeStr[size - 1] = '\0';
-		time = std::string(timeStr) + " GTM";
+		std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", curtime);
+		time = buf;
 	}
 	return time;
 }

@@ -1,26 +1,30 @@
 #include "configuration/ConfigParser.hpp"
 #include "HandleRequest/ReqHandler.hpp"
+#include "HandleRequest/ErrorGen.hpp"
+
+ServersInterface ServI;
 
 
 
 int main()
 {
 	try {
-		ConfigParser parser;
+		ConfigParser parser("/Users/keddib/Desktop/webServer/src/config/default.conf");
 		parser.parse();
 		parser.AddServersToServersInterface();
 	} catch(std::string &s) {
 		std::cerr << "Error -> " << s;
 		return 1;
 	}
-	ReqHandler hundler;
-	Request req(0, POST, "/", 1);
-	Response *res = hundler.getResponse(req);
-	res = NULL;
-	// srvs.Display();
-	// CommonServers &cs = srvs[1];
-	// const VirtualServer &myserver = cs.whichServer("site1.com");
-	// const Location &myLoc = myserver.wichLocation("/photos/index.html");
-	// myLoc.Display();
+	ServI.Display();
+	std::cout << "example of error response\n";
+	ErrorGen errGenerator;
+	Response *res = errGenerator.getResponse(0, 400);
+	res->display();
+		// CommonServers &cs = srvs[1];
+		// const VirtualServer &myserver = cs.whichServer("site1.com");
+		// const Location &myLoc = myserver.wichLocation("/photos/index.html");
+		// myLoc.Display();
+
 	return 0;
 }

@@ -8,12 +8,14 @@ SRCS 		=	main.cpp \
 				configuration/Location.cpp\
 				configuration/utils.cpp\
 				HandleRequest/ReqHandler.cpp\
-				HandleRequest/Request.cpp\
-				HandleRequest/Response.cpp
+				start-servers/requset.cpp\
+				HandleRequest/Response.cpp\
+				HandleRequest/ErrorGen.cpp\
+				HandleRequest/HelperFunctions.cpp
 
 OBJ			=	*.o
 
-GO			=	clang++ -std=c++98 -Wall -Wextra -Werror #-fsanitize=address -g3
+GO			=	clang++ -std=c++98 -Wall -Wextra -Werror -g3 #-fsanitize=address -g3
 
 all:	$(NAME)
 

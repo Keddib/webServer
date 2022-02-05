@@ -30,7 +30,7 @@ int	Request::AddToRequest(char *str, int size)
 	// return 0 means requset not done yet
 	// return 1 means return is done
 	// return -1 something wron with this requset
-	// if's that are down don not change them to if else struct 
+	// if's that are down don not change them to if else struct
 	// they shoould stay if if if ...
 	endStr = str + size;
 	if (status == -1)
@@ -55,7 +55,7 @@ int	Request::AddToRequest(char *str, int size)
 		if (status == -1)
 			return -1; // problem accured handel later
 	}
-	
+
 	if (status == 1)
 	{
 		// processing body
@@ -106,7 +106,7 @@ bool	Request::ReadBody(char *str, long size)
 	// be carefull in case of file writing
 	// this is easy just read entire body and store it in file
 	// if Content-Length is under MAX_BODY_SWITCH body will be string
-	// if bigger will b stord and file 
+	// if bigger will b stord and file
 	if (bodySize < MAX_BODY_SWITCH)
 		return BodyStringCase(str, size);
 	// from here i will handle body as file
@@ -169,11 +169,11 @@ bool	Request::ReadByChunck(char *str, long size)
 		}
 		if (!chunkedBodyState)
 		{
-			if (BodyFileCase(str, size)) 
+			if (BodyFileCase(str, size))
 			{
 				chunkedBodyState = true; // swith again to wait for other data
 				str += (bodySize - hasBeenRead + 2); // this important
-				// example 
+				// example
 				// bodySize = 7 and hasBeenRead = 0
 				// BODY WAS "*******78544\r\n********"
 				// BodyFileCase() will return true because read 7 but it still data after i should not just waste that
@@ -336,7 +336,7 @@ bool	Request::InitFromStartLine()
 	// i need now to get resource path
 	InitRecoursePath(aResourcPath, tmpStr, start);
 	start = GetHttpVersion(tmpStr, start);
-	if (start == -1)
+	if (start == 2)
 		return false;
 	version = start;
 	return true;
@@ -384,14 +384,14 @@ int	GetHttpVersion(std::string &line, size_t index)
 		if (!(line[index] == ' ' || line[index] == '\t'))
 			break ;
 	// now index has start of HTTP version
-	
+
 	tmp = line.c_str() + index;
 	if (str_cmp(tmp, "HTTP/1.0"))
 		return 0;
 	else if (str_cmp(tmp, "HTTP/1.1"))
 		return 1;
-	return -1;
-	
+	return 2;
+
 }
 
 int	GetLocationOf(char *str, const char *target, long size)

@@ -16,6 +16,7 @@ Response *ErrorGen::getResponse(size_t server, int error, const std::string &Hos
 {
 	Response *res = new Response();
 	res->setStartLine("HTTP/1.1", error, getErrorMessage(error));
+	res->setHeader("Connection", "close", 0);
 	// check if the user defined an error page for the error accured
 	// if not we use out defualt error pages
 	const std::vector<std::pair<int, std::string> > &Errors =
@@ -31,13 +32,14 @@ Response *ErrorGen::getResponse(size_t server, int error, const std::string &Hos
 	// if not we use our default one
 	if (!errorPagePath.empty() && isFileExiste(errorPagePath))
 	{
-		// add file to body of request;
-		res->setBodyfile(errorPagePath);
 		// check file type and add content-type header
 		res->setHeader("Content-Type", getFileType(errorPagePath), 0);
 		// check file size and add content-lenght header
-		res->setHeader("Content-Length", std::to_string(getFileSize(errorPagePath)), 0);
-		res->setHeader("Content-Length", getFileLastModifiedTime(errorPagePath), 1);
+		size_t bodysize = getFileSize(errorPagePath);
+		res->setHeader("Content-Length", std::to_string(bodysize), 0);
+		res->setHeader("Last-Modified", getFileLastModifiedTime(errorPagePath), 1);
+		// add file to body of request;
+		res->setBodyfile(errorPagePath);
 	}
 	else
 		setDefaultErrorPage(res, getErrorPage(error));

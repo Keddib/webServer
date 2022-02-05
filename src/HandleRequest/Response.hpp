@@ -15,7 +15,6 @@ class Response
 		std::string _buffer;
 		unsigned int _bSize;
 		bool _keepAlive;
-		bool _bodyExcite;
 	public:
 		Response();
 		~Response();
