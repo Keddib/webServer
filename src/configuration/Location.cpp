@@ -63,9 +63,52 @@ void Location::setUpload( const std::string &UPpath )
 	_upload = UPpath;
 }
 
+void Location::fillAllowedMethods(std::string &allow) const
+{
+	size_t s = _methods.size();
+	char p[2] = { ',', ' ' };
+	for(size_t i =0; i < s; i++)
+	{
+		if (i+1 == s)
+			p[0] = '\0';
+		if (_methods[i] == POST)
+			allow += std::string(POST_STR) + p;
+		else if (_methods[i] == GET)
+			allow += std::string(GET_STR) + p;
+		else if (_methods[i] == DELETE)
+			allow += std::string(DELETE_STR) + p;
+	}
+
+}
+
 const std::string& Location::getPrefix() const
 {
 	return _prefix;
+}
+
+
+bool Location::isMethodAllowed(int meth) const
+{
+	size_t size = _methods.size();
+	for (size_t i = 0; i < size; i++)
+		if (meth == _methods[i])
+			return true;
+	return !size;
+}
+
+const std::string& Location::getRoute() const
+{
+	return _root;
+}
+
+const std::vector<std::string>& Location::getIndexes() const
+{
+	return _index;
+}
+
+bool Location::isAutoIndexOn() const
+{
+	return _autoIndex;
 }
 
 void Location::Display() const

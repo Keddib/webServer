@@ -130,7 +130,7 @@ Response			*Request::ReserveSpaceForBody()
 		else if (method == POST)
 			return errorRespo.getResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
 		else
-			return NULL   ; // in this case i should return complete response bec request is done processing
+			return HandleRequest(*this); // +++++++++++++++ in this case i should return complete response bec request is done processing
 	}
 	return NULL;
 }
@@ -262,7 +262,7 @@ Response		*Request::ProcessHeaders(char **str, int size)
 {
 	//  if headers are done return NULL ans set status to 1
 	// return NULL if headers are not done and set status to 0
-	// maybe i will set -1 if error accured but i will remove this line later	
+	// maybe i will set -1 if error accured but i will remove this line later
 	bool	opfold;
 	while (*str)
 	{
@@ -591,4 +591,31 @@ void	STOP_HERE()
 		if (str == "id")
 			std::cout << getpid() << std::endl;
 	}while (str != "cont");
+}
+
+//////////////////////// getters
+
+int Request::getCommonServerIndex()const
+{
+	return comServerIndex;
+}
+
+int Request::getMethod() const
+{
+	return method;
+}
+
+const std::string& Request::getResource()const
+{
+	return aResourcPath;
+}
+
+bool Request::getVersion() const
+{
+	return version;
+}
+
+const std::string& Request::getHost() const
+{
+	return aHostName;
 }

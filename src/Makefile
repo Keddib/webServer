@@ -8,10 +8,10 @@ SRCS 		=	main.cpp \
 				configuration/Location.cpp\
 				configuration/utils.cpp\
 				HandleRequest/ReqHandler.cpp\
-				start-servers/requset.cpp\
 				HandleRequest/Response.cpp\
 				HandleRequest/ErrorGen.cpp\
-				HandleRequest/HelperFunctions.cpp
+				HandleRequest/utils/HelperFunctions.cpp\
+				start-servers/requset.cpp
 
 OBJ			=	*.o
 

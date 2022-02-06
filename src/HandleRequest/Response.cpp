@@ -29,6 +29,13 @@ void Response::setHeader(const std::string &key, const std::string &value, bool 
 		_buffer += "\r\n";
 }
 
+void Response::setHeader(const std::vector<std::string> &headers) // add bunch of header
+{
+	size_t s = headers.size();
+	for (size_t i = 0; i < s; i++)
+	_buffer += headers[i];
+}
+
 void Response::addBodyToBuffer(const std::string &text)
 {
 	_buffer += text;
@@ -66,9 +73,13 @@ std::fstream &Response::getBody()
 	return _body;
 }
 
-void Response::display() const
+void Response::display()
 {
+	char p[2000];
+	bzero(p, 2000);
 	std::cout << "Response : \n";
 	std::cout << "keep_alive: " << isKeepAlive() << '\n';
 	std::cout << getBuffer();
+	_body.read(p, 1008);
+	std::cout << p << '\n';
 }

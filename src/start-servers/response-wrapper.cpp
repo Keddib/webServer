@@ -61,5 +61,5 @@ bool		ResponseWrapper::isStillValid(std::time_t cur_t)
 
 bool		ResponseWrapper::CloseConnection() const
 {
-	return _com_response->isKeepAlive();
+	return !_com_response->isKeepAlive();
 }

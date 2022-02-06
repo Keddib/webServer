@@ -9,6 +9,8 @@
 #include <ctime>
 #include <map>
 
+extern ErrorGen errorRespo;
+
 class	Request
 {
 	private:
@@ -27,14 +29,12 @@ class	Request
 		std::string			aResourcPath;
 		bool				version; // false if HTTP/1.0 true if HTTP/1.1
 		std::string			aHostName;
-		std::vector<std::pair<std::string, std::string> >	aHeaders;
 		const char			*first, *second;
 		char				*endStr;
 		char				methodHolder[LONGEST_METHOD + 1];
 		char				fileName[30];
 		bool				booltmp;
 		Response			*Restmp;
-		ErrorGen			errorRespo;
 	private:
 		int				ProcessOneLine(char *str, long size);
 		Response			*ProcessHeaders(char **str, int size);
@@ -57,6 +57,15 @@ class	Request
 		Request(const Request &cp);
 		Request&			operator=(const Request &rhs);
 		Request(int cf,int sFd);
+		int getCommonServerIndex()const;
+		int getMethod() const ;
+		const std::string& getResource()const;
+		bool getVersion() const;
+		const std::string& getHost() const;
+		std::vector<std::pair<std::string, std::string> >	aHeaders;
 };
+
+
+Response* HandleRequest(const Request &req);
 
 #endif

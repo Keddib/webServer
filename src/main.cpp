@@ -9,7 +9,7 @@ ServersInterface ServI;
 int main()
 {
 	try {
-		ConfigParser parser("/Users/keddib/Desktop/webServer/src/config/default.conf");
+		ConfigParser parser("/Users/keddib/Desktop/Keddib/42Projects/webServer/src/config/default.conf");
 		parser.parse();
 		parser.AddServersToServersInterface();
 	} catch(std::string &s) {

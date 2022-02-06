@@ -34,11 +34,11 @@ void ft_split(const std::string &s, std::vector<std::string> &strs)
 int isValidMethod(const std::string &meth)
 {
 	if (meth == "GET")
-		return 20;
+		return GET;
 	else if (meth == "POST")
-		return 21;
+		return POST;
 	else if (meth == "DELETE")
-		return 22;
+		return DELETE;
 	return 0;
 }
 

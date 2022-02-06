@@ -21,7 +21,10 @@ class ErrorGen
 	public:
 		ErrorGen();
 		~ErrorGen();
-		Response *getResponse(size_t server, int error, const std::string &Host = "");
+		Response *getResponse(size_t server, int error,
+			const std::string &Host = "",
+			const std::vector<std::string> &head = std::vector<std::string>()
+			);
 	private:
 		void setDefaultErrorPage(Response *res, const char *errpage);
 };

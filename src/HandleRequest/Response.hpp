@@ -16,6 +16,7 @@ class Response
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
 		void setHeader(const std::string&, const std::string&, bool end);
+		void setHeader(const std::vector<std::string> &headers);
 		void addBodyToBuffer(const std::string &);
 		void setBodyfile(const std::string &path);
 		void setKeepAlive(bool connection);
@@ -23,7 +24,7 @@ class Response
 		unsigned int getBodySize() const;
 		const std::string& getBuffer()const ; // i have removed const from return
 		std::fstream	&getBody(); // i just added this function
-		void display() const;
+		void display();
 };
 
 #endif

@@ -23,10 +23,10 @@ int main()
 		exit(1);
 
 
-	//ErrorGen p;
+	// ErrorGen p;
 
-	/*Response *l = p.getResponse(0, 405);
-	l->display();*/
+	// Response *l = p.getResponse(0, 405);
+	// l->display();
 	ManageRequest manage(FdToIndex);
 
 

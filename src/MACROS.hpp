@@ -5,7 +5,7 @@
 	// check if the user defined an error page for the error accured
 #define ERR400 "<!DOCTYPE html>\n<html>\n<head><title>400 Bad Request</title></head>\n<body><center><h1>400 Bad Request</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 #define ERR501 "<!DOCTYPE html>\n<html>\n<head><title>501 not implemented</title></head>\n<body><center><h1>501 not implemented</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR405 "<!DOCTYPE html>\n<html>\n<head><title>405 not allowed</title></head>\n<body><center><h1>405 not allowed</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
+#define ERR405 "<!DOCTYPE html>\n<html>\n<head><title>405 Method Not Allowed</title></head>\n<body><center><h1>405 Method Not Allowed</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 #define ERR406 "<!DOCTYPE html>\n<html>\n<head><title>406 Not Acceptable</title></head>\n<body><center><h1>406 Not Acceptable</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 #define ERR408 "<!DOCTYPE html>\n<html>\n<head><title>408 Request Timeout</title></head>\n<body><center><h1>408 Request Timeout</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 #define ERR411 "<!DOCTYPE html>\n<html>\n<head><title>411 Length Required</title></head>\n<body><center><h1>411 Length Required</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
@@ -62,7 +62,7 @@
 #define LONGEST_METHOD 7 // +1 is neccessary
 #define MAX_BODY_SWITCH  4096 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
-#define	RQ_RS_TIME_OUT 10 // change later
+#define	RQ_RS_TIME_OUT 50 // change later
 
 
 #endif

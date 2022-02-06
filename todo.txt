@@ -27,6 +27,7 @@ We splited the work into two parts:
 	based on configuation
 	- [] if the requested resource is a CGI script just print CGI on output.
 	CGI will be handled later.
+	- [] directory listing -> function that list content of a directory.
 
 - [] handle CGI
 	- [] add request headers to envirment variables wih "setenv(n,v,or)"
