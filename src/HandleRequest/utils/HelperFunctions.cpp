@@ -1,35 +1,37 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string>
-#include <cstdio>
-#include <ctime>
-#include <fstream>
-#include <iostream>
-#include <cstring>
+#include "../utils.hpp"
 
-/*
-** default error pages
-*/
-#include "../MACROS.hpp"
-
-bool isFileExiste(const std::string &path)
+bool isFileAccessible(const std::string &path)
 {
 	std::ifstream infile(path);
 	return infile.good();
 }
 
-
-int getFileSize(const std::string &filename) // path to file
+// if file dosn't existe return 1, if file existe and not accessible return 2
+// otherwise get file size, type and Lastmodification date and return 0;
+int getFileInfo(const std::string &fileName, FileInfo &fileI)
 {
-	FILE *p_file = NULL;
-	p_file = fopen(filename.c_str(), "r");
-	if (!p_file)
-		return -1;
-	fseek(p_file, 0, SEEK_END);
-	int size = ftell(p_file);
-	fclose(p_file);
-	return size;
+	struct stat result;
+	if(stat(fileName.c_str(), &result)==0)
+	{
+		if (!S_ISREG(result.st_mode) && !S_ISLNK(result.st_mode))
+			return 1;
+		if (isFileAccessible(fileName))
+		{
+			fileI.size  = result.st_size;
+			char buf[100];
+			time_t mod_time = result.st_mtime;
+			struct tm * curtime = std::gmtime( &mod_time );
+			std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", curtime);
+			fileI.Mtime = buf;
+			fileI.Ftype = getFileType(fileName);
+			return 0;
+		}
+	}
+	else if (errno != EACCES)
+		return 1;
+	return 2;
 }
+
 
 const char *getErrorPage(int error)
 {
@@ -82,22 +84,6 @@ std::string getDate()
 	struct tm *tm = std::gmtime(&now);
 	std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", tm);
 	return std::string(buf);
-}
-
-std::string getFileLastModifiedTime(const std::string &fileName)
-{
-	struct stat result;
-	std::string time;
-	if(stat(fileName.c_str(), &result)==0)
-	{
-		char buf[100];
-		time_t mod_time;
-		mod_time = result.st_mtime;
-		struct tm * curtime = std::gmtime( &mod_time );
-		std::strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", curtime);
-		time = buf;
-	}
-	return time;
 }
 
 

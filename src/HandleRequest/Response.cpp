@@ -39,6 +39,11 @@ void Response::setBodyfile(const std::string &file)
 	_body.open(file, std::fstream::in | std::fstream::binary);
 }
 
+void Response::setKeepAlive(bool connection)
+{
+	_keepAlive = connection;
+}
+
 bool Response::isKeepAlive() const
 {
 	return _keepAlive;

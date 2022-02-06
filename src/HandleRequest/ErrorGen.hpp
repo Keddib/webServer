@@ -3,8 +3,8 @@
 
 #include "../configuration/confHeaders.hpp"
 #include "Response.hpp"
-#include <string>
-#include <cstring>
+#include "utils.hpp"
+
 
 extern ServersInterface ServI;
 
@@ -25,13 +25,5 @@ class ErrorGen
 	private:
 		void setDefaultErrorPage(Response *res, const char *errpage);
 };
-
-bool isFileExiste(const std::string &path);
-int getFileSize(const std::string &filename);
-std::string getFileType(const std::string &path);
-std::string getFileLastModifiedTime(const std::string &fileName);
-const char *getErrorPage(int error);
-const char *getErrorMessage(int error);
-
 
 #endif
