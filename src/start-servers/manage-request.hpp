@@ -2,6 +2,7 @@
 #define	__MANAGE_REQUEST__
 
 #include "requset.hpp"
+#include "response-wrapper.hpp"
 #include "../MACROS.hpp"
 
 class	ManageRequest
@@ -12,12 +13,19 @@ class	ManageRequest
 		fd_set	read_set, write_set, all_fds;
 		std::map<int, int>	&aFdToIndex;
 		std::map<int, Request>	fdToRequest;
+		std::map<int, ResponseWrapper>	fdToResponse;
+		Response		*Restmp;
 		char			buffer[read_nb * 2];
+		std::map<int, ResponseWrapper>::iterator	iter_to_res;
+		std::map<int, Request>::iterator iter_to_req;
 	public:
 		ManageRequest(std::map<int, int> &fdToIndex);
 		void		StartListening();
 	private:
-		bool	ConstructRequest(std::map<int, Request>::iterator &req);
+		bool		TimeOut(int fd);
+		void		ListeningOnReadEnd(int);
+		void		ListeningOnWriteEnd(int);
+		Response	*ConstructRequest(std::map<int, Request>::iterator &req);
 		void		Select();
 };
 

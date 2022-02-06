@@ -3,6 +3,7 @@
 void	STOP_HERE();
 
 
+const char	*remove_speces_at_end_start(char *str);
 int	GetLocationOf(char *str, const char *target, long size);
 int	GetMethod(std::string &str, char *methodHolder, size_t &i);
 bool	str_cmp(const char *str, const char *against);
@@ -19,13 +20,14 @@ Request::Request(int confd, int comServerIndex)
 
 void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 {
+	startTime = std::time(NULL);
 	this->comServerIndex = comServerIndex;
 	connFD = confd;
 	status = -1;
 	bodySize = -1;
 	isChuncked = -1;
 	hasBeenRead = 0;
-	strcpy(fileName, "._req_body");
+	strcpy(fileName, "/tmp/.");
 	chunkedBodyState = true;
 	booltmp = false;
 }
@@ -38,16 +40,23 @@ Request::Request(const Request &cp)
 Request&	Request::operator=(const Request &rhs)
 {
 	this->comServerIndex = rhs.comServerIndex;
+	startTime = rhs.startTime;
 	connFD = rhs.connFD;
 	status = rhs.status;
 	bodySize = rhs.bodySize;
 	isChuncked = rhs.isChuncked;
 	hasBeenRead = rhs.hasBeenRead;
-	strcpy(fileName, "._req_body"); // stay like this not related here
+	strcpy(fileName, "/tmp/."); // stay like this not related here
 	chunkedBodyState = rhs.chunkedBodyState;
 	booltmp = rhs.booltmp;
 	return *this;
 }
+
+bool				Request::isStillValid(std::time_t cur_t)
+{
+	return (cur_t - startTime < RQ_RS_TIME_OUT);
+}
+
 
 Response			*Request::StartLineParsing(char **str, int &size)
 {
@@ -56,12 +65,8 @@ Response			*Request::StartLineParsing(char **str, int &size)
 	if (status != -1)
 	{
 		(*str) += status;
-		size -= status; // what left in string aka str variable
-		status = 0;// means ready to start header
-		// extract from tmpStr data needed like method...
-		/*if (!InitFromStartLine())
-			return NULL;
-			//return -1; // i will change this bec in case if error i should return responce not immdiate answer*/
+		size -= status;
+		status = 0;
 		Restmp = InitFromStartLine();
 		if (Restmp)
 			return Restmp;
@@ -77,55 +82,59 @@ Response	*Request::AddToRequest(char *str, int size)
 	if (status == -1)
 	{
 		Restmp = StartLineParsing(&str, size);
-		Restmp->display();
 		if (Restmp)
 			return Restmp;
-		exit(1); /////// remove this line
 	}
 	if (!status)
 	{
-		// processing headers
-		status = ProcessHeaders(&str, size);
-		if (status == -1)
-			return NULL;
-			//return -1; // problem accured handel later
+		Restmp = ProcessHeaders(&str, size);
+		if (Restmp)
+			return Restmp;
 	}
-
 	if (status == 1)
 	{
-		// processing body
-		if (!booltmp)
+		Restmp = ReserveSpaceForBody();
+		if (Restmp)
+			return Restmp;
+		if (ProcessBody(str, endStr - str))
 		{
-			booltmp = true;
-			// here make sure that this branch will only be excuted once
-			if (isChuncked == 1)
-			{
+			bodyFileObj.close();
+			return NULL; // this is here means request is done
+		}
+	}
+	return NULL; // request not  done yet
+}
+
+Response			*Request::ReserveSpaceForBody()
+{
+	if (!booltmp)
+	{
+		booltmp = true;
+		// here make sure that this branch will only be excuted once
+		if (isChuncked == 1)
+		{
+			fillFileName(connFD, fileName);
+			bodyFileObj.open(fileName, std::fstream::out); // creating file
+		}
+		else if (bodySize != -1)
+		{
+			if (bodySize > CLIENT_MAX_BODY_SIZE)
+				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
+			if (bodySize < MAX_BODY_SWITCH)
+				bodyString.reserve(bodySize);
+			else {
 				fillFileName(connFD, fileName);
 				bodyFileObj.open(fileName, std::fstream::out); // creating file
 			}
-			else if (bodySize != -1)
-			{
-				if (bodySize < MAX_BODY_SWITCH)
-					bodyString.reserve(bodySize);
-				else {
-					fillFileName(connFD, fileName);
-					bodyFileObj.open(fileName, std::fstream::out); // creating file
-				}
-			}
-			else // means no body
-				return NULL;
-				//return 1; // wich indacte done reading request
 		}
-		if (ProcessBody(str, endStr - str)) {
-			bodyFileObj.close();
-			STOP_HERE();
-			return NULL;
-		//	return true;
-		}
-		// working here check if you read the body correctly or not check chunked and with Content-Length
+		else if (method == POST)
+			return errorRespo.getResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
+		else
+			return NULL   ; // in this case i should return complete response bec request is done processing
 	}
 	return NULL;
 }
+
 
 // body processing
 
@@ -248,27 +257,34 @@ int					Request::HowToReadBody() const
 	return 0;
 }
 
-
-
-
 // all down has to do with  headers and putting them into the vector
-int				Request::ProcessHeaders(char **str, int size)
+Response		*Request::ProcessHeaders(char **str, int size)
 {
-	// return 1 means that headers are done
-	// return 0 means that headers not done yet
-	// return -1 if problem ("Key ' ': value") that ' ' is the problem here it should not
+	//  if headers are done return NULL ans set status to 1
+	// return NULL if headers are not done and set status to 0
+	// maybe i will set -1 if error accured but i will remove this line later	
 	bool	opfold;
 	while (*str)
 	{
 		status = ProcessOneLine(*str, size);
 		if (IsHeadersDone(str))
-			return 1;
+		{
+			if (aHostName.empty())
+				return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE); // HOST header does not exist
+			status = 1;
+			return NULL;
+		}
 		if (status != -1)
 		{
-			if (!FirstSecondFromHeaderLine(opfold))
-				return -1;
+			Restmp = FirstSecondFromHeaderLine(opfold); //"key :g"
+			if (Restmp)
+				return Restmp;
 			if (!opfold)
-				TakeInfoFromHeaders(str);
+			{
+				Restmp = TakeInfoFromHeaders(str); // redefntion of host header
+				if (Restmp)
+					return Restmp;
+			}
 			else
 			{
 				// by the way this entire branch has not been tested yet
@@ -282,7 +298,8 @@ int				Request::ProcessHeaders(char **str, int size)
 		else
 			break ;
 	}
-	return 0; // means headers not done yet
+	status = 0;
+	return NULL; // means headers not done yet
 }
 
 
@@ -305,13 +322,18 @@ bool				Request::IsHeadersDone(char **str)
 	return false;
 }
 
-void				Request::TakeInfoFromHeaders(char **str)
+Response	*Request::TakeInfoFromHeaders(char **str)
 {
 	// this function will collect some informmation from header
 	// for in Request needed informmation like Content-Length
 	// or for respone info like Host
 	if (str_cmp(first, "Host"))
-		aHostName = second;
+	{
+		if (aHostName.empty())
+			aHostName = second;
+		else
+			return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+	}
 	else
 		aHeaders.push_back(std::make_pair(first, second));
 	if (isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
@@ -325,10 +347,11 @@ void				Request::TakeInfoFromHeaders(char **str)
 		bodySize = GetBodySize(second);
 	tmpStr.clear();
 	(*str) += status;
+	return NULL;
 }
 
 
-bool	Request::FirstSecondFromHeaderLine(bool &opfold)
+Response	*Request::FirstSecondFromHeaderLine(bool &opfold)
 {
 	// this function will change one tmpStr line
 	// to first second pointers sperated by ":"
@@ -343,13 +366,27 @@ bool	Request::FirstSecondFromHeaderLine(bool &opfold)
 	if (tmp == -1)
 	{
 		opfold = true;
-		return true;
+		return NULL;
 	}
 	tmpStr[tmp] = 0;
 	if (tmpStr[tmp - 1] == ' ')
-		return false;
-	second = first + tmp + 2; // what is after ":" character because i'm assuming that ther's always one space at first that's why i go over that one space maybe later optimiziation
-	return true;
+		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+	//second = first + tmp + 1;
+	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1));
+	// IF YOU NEED TO CHECK THE SECOND VALUE OF HEADER TO GENRATE ERROR CHECK AT THIS LINE
+	return NULL;
+}
+
+const char	*remove_speces_at_end_start(char *str)
+{
+	int len = strlen(str) - 1;
+	while (*str == ' ')
+		++str;
+	while (str[len] == ' ')
+		--len;
+	if (str[len  + 1] == ' ')
+		str[len + 1] = 0;
+	return str;
 }
 
 // all down has to do with start line nothing more
@@ -516,7 +553,7 @@ void	fillFileName(int num, char* str)
 {
 	// will be used to genrate name for the file that i'm creating
 	// given 32 returns ./req-files/23 as char*
-    int i = 10; // this number is dependent on what is already in str variable
+    int i = 6; // this number is dependent on what is already in str variable
 
     while (num != 0)
     {
@@ -527,6 +564,8 @@ void	fillFileName(int num, char* str)
     str[i] = '\0';
 }
 
+
+// down just debug functions remove then when you are done
 
 void	AVAILABLE_COMMANDS()
 {

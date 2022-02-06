@@ -59,6 +59,13 @@ const std::string& Response::getBuffer() const
 	return _buffer;
 }
 
+
+// this is added
+std::fstream &Response::getBody()
+{
+	return _body;
+}
+
 void Response::display() const
 {
 	std::cout << "Response : \n";

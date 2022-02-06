@@ -33,7 +33,7 @@
 #define CGI 13
 #define NONE -1
 
-#define	BUFFER_SIZE	1024 // make sure that this number is fiting in int type
+#define	BUFFER_SIZE	4096 // make sure that this number is fiting in int type
 #define GET 15
 #define POST 16
 #define DELETE 17
@@ -55,7 +55,14 @@
 #define HTTP_VERSION_NOT_SUPPORTED 3
 #define HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE 505
 
+#define LENGTH_REQUIRED_STATUS_CODE 411
+#define CLIENT_MAX_BODY_SIZE 1048576 // this number is 1M
+#define PAYLOAD_TOO_LARGE_STATUS_CODE 413
+
 #define LONGEST_METHOD 7 // +1 is neccessary
-#define MAX_BODY_SWITCH 10 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
+#define MAX_BODY_SWITCH  4096 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
+
+#define	RQ_RS_TIME_OUT 10 // change later
+
 
 #endif

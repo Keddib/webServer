@@ -21,7 +21,8 @@ class Response
 		void setKeepAlive(bool connection);
 		bool isKeepAlive() const;
 		unsigned int getBodySize() const;
-		const std::string& getBuffer()const ;
+		const std::string& getBuffer()const ; // i have removed const from return
+		std::fstream	&getBody(); // i just added this function
 		void display() const;
 };
 

@@ -6,11 +6,13 @@
 #include "../HandleRequest/ErrorGen.hpp"
 #include "../MACROS.hpp"
 #include <cstring>
+#include <ctime>
 #include <map>
 
 class	Request
 {
 	private:
+		std::time_t			startTime;
 		int				connFD;
 		bool				chunkedBodyState;
 		std::fstream			bodyFileObj;
@@ -35,10 +37,11 @@ class	Request
 		ErrorGen			errorRespo;
 	private:
 		int				ProcessOneLine(char *str, long size);
-		int				ProcessHeaders(char **str, int size);
+		Response			*ProcessHeaders(char **str, int size);
+		Response			*ReserveSpaceForBody();
 		bool				IsHeadersDone(char **str);
-		bool				FirstSecondFromHeaderLine(bool &opfold);
-		void				TakeInfoFromHeaders(char **str);
+		Response			*FirstSecondFromHeaderLine(bool &opfold);
+		Response			*TakeInfoFromHeaders(char **str);
 		Response			*InitFromStartLine();
 		bool				ProcessBody(char *str, long size);
 		int				HowToReadBody() const;
@@ -49,6 +52,7 @@ class	Request
 		Response			*StartLineParsing(char **str, int &size);
 		void				INIT_AT_CONSTRUCTION(int, int);
 	public:
+		bool				isStillValid(std::time_t);
 		Response 			*AddToRequest(char *str, int size);
 		Request(const Request &cp);
 		Request&			operator=(const Request &rhs);
