@@ -120,7 +120,7 @@ void	ManageRequest::ListeningOnReadEnd(int curFd)
 Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter_to_req)
 {
 	int	read_data;
-	int	status;
+	// int	status;
 	int	tot = 0;
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);

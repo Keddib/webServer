@@ -3,20 +3,15 @@
 
 
 	// check if the user defined an error page for the error accured
-#define ERR400 "<!DOCTYPE html>\n<html>\n<head><title>400 Bad Request</title></head>\n<body><center><h1>400 Bad Request</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR501 "<!DOCTYPE html>\n<html>\n<head><title>501 not implemented</title></head>\n<body><center><h1>501 not implemented</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR405 "<!DOCTYPE html>\n<html>\n<head><title>405 Method Not Allowed</title></head>\n<body><center><h1>405 Method Not Allowed</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR406 "<!DOCTYPE html>\n<html>\n<head><title>406 Not Acceptable</title></head>\n<body><center><h1>406 Not Acceptable</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR408 "<!DOCTYPE html>\n<html>\n<head><title>408 Request Timeout</title></head>\n<body><center><h1>408 Request Timeout</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR411 "<!DOCTYPE html>\n<html>\n<head><title>411 Length Required</title></head>\n<body><center><h1>411 Length Required</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR413 "<!DOCTYPE html>\n<html>\n<head><title>413 Payload Too Large</title></head>\n<body><center><h1>413 Payload Too Large</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
-#define ERR505 "<!DOCTYPE html>\n<html>\n<head><title>505 HTTP Version Not Supported</title></head>\n<body><center><h1>505 HTTP Version Not Supported</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
+
+#define HTML1 "<!DOCTYPE html>\n<html>\n<head><title>"
+#define HTML2 "</title></head>\n<body><center><h1>"
+#define HTML3 "</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 
 #define	MAX_BACK_LOG	20
-#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
-#define CONFIG_FILE "./config/default.conf"
-#define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/"
-#define ERROR_ROOT "/Users/keddib/Desktop/Keddib/42Projects/WebServ/www/error/"
+#define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/webServer/src/config/default.conf"
+#define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/webServer/www/"
+#define ERROR_ROOT ""
 #define D_PORT 8000
 #define HOST 1
 #define PORT 2

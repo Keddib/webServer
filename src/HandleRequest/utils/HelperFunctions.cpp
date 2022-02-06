@@ -33,23 +33,18 @@ int getFileInfo(const std::string &fileName, FileInfo &fileI)
 }
 
 
-const char *getErrorPage(int error)
+void getErrorPage(int error, std::string &page)
 {
-	if (error == 400) return ERR400;
-	else if (error == 405) return ERR405;
-	else if (error == 406) return ERR406;
-	else if (error == 408) return ERR408;
-	else if (error == 411) return ERR411;
-	else if (error == 413) return ERR413;
-	else if (error == 501) return ERR501;
-	else if (error == 505) return ERR505;
-	return "";
+	std::string TOKEN = std::to_string(error) + " " + getErrorMessage(error);
+	page += std::string(HTML1) + TOKEN + HTML2 + TOKEN + HTML3;
 }
 
 
 const char* getErrorMessage(int error)
 {
 	if (error == 400) return "Bad Request";
+	else if (error == 403) return "Forbidden";
+	else if (error == 404) return "Not Found";
 	else if (error == 405) return "Method Not Allowed";
 	else if (error == 406) return "Not Acceptable";
 	else if (error == 408) return "Request Timeout";

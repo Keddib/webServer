@@ -51,6 +51,13 @@ void Response::setKeepAlive(bool connection)
 	_keepAlive = connection;
 }
 
+
+void Response::setBodySize(int64_t bsize)
+{
+	_bSize = bsize;
+}
+
+
 bool Response::isKeepAlive() const
 {
 	return _keepAlive;
@@ -75,11 +82,8 @@ std::fstream &Response::getBody()
 
 void Response::display()
 {
-	char p[2000];
-	bzero(p, 2000);
 	std::cout << "Response : \n";
 	std::cout << "keep_alive: " << isKeepAlive() << '\n';
 	std::cout << getBuffer();
-	_body.read(p, 1008);
-	std::cout << p << '\n';
+	std::cout << _bSize << '\n';
 }

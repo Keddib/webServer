@@ -40,7 +40,7 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 {
 	// if true is returned means that there's no body and response id done
 	int read_data;
-	if (required_size > _buffer_size)
+	if ((size_t)required_size > _buffer_size)
 	{
 		read_data = write(fd, _buffer, _buffer_size);
 		_buffer += read_data; // if header was all sent _buffer will be "" so we will get in this branch again

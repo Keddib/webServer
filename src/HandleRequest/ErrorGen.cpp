@@ -38,13 +38,20 @@ Response *ErrorGen::getResponse(size_t server, int error, const std::string &Hos
 		res->setHeader("Content-Type", fData.Ftype, 0);
 		// check file size and add content-lenght header
 		res->setHeader("Content-Length", std::to_string(fData.size), 0);
+		res->setBodySize(fData.size);
 		res->setHeader("Last-Modified", fData.Mtime, 1);
 		// add file to body of request;
 		res->setBodyfile(errorPagePath);
 	}
 	// if not we use our default one
 	else
-		setDefaultErrorPage(res, getErrorPage(error));
+	{
+		std::string errorPage;
+		getErrorPage(error, errorPage);
+		setDefaultErrorPage(res, errorPage.c_str());
+	}
+	// res->display();
+	// exit(1);
 	return res;
 }
 

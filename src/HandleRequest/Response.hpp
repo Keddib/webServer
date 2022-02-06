@@ -9,7 +9,7 @@ class Response
 		/* data */
 		std::fstream _body;
 		std::string _buffer;
-		unsigned int _bSize;
+		int64_t _bSize;
 		bool _keepAlive;
 	public:
 		Response();
@@ -20,6 +20,7 @@ class Response
 		void addBodyToBuffer(const std::string &);
 		void setBodyfile(const std::string &path);
 		void setKeepAlive(bool connection);
+		void setBodySize(int64_t bsize);
 		bool isKeepAlive() const;
 		unsigned int getBodySize() const;
 		const std::string& getBuffer()const ; // i have removed const from return

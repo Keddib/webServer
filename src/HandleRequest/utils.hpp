@@ -24,7 +24,7 @@ typedef struct	FileInfo_s
 bool isFileAccessible(const std::string &path);
 int getFileInfo(const std::string &fileName, FileInfo &fileI);
 std::string getFileType(const std::string &path);
-const char *getErrorPage(int error);
+void getErrorPage(int error, std::string &page);
 const char *getErrorMessage(int error);
 std::string getOsName();
 std::string getDate();

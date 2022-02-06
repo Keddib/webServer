@@ -91,6 +91,8 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path)\n");
+		if (tokens[1][tokens[1].size() -1 ] == '/')
+			tokens[1].erase(tokens[1].size() - 1);
 		_Vsrvs.back().getLocationsToEdit().back().setRoot(tokens[1]);
 	}
 	else if (dir == AUTO)
