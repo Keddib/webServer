@@ -78,6 +78,11 @@ void	ManageRequest::ListeningOnWriteEnd(int curFd)
 			FD_CLR(curFd, &all_fds);
 			close(curFd);
 		}
+		else
+		{
+			int srvFd = iter_to_res->second.getCommonSrvIndex();
+			fdToRequest.insert(std::make_pair(curFd, Request(curFd, srvFd))); // this aFdToIndex[i] returns bad number
+		}
 		fdToResponse.erase(curFd);
 	}
 }

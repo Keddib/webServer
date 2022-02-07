@@ -15,6 +15,7 @@ ErrorGen::~ErrorGen(/* args */) {}
 Response *ErrorGen::getResponse(size_t server, int error, const std::string &Host,const std::vector<std::string> &head)
 {
 	Response *res = new Response();
+	res->setCommonServerIndex(server);
 	res->setStartLine("HTTP/1.1", error, getErrorMessage(error));
 	res->setHeader("Connection", "close", 0);
 	res->setKeepAlive(false);

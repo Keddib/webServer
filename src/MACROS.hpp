@@ -9,8 +9,8 @@
 #define HTML3 "</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 
 #define	MAX_BACK_LOG	20
-#define CONFIG_FILE "/Users/keddib/Desktop/Keddib/42Projects/webServer/src/config/default.conf"
-#define DEFAULT_ROOT "/Users/keddib/Desktop/Keddib/42Projects/webServer/www/"
+#define CONFIG_FILE "/home/mohamed/webServer/src/config/default.conf"
+#define DEFAULT_ROOT "/home/mohamed/webServer/www/"
 #define ERROR_ROOT ""
 #define D_PORT 8000
 #define HOST 1

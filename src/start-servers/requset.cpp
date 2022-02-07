@@ -330,7 +330,12 @@ Response	*Request::TakeInfoFromHeaders(char **str)
 	if (str_cmp(first, "Host"))
 	{
 		if (aHostName.empty())
+		{
+		/*	int tmp = IndexOf(second, ':'); // added
+			if (tmp != -1) //added
+				const_cast<char>(second[tmp]) = 0; //added*/
 			aHostName = second;
+		}
 		else
 			return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	}

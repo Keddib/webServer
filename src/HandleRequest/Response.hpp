@@ -7,6 +7,7 @@ class Response
 {
 	private:
 		/* data */
+		int	cmSrvFd;
 		std::fstream _body;
 		std::string _buffer;
 		int64_t _bSize;
@@ -25,6 +26,9 @@ class Response
 		unsigned int getBodySize() const;
 		const std::string& getBuffer()const ; // i have removed const from return
 		std::fstream	&getBody(); // i just added this function
+
+		int	getCommonServerIndex() const;
+		void	setCommonServerIndex(int s);
 		void display();
 };
 

@@ -1,4 +1,4 @@
-#include "util.h"
+#include "utils.hpp"
 #include "Response.hpp"
 #include "../configuration/confHeaders.hpp"
 #include "../start-servers/requset.hpp"
@@ -36,14 +36,15 @@ Response *MethodsErrors(ReqInfo &Rq, const Location &rLoc)
 	return errorRespo.getResponse(Rq.com_srv_index, 405, Rq.host_name, Rq.tmpHeader);
 }
 
-Response *FileFound200(const std::string &PATH, FileInfo &Fdata)
+Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 {
 	Response *res = new Response();
+	res->setCommonServerIndex(server);
 	res->setStartLine("HTTP/1.1", 200, "OK");
 	res->setHeader("Content-Type", Fdata.Ftype, 0);
 	res->setHeader("Content-Length", std::to_string(Fdata.size), 0);
 	res->setBodySize(Fdata.size);
-	res->setHeader("Last-Modified", Fdata.Mtime, 0);
+	res->setHeader("Last-Modified", Fdata.Mtime, 1);
 	res->setBodyfile(PATH);
 	// res->display();
 	return res;
@@ -60,7 +61,7 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	std::cout << PATH << '\n';
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
-		return FileFound200(PATH, Fdata);
+		return FileFound200(PATH, Fdata, Rq.com_srv_index);
 	else if (ret == 1) // not found
 		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name));
 	else
@@ -85,7 +86,7 @@ Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<st
 	else if (error == 2) // dir forbiden
 		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name);
 	else if (index.empty() && Rq.indexon) // dir listing
-		return NULL // need to return a response with directory listing
+		return NULL; // need to return a response with directory listing
 	return HandleFileResource(PATH += index, Rq); // found
 }
 

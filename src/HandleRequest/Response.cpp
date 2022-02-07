@@ -80,6 +80,17 @@ std::fstream &Response::getBody()
 	return _body;
 }
 
+
+int	Response::getCommonServerIndex() const
+{
+	return cmSrvFd;
+}
+
+void	Response::setCommonServerIndex(int s)
+{
+	cmSrvFd = s;
+}
+
 void Response::display()
 {
 	std::cout << "Response : \n";

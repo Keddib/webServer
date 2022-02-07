@@ -63,3 +63,10 @@ bool		ResponseWrapper::CloseConnection() const
 {
 	return !_com_response->isKeepAlive();
 }
+
+
+
+int		ResponseWrapper::getCommonSrvIndex() const
+{
+	return _com_response->getCommonServerIndex();
+}
