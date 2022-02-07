@@ -80,10 +80,12 @@ Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<st
 	*/
 	int error(-1);
 	std::string index = lookForIndexInDirectory(PATH, iVec, error);
-	if (error == 1 || index.empty()) // not found
+	if (error == 1) // dir not found
 		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name);
-	else if (error == 2) // forbiden
+	else if (error == 2) // dir forbiden
 		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name);
+	else if (index.empty() && Rq.indexon) // dir listing
+		return NULL // need to return a response with directory listing
 	return HandleFileResource(PATH += index, Rq); // found
 }
 
