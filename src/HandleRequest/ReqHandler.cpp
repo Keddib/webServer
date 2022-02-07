@@ -16,6 +16,7 @@ struct ReqInfo
 	int					com_srv_index;
 	int					meth;
 	bool				vers;
+	bool				indexon;
 
 	ReqInfo(const std::string &rcp, const std::string &hn, int srvIndex, int mt, bool v) :
 	rsource_path(rcp), host_name(hn)
@@ -25,7 +26,6 @@ struct ReqInfo
 		vers = v;
 	}
 };
-
 
 Response *MethodsErrors(ReqInfo &Rq, const Location &rLoc)
 {
@@ -45,12 +45,17 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata)
 	res->setBodySize(Fdata.size);
 	res->setHeader("Last-Modified", Fdata.Mtime, 0);
 	res->setBodyfile(PATH);
-	res->display();
+	// res->display();
 	return res;
 }
 
 Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 {
+	/*
+	** if file and existe get file info and rerurn response with file in body
+	** if can't access file return forbiden
+	** if file not found return Not Found
+	*/
 	FileInfo Fdata;
 	std::cout << PATH << '\n';
 	int ret = getFileInfo(PATH, Fdata);
@@ -61,6 +66,37 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	else
 		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name));
 		// forbiden
+}
+
+Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<std::string> &iVec)
+{
+	/*
+	** if Dir and existe look for indexes within that file
+	** if no index found and autoindex is on list directory cotent
+	** if no index found and autoindex is off return Not found
+	** if index found go back to HandleFileResouce
+	** if can't access Dir return forbiden
+	** if Dir not found return Not Found
+	*/
+	int error(-1);
+	std::string index = lookForIndexInDirectory(PATH, iVec, error);
+	if (error == 1 || index.empty()) // not found
+		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name);
+	else if (error == 2) // forbiden
+		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name);
+	return HandleFileResource(PATH += index, Rq); // found
+}
+
+void getLocationIndexes(const Location &loc, std::vector<std::string> &indexes)
+{
+	const std::vector<std::string> &vec = loc.getIndexes();
+	if (vec.empty())
+	{
+		indexes.push_back("index.html");
+		indexes.push_back("index.htm");
+		return;
+	}
+	indexes = vec;
 }
 
 Response* HandleRequest(const Request &req)
@@ -76,6 +112,7 @@ Response* HandleRequest(const Request &req)
 	// check if req.method is accepted on location
 	if (!rLoc.isMethodAllowed(Rq.meth))
 		return MethodsErrors(Rq, rLoc);
+	Rq.indexon = rLoc.isAutoIndexOn();
 	// if redirect return redirect response
 	// return -> ??
 		// if exist and not CGI script open file and return response
@@ -83,17 +120,21 @@ Response* HandleRequest(const Request &req)
 
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
+
 	// concatinate root with resource
 	std::string PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
-	// std::cout << PATH << '\n';
+
+	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file
 		return HandleFileResource(PATH, Rq);
-	// check if file or dir
-	// if file and existe get file info and rerurn response with file in body
-	// if can't access file return forbiden
-	// if file not found return Not Found
+	else // is directory
+	{
+		// get indexes
+		std::vector<std::string> indexes;
+		getLocationIndexes(rLoc, indexes);
+		return HandleDirResource(PATH, Rq, indexes);
+	}
 
-	// if path is dir
 	// check http version if 0 && Keep_alive not excite set connection to close/ KA to 0;
 	return NULL;
 }

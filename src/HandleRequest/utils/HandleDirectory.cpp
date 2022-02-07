@@ -14,6 +14,8 @@ std::string lookForIndexInDirectory(const std::string &Dir, const std::vector<st
 		/* print all the files and directories within directory */
 		while ( (ent = readdir(direcroty) ) != NULL)
 		{
+			if (ent->d_type != DT_REG && ent->d_type != DT_LNK)
+				continue;
 			int inx1 = inx;
 			while (inx1 >= 0)
 			{
