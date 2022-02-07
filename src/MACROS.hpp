@@ -8,9 +8,12 @@
 #define HTML2 "</title></head>\n<body><center><h1>"
 #define HTML3 "</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
 
+#define Dir1 "<!DOCTYPE html><head><title>Index of</title></head><body><h1>Index of "
+#define Dir2 "</pre><hr></body></html>"
+
 #define	MAX_BACK_LOG	20
-#define CONFIG_FILE "/home/mohamed/webServer/src/config/default.conf"
-#define DEFAULT_ROOT "/home/mohamed/webServer/www/"
+#define CONFIG_FILE "./config/default.conf"
+#define DEFAULT_ROOT "../www"
 #define ERROR_ROOT ""
 #define D_PORT 8000
 #define HOST 1

@@ -331,9 +331,12 @@ Response	*Request::TakeInfoFromHeaders(char **str)
 	{
 		if (aHostName.empty())
 		{
-		/*	int tmp = IndexOf(second, ':'); // added
+			int tmp = IndexOf(second, ':'); // added
 			if (tmp != -1) //added
-				const_cast<char>(second[tmp]) = 0; //added*/
+			{
+				char *s = const_cast<char *>(second);
+				s[tmp] = 0; //added
+			}
 			aHostName = second;
 		}
 		else

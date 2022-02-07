@@ -32,7 +32,7 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 	read_data = write(fd, storage_elment, required_size);
 	hasBeenRead += read_data;
 	_body.seekg(hasBeenRead); // this very important problem could arise here
-	return (hasBeenRead == bodySize);
+	return (hasBeenRead >= bodySize);
 }
 
 

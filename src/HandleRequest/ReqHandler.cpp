@@ -69,6 +69,21 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 		// forbiden
 }
 
+Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
+{
+	Response *res = new Response();
+	res->setStartLine("HTTP/1.1", 200, "OK");
+	res->setCommonServerIndex(Rq.com_srv_index);
+	res->setHeader("Content-Type", "text/html", 0);
+	const std::string &s = ListDirectory(PATH, Rq.rsource_path);
+	size_t size = s.size();
+	res->setBodySize(size);
+	res->setHeader("Content-Length", std::to_string(size), 1);
+	res->addBodyToBuffer(s);
+	// content lenght
+	return res;
+}
+
 Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<std::string> &iVec)
 {
 	/*
@@ -81,12 +96,12 @@ Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<st
 	*/
 	int error(-1);
 	std::string index = lookForIndexInDirectory(PATH, iVec, error);
-	if (error == 1) // dir not found
+	if (error == 1 || (index.empty() && !Rq.indexon)) // dir not found
 		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name);
 	else if (error == 2) // dir forbiden
 		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name);
 	else if (index.empty() && Rq.indexon) // dir listing
-		return NULL; // need to return a response with directory listing
+		return GetDirListingResponse(PATH, Rq); // need to return a response with directory listing
 	return HandleFileResource(PATH += index, Rq); // found
 }
 
@@ -132,6 +147,7 @@ Response* HandleRequest(const Request &req)
 		return HandleFileResource(PATH, Rq);
 	else // is directory
 	{
+		std::cout << "->  DIR\n";
 		// get indexes
 		std::vector<std::string> indexes;
 		getLocationIndexes(rLoc, indexes);
