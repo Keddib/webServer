@@ -7,6 +7,7 @@
 #include "../MACROS.hpp"
 #include <cstring>
 #include <ctime>
+#include <cctype>
 #include <map>
 
 extern ErrorGen errorRespo;

@@ -269,7 +269,7 @@ Response		*Request::ProcessHeaders(char **str, int size)
 		status = ProcessOneLine(*str, size);
 		if (IsHeadersDone(str))
 		{
-			if (aHostName.empty())
+			if (aHostName.empty() && version == false)
 				return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE); // HOST header does not exist
 			status = 1;
 			return NULL;
@@ -381,6 +381,7 @@ Response	*Request::FirstSecondFromHeaderLine(bool &opfold)
 		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	//second = first + tmp + 1;
 	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1));
+	
 	// IF YOU NEED TO CHECK THE SECOND VALUE OF HEADER TO GENRATE ERROR CHECK AT THIS LINE
 	return NULL;
 }
@@ -394,6 +395,8 @@ const char	*remove_speces_at_end_start(char *str)
 		--len;
 	if (str[len  + 1] == ' ')
 		str[len + 1] = 0;
+	for (int i = 0; str[i]; ++i)
+		str[i] = std::tolower(str[i]);
 	return str;
 }
 

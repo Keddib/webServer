@@ -4,6 +4,7 @@
 #include "CommonServers.hpp"
 #include "../MACROS.hpp"
 #include <unistd.h>
+#include <stdarg.h>
 #include <cstring>
 #include <map>
 
