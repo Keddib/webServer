@@ -43,6 +43,11 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 	Response *res = new Response();
 	res->setCommonServerIndex(server);
 	res->setStartLine("HTTP/1.1", 200, "OK");
+	if (!Fdata.keepAlive)
+	{
+		res->setHeader("Connection", "close", 0);
+		res->setKeepAlive(false);
+	}
 	res->setHeader("Content-Type", Fdata.Ftype, 0);
 	res->setHeader("Content-Length", std::to_string(Fdata.size), 0);
 	res->setBodySize(Fdata.size);
@@ -60,6 +65,7 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	** if file not found return Not Found
 	*/
 	FileInfo Fdata;
+	Fdata.keepAlive = Rq.keepAlive;
 	std::cout << PATH << '\n';
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
@@ -167,6 +173,8 @@ Response* HandleRequest(const Request &req)
 		Rq.keepAlive = Rq.vers ? 1 : 0;
 	else
 		Rq.keepAlive = ret;
+
+	std::cout <<"keep : " << Rq.keepAlive << '\n';
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
 

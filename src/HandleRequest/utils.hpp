@@ -19,6 +19,7 @@ typedef struct	FileInfo_s
 	int64_t		size;
 	std::string	Mtime;
 	std::string Ftype;
+	bool		keepAlive;
 }				FileInfo;
 
 bool isFileAccessible(const std::string &path);
