@@ -12,14 +12,21 @@ ErrorGen::~ErrorGen(/* args */) {}
 ** error page
 */
 
-Response *ErrorGen::getResponse(size_t server, int error, const std::string &Host,const std::vector<std::string> &head)
+Response *ErrorGen::getResponse(
+	size_t server, int error,
+	const std::string &Host,
+	bool keepAlive,
+	const std::vector<std::string> &head)
 {
 	Response *res = new Response();
 	res->setCommonServerIndex(server);
 	res->setStartLine("HTTP/1.1", error, getErrorMessage(error));
-	res->setHeader("Connection", "close", 0);
-	res->setKeepAlive(false);
 	res->setHeader(head); // add bunch of header specific to an the error;
+	if (!keepAlive)
+	{
+		res->setHeader("Connection", "close", 0);
+		res->setKeepAlive(false);
+	}
 	// check if the user defined an error page for the error accured
 	// if not we use out defualt error pages
 	const std::vector<std::pair<int, std::string> > &Errors =

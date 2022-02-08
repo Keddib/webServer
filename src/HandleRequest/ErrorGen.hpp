@@ -23,6 +23,7 @@ class ErrorGen
 		~ErrorGen();
 		Response *getResponse(size_t server, int error,
 			const std::string &Host = "",
+			bool keepAlive = 0,
 			const std::vector<std::string> &head = std::vector<std::string>()
 			);
 	private:

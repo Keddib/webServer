@@ -17,6 +17,7 @@ struct ReqInfo
 	int					meth;
 	bool				vers;
 	bool				indexon;
+	bool				keepAlive;
 
 	ReqInfo(const std::string &rcp, const std::string &hn, int srvIndex, int mt, bool v) :
 	rsource_path(rcp), host_name(hn)
@@ -24,6 +25,7 @@ struct ReqInfo
 		com_srv_index = srvIndex;
 		meth = mt;
 		vers = v;
+		keepAlive = true;
 	}
 };
 
@@ -33,7 +35,7 @@ Response *MethodsErrors(ReqInfo &Rq, const Location &rLoc)
 	Rq.tmpHeader.push_back("Allow: ");
 	rLoc.fillAllowedMethods(Rq.tmpHeader[0]);
 	Rq.tmpHeader[0] += "\r\n";
-	return errorRespo.getResponse(Rq.com_srv_index, 405, Rq.host_name, Rq.tmpHeader);
+	return errorRespo.getResponse(Rq.com_srv_index, 405, Rq.host_name, Rq.keepAlive, Rq.tmpHeader);
 }
 
 Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
@@ -63,9 +65,9 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	if (ret == 0) // found
 		return FileFound200(PATH, Fdata, Rq.com_srv_index);
 	else if (ret == 1) // not found
-		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name));
+		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
 	else
-		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name));
+		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive));
 		// forbiden
 }
 
@@ -74,6 +76,11 @@ Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 	Response *res = new Response();
 	res->setStartLine("HTTP/1.1", 200, "OK");
 	res->setCommonServerIndex(Rq.com_srv_index);
+	if (!Rq.keepAlive)
+	{
+		res->setHeader("Connection", "close", 0);
+		res->setKeepAlive(false);
+	}
 	res->setHeader("Content-Type", "text/html", 0);
 	const std::string &s = ListDirectory(PATH, Rq.rsource_path);
 	size_t size = s.size();
@@ -97,9 +104,9 @@ Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<st
 	int error(-1);
 	std::string index = lookForIndexInDirectory(PATH, iVec, error);
 	if (error == 1 || (index.empty() && !Rq.indexon)) // dir not found
-		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name);
+		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
 	else if (error == 2) // dir forbiden
-		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name);
+		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive);
 	else if (index.empty() && Rq.indexon) // dir listing
 		return GetDirListingResponse(PATH, Rq); // need to return a response with directory listing
 	return HandleFileResource(PATH += index, Rq); // found
@@ -117,6 +124,23 @@ void getLocationIndexes(const Location &loc, std::vector<std::string> &indexes)
 	indexes = vec;
 }
 
+
+int checkConnectionHeader(const std::vector<std::pair<std::string, std::string> > &headers)
+{
+	size_t size = headers.size();
+	for (size_t i = 0; i < size; i++)
+	{
+		if (!strcmp(headers[i].first.c_str(), "Connection"))
+		{
+			if (!strcmp(headers[i].second.c_str(), "close"))
+				return 0;
+			else
+				return 1;
+		}
+	}
+	return 2;
+}
+
 Response* HandleRequest(const Request &req)
 {
 	ReqInfo Rq(
@@ -127,6 +151,8 @@ Response* HandleRequest(const Request &req)
 		req.getVersion()
 		);
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
+	// set keepAlive
+
 	// check if req.method is accepted on location
 	if (!rLoc.isMethodAllowed(Rq.meth))
 		return MethodsErrors(Rq, rLoc);
@@ -135,7 +161,12 @@ Response* HandleRequest(const Request &req)
 	// return -> ??
 		// if exist and not CGI script open file and return response
 	// if (CGI) -> ??
-
+	// check connection
+	int ret = checkConnectionHeader(req.aHeaders);
+	if (ret == 2)
+		Rq.keepAlive = Rq.vers ? 1 : 0;
+	else
+		Rq.keepAlive = ret;
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
 

@@ -36,6 +36,10 @@ We splited the work into two parts:
 	- [] get out put and create a response
 
 
+
+-> [] heade fields values lower-case !!!!
+-> [] if Version 1.0 and host not found set Host to "_".
+
 !!!! note the server can't handle more than one request .. it hangs out ???
 
 
