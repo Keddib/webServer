@@ -1,38 +1,33 @@
-NAME		= 	Webserv
+NAME	= Webserv
 
-SRCS 		=	configuration/ConfigParser.cpp\
-				configuration/ServersInterface.cpp\
-				configuration/CommonServers.cpp\
-				configuration/VirtualServer.cpp\
-				configuration/Location.cpp\
-				configuration/utils.cpp\
-				HandleRequest/ReqHandler.cpp\
-				HandleRequest/Response.cpp\
-				HandleRequest/ErrorGen.cpp\
-				HandleRequest/utils/HelperFunctions.cpp\
-				HandleRequest/utils/HandleDirectory.cpp\
-				start-servers/requset.cpp\
-				start-servers/response-wrapper.cpp\
-				start-servers/manage-request.cpp\
-				start-servers/main.cpp
+GO		= clang++ -std=c++98 -Wall -Wextra -Werror #-g3 #-fsanitize=address
 
+OFILES	= CommonServers.o ErrorGen.o Location.o ServersInterface.o requset.o\
+		utils.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
+		response-wrapper.o ReqHandler.o main.o HandleDirectory.o
 
-OBJ			=	obj/*.o
+ODIR=obj
 
-GO			=	clang++ -std=c++98 -Wall -Wextra -Werror #-g3 #-fsanitize=address
+OBJ = $(patsubst %,$(ODIR)/%,$(OFILES))
 
-all:	$(NAME)
-$(NAME): $(SRCS)
-		$(GO) -c $(SRCS)
-		mv *.o obj
-		$(GO) -o $(NAME) $(OBJ)
+DEPS = MACROS.hpp configuration/*.hpp HandleRequest/*.hpp start-servers/*.hpp
 
-clean:
-	@rm -rf $(OBJ)
+vpath %.cpp configuration HandleRequest HandleRequest/utils start-servers
 
-fclean: clean
-	@rm -rf $(NAME)
+all: $(NAME)
+
+$(NAME): $(OBJ)
+	$(GO) -o $(NAME) $(OBJ)
+
+$(ODIR)/%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 re: fclean all
+
+clean:
+	rm -rf $(OBJ)
+
+fclean: clean
+	rm -rf $(NAME)
 
 .PHONY: clean fclean re all
