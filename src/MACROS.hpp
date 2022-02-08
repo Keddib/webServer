@@ -58,7 +58,7 @@
 #define PAYLOAD_TOO_LARGE_STATUS_CODE 413
 
 #define LONGEST_METHOD 7 // +1 is neccessary
-#define MAX_BODY_SWITCH  4096 // this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
+#define MAX_BODY_SWITCH  1048576 //1048576 this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
 #define	RQ_RS_TIME_OUT 50 // change later
 

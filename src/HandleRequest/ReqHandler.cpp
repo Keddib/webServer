@@ -181,6 +181,20 @@ Response* HandleRequest(const Request &req)
 	// concatinate root with resource
 	std::string PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
+
+	for(size_t i = 0; i < req.aHeaders.size(); i++)
+		std::cout << req.aHeaders[i].first + ": " << req.aHeaders[i].second << "\r\n";
+	if (req.isBodyStr())
+		std::cout << req.getBody() << '\n';
+	else
+	{
+		struct stat result;
+		if(stat("/tmp/.3", &result)==0)
+		{
+			std::cout << "-> .3 size ; " << result.st_size << '\n';
+		}
+
+	}
 	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file
 		return HandleFileResource(PATH, Rq);

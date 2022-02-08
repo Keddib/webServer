@@ -78,6 +78,8 @@ Response			*Request::StartLineParsing(char **str, int &size)
 Response	*Request::AddToRequest(char *str, int size)
 {
 	endStr = str + size;
+	// std::cout << str;
+	// std::cout << "inside\n";
 	Restmp = NULL;
 	if (status == -1)
 	{
@@ -99,7 +101,8 @@ Response	*Request::AddToRequest(char *str, int size)
 		if (ProcessBody(str, endStr - str))
 		{
 			bodyFileObj.close();
-			return NULL; // this is here means request is done
+			std::cout << "SIZE: " << bodyString.size();
+			return HandleRequest(*this); // this is here means request is done
 		}
 	}
 	return NULL; // request not  done yet
@@ -114,7 +117,7 @@ Response			*Request::ReserveSpaceForBody()
 		if (isChuncked == 1)
 		{
 			fillFileName(connFD, fileName);
-			bodyFileObj.open(fileName, std::fstream::out); // creating file
+			bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
 		}
 		else if (bodySize != -1)
 		{
@@ -269,7 +272,7 @@ Response		*Request::ProcessHeaders(char **str, int size)
 		status = ProcessOneLine(*str, size);
 		if (IsHeadersDone(str))
 		{
-			if (aHostName.empty() && version == false)
+			if (aHostName.empty() && version == true)
 				return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE); // HOST header does not exist
 			status = 1;
 			return NULL;
@@ -381,7 +384,7 @@ Response	*Request::FirstSecondFromHeaderLine(bool &opfold)
 		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	//second = first + tmp + 1;
 	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1));
-	
+
 	// IF YOU NEED TO CHECK THE SECOND VALUE OF HEADER TO GENRATE ERROR CHECK AT THIS LINE
 	return NULL;
 }
@@ -629,4 +632,20 @@ bool Request::getVersion() const
 const std::string& Request::getHost() const
 {
 	return aHostName;
+}
+
+const std::string& Request::getBody() const
+{
+	return bodyString;
+}
+
+const std::fstream& Request::getBody(int) const
+{
+	return bodyFileObj;
+}
+
+
+bool Request::isBodyStr() const
+{
+	return bodyString.size();
 }
