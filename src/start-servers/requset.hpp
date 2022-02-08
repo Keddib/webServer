@@ -52,6 +52,7 @@ class	Request
 		bool				BodyFileCase(char *str, long size);
 		Response			*StartLineParsing(char **str, int &size);
 		void				INIT_AT_CONSTRUCTION(int, int);
+		void				InsertCharToFile(char*, long);
 	public:
 		bool				isStillValid(std::time_t);
 		Response 			*AddToRequest(char *str, int size);

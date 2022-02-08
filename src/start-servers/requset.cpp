@@ -180,12 +180,12 @@ bool	Request::BodyStringCase(char *str, long size)
 	// means that body small enough to be stored in string obj
 	if (hasBeenRead + size < bodySize)
 	{
-		bodyString += str;
+		bodyString.insert(hasBeenRead, str, size);
 		hasBeenRead += size;
 		return false;
 	}
-	str[bodySize - hasBeenRead + 1]  = 0; /* in this case i'm gonna take just what is needed for example if str "bbaaaa" and only two are still needed so i will add only two and done*/
-	bodyString += str;
+	// i am not adding to hasBeenRead here bec i do not care any  more at this point
+	bodyString.insert(hasBeenRead, str, bodySize - hasBeenRead);
 	return true;
 }
 
@@ -193,14 +193,21 @@ bool	Request::BodyFileCase(char *str, long size)
 {
 	if (hasBeenRead + size < bodySize)
 	{
-		bodyFileObj << str;
+		InsertCharToFile(str, size);
 		hasBeenRead += size;
 		return false;
 	}
-	str[bodySize - hasBeenRead] = 0;
-	bodyFileObj << str;
+	// i am not adding to hasBeenRead here bec i do not care any  more at this point
+	InsertCharToFile(str, bodySize - hasBeenRead);
 	return true;
 }
+
+void	Request::InsertCharToFile(char *str, long size)
+{
+	for (size_t i = 0; i < size; ++i)
+		bodyFileObj << str[i];
+}
+
 
 bool	Request::ReadByChunck(char *str, long size)
 {
