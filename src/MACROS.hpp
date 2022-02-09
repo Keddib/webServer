@@ -4,6 +4,8 @@
 
 	// check if the user defined an error page for the error accured
 
+#define _DARWIN_UNLIMITED_SELECT 1
+
 #define HTML1 "<!DOCTYPE html>\n<html>\n<head><title>"
 #define HTML2 "</title></head>\n<body><center><h1>"
 #define HTML3 "</h1></center><hr><center>webserv/1.1</center></body>\n</html>"
@@ -11,7 +13,7 @@
 #define Dir1 "<!DOCTYPE html><head><title>Index of</title></head><body><h1>Index of "
 #define Dir2 "</pre><hr></body></html>"
 
-#define	MAX_BACK_LOG	20
+#define	MAX_BACK_LOG	100
 #define CONFIG_FILE "./config/default.conf"
 #define DEFAULT_ROOT "../www"
 #define ERROR_ROOT ""
@@ -58,9 +60,9 @@
 #define PAYLOAD_TOO_LARGE_STATUS_CODE 413
 
 #define LONGEST_METHOD 7 // +1 is neccessary
-#define MAX_BODY_SWITCH  1048576 //1048576 this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
+#define MAX_BODY_SWITCH  4096 //1048576 this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
-#define	RQ_RS_TIME_OUT 50 // change later
+#define	RQ_RS_TIME_OUT 10 // change later
 
 
 #endif

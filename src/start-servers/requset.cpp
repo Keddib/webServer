@@ -1,5 +1,6 @@
 #include "requset.hpp"
 
+
 void	STOP_HERE();
 
 
@@ -78,8 +79,6 @@ Response			*Request::StartLineParsing(char **str, int &size)
 Response	*Request::AddToRequest(char *str, int size)
 {
 	endStr = str + size;
-	// std::cout << str;
-	// std::cout << "inside\n";
 	Restmp = NULL;
 	if (status == -1)
 	{

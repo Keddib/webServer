@@ -23,11 +23,15 @@ We splited the work into two parts:
 
 - [] handle requests
 	- [x] create a Response class
-	- [] implement a Reqhandler class that takes request and create a response
+	- [x] implement a Reqhandler class that takes request and create a response
 	based on configuation
 	- [] if the requested resource is a CGI script just print CGI on output.
 	CGI will be handled later.
-	- [] directory listing -> function that list content of a directory.
+	- [x] directory listing -> function that list content of a directory.
+
+- [] redirection
+	- [] 
+
 
 - [] handle CGI
 	- [] add request headers to envirment variables wih "setenv(n,v,or)"
@@ -37,8 +41,8 @@ We splited the work into two parts:
 
 
 
--> [] heade fields values lower-case !!!!
--> [] if Version 1.0 and host not found set Host to "_".
+-> [x] heade fields values lower-case !!!!
+-> [x] if Version 1.0 and host not found set Host to "_".
 
 !!!! note the server can't handle more than one request .. it hangs out ???
 

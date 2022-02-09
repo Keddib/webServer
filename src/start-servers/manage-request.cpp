@@ -137,13 +137,21 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 	return iter_to_req->second.AddToRequest(buffer, tot);
 }
 
-
+#include <cerrno>
 void	ManageRequest::Select()
 {
 	read_set = all_fds;
 	write_set = all_fds;
 	if (select(maxFd, &read_set, &write_set, NULL, NULL) < 0)
 	{
+		if (errno == EBADF)
+			std::cout << "1: " << std::strerror(errno);
+		else if (errno == EAGAIN)
+			std::cout << "2: " << std::strerror(errno);
+		else if (errno == EINTR)
+			std::cout << "3: " << std::strerror(errno);
+		else if (errno == EINVAL)
+			std::cout << "4: " << std::strerror(errno);
 		std::cout << "Error accured in select\n";
 		exit(2);
 	}

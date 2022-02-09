@@ -174,7 +174,6 @@ Response* HandleRequest(const Request &req)
 	else
 		Rq.keepAlive = ret;
 
-	std::cout <<"keep : " << Rq.keepAlive << '\n';
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
 
@@ -182,25 +181,11 @@ Response* HandleRequest(const Request &req)
 	std::string PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
 
-	for(size_t i = 0; i < req.aHeaders.size(); i++)
-		std::cout << req.aHeaders[i].first + ": " << req.aHeaders[i].second << "\r\n";
-	if (req.isBodyStr())
-		std::cout << req.getBody() << '\n';
-	else
-	{
-		struct stat result;
-		if(stat("/tmp/.3", &result)==0)
-		{
-			std::cout << "-> .3 size ; " << result.st_size << '\n';
-		}
-
-	}
 	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file
 		return HandleFileResource(PATH, Rq);
 	else // is directory
 	{
-		std::cout << "->  DIR\n";
 		// get indexes
 		std::vector<std::string> indexes;
 		getLocationIndexes(rLoc, indexes);

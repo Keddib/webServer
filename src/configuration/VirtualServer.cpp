@@ -4,7 +4,7 @@ VirtualServer::VirtualServer(const std::pair<unsigned int, int> &srv)
 : _serverName("_"), _client_max_body_size(1048576),  _errLocation("")
 {
 	aServerInfo = srv;
-	_errLocation.setRoot(ERROR_ROOT);
+	_errLocation.setRoot(DEFAULT_ROOT);
 }
 
 
