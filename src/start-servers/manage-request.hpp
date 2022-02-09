@@ -4,9 +4,32 @@
 #include "requset.hpp"
 #include "response-wrapper.hpp"
 #include "../MACROS.hpp"
+#include <sys/epoll.h>
 
 class	ManageRequest
 {
+
+
+	private:
+		// new stuff related to epoll
+		struct epoll_event event;
+		int	epoll_fd;
+		std::vector<struct epoll_event> ready_fds;
+		std::vector<int>	ComFds;
+		short			MSFDN;
+		int			curReady;
+
+		void	HandelNewConnection(int tmpFd, int curFd, int &newConnections);
+		int	FDS_That_ready_for_IO(int &newConnections);
+		void	WorkOnRequest(int curFd);
+		void	WorkOnResponse(int curFd);
+	public:
+		void	EP_StartLIstening();
+
+
+
+
+	
 	private:
 		int			maxFd;
 		const	static int	read_nb = BUFFER_SIZE; // this number will be used to read number of bytes at each time data is available

@@ -15,6 +15,7 @@ class	ResponseWrapper
 		bool		SendingHeader(int fd, int &required_size);
 		bool		SendingBody(int fd, char *storage_elment, int required_size);
 	public:
+		void		Free_Com_response();
 		int		getCommonSrvIndex() const;
 		bool		isStillValid(std::time_t);
 		bool		CloseConnection() const;

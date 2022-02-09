@@ -123,6 +123,7 @@ std::pair<int, int>	ServersInterface::StartServerAt(int index, bool &status) con
 
 	status = true;
 	fd = socket(AF_INET, SOCK_STREAM, 0);
+	//fcntl(fd, F_SETFL, O_NONBLOCK);// look carefully here
 	if (fd < 0) {
 		print_on_error(1, "socket faild to open");
 		status = false;

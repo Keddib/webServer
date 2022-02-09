@@ -99,7 +99,7 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	*/
 	FileInfo Fdata;
 	Fdata.keepAlive = Rq.keepAlive;
-	std::cout << PATH << '\n';
+	//std::cout << PATH << '\n';
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
 		return FileFound200(PATH, Fdata, Rq.com_srv_index);

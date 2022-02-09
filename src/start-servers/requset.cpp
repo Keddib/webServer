@@ -33,6 +33,16 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 	booltmp = false;
 }
 
+
+void	Request::RESET()
+{
+//	INIT_AT_CONSTRUCTION();
+	bodyFileObj.close();
+	bodyString.clear();
+	Restmp = NULL;
+	first = second = endStr = NULL;
+}
+
 Request::Request(const Request &cp)
 {
 	*this = cp;

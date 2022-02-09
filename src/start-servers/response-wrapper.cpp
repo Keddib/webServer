@@ -70,3 +70,10 @@ int		ResponseWrapper::getCommonSrvIndex() const
 {
 	return _com_response->getCommonServerIndex();
 }
+
+
+void		ResponseWrapper::Free_Com_response()
+{
+	_com_response->getBody().close();
+	delete _com_response;
+}

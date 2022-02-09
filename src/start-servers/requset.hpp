@@ -54,6 +54,7 @@ class	Request
 		void				INIT_AT_CONSTRUCTION(int, int);
 		void				InsertCharToFile(char*, long);
 	public:
+		void				RESET();
 		bool				isStillValid(std::time_t);
 		Response 			*AddToRequest(char *str, int size);
 		Request(const Request &cp);
