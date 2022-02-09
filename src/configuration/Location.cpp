@@ -111,6 +111,21 @@ bool Location::isAutoIndexOn() const
 	return _autoIndex;
 }
 
+bool Location::isRedirect() const
+{
+	return _ret.first;
+}
+
+int Location::getRedirectCode() const
+{
+	return _ret.first;
+}
+
+const std::string& Location::getRedirectURI() const
+{
+	return _ret.second;
+}
+
 void Location::Display() const
 {
 	std::cout << "Location: \n" <<

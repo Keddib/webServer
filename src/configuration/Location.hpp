@@ -48,6 +48,9 @@ class Location
 		const std::string& getRoute() const;
 		const std::vector<std::string>& getIndexes() const;
 		bool isAutoIndexOn() const;
+		bool isRedirect() const;
+		int getRedirectCode() const;
+		const std::string& getRedirectURI() const;
 		void Display() const;
 
 };

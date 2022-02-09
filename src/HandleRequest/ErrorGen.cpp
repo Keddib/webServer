@@ -29,14 +29,17 @@ Response *ErrorGen::getResponse(
 	}
 	// check if the user defined an error page for the error accured
 	// if not we use out defualt error pages
-	const std::vector<std::pair<int, std::string> > &Errors =
-	ServI[server].whichServer(Host).getErrorPages();
 	std::string errorPagePath;
-	// loop over error pages and check if the server has error pages
-	for(size_t i=0; i < Errors.size(); i++)
+	if (error >= 400)
 	{
-		if (Errors[i].first == error)
-			errorPagePath = Errors[i].second;
+		const std::vector<std::pair<int, std::string> > &Errors =
+		ServI[server].whichServer(Host).getErrorPages();
+		// loop over error pages and check if the server has error pages
+		for(size_t i=0; i < Errors.size(); i++)
+		{
+			if (Errors[i].first == error)
+				errorPagePath = Errors[i].second;
+		}
 	}
 	FileInfo fData;
 	// we check if a error page path is correct we use it as response body

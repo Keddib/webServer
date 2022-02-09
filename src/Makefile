@@ -1,6 +1,6 @@
 NAME	= Webserv
 
-GO		= clang++ -std=c++98 -Wall -Wextra -Werror -g3 #-fsanitize=address
+GO		= clang++ -std=c++98 -Wall -Wextra -Werror -D_DARWIN_UNLIMITED_SELECT #-g3 #-fsanitize=address
 
 OFILES	= CommonServers.o ErrorGen.o Location.o ServersInterface.o requset.o\
 		utils.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
@@ -17,7 +17,7 @@ vpath %.cpp configuration HandleRequest HandleRequest/utils start-servers
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(GO) -o $(NAME) $(OBJ)
+	$(GO) $(CFLAGS) -o $(NAME) $(OBJ)
 
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

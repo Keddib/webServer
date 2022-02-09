@@ -42,7 +42,13 @@ void getErrorPage(int error, std::string &page)
 
 const char* getErrorMessage(int error)
 {
-	if (error == 400) return "Bad Request";
+	if (error == 301) return "Moved Permanently";
+	else if (error == 302) return "Found";
+	else if (error == 303) return "See Other";
+	else if (error == 304) return "Not Modified";
+	else if (error == 307) return "Temporary Redirect";
+	else if (error == 308) return "Permanent Redirect";
+	else if (error == 400) return "Bad Request";
 	else if (error == 403) return "Forbidden";
 	else if (error == 404) return "Not Found";
 	else if (error == 405) return "Method Not Allowed";
@@ -52,7 +58,7 @@ const char* getErrorMessage(int error)
 	else if (error == 413) return "Payload Too Large";
 	else if (error == 501) return "Not Implemented";
 	else if (error == 505) return "HTTP Version Not Supported";
-	return "Not Found";
+	return "";
 }
 
 std::string getOsName()
@@ -70,6 +76,15 @@ std::string getOsName()
 	#else
 	return "Other";
 	#endif
+}
+
+std::string ConvertIPtoString(uint32_t IP)
+{
+	char str[INET_ADDRSTRLEN];
+	struct sockaddr_in sa;
+	sa.sin_addr.s_addr = IP;
+	inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
+	return str;
 }
 
 std::string getDate()
@@ -146,4 +161,27 @@ std::string getFileType(const std::string &path)
 
 	}
 	return "application/octet-stream";
+}
+
+
+
+//Example: b1 == 192, b2 == 168, b3 == 0, b4 == 100
+struct IPv4
+{
+	unsigned char b1, b2, b3, b4;
+};
+
+std::string getMyIP()
+{
+	char szBuffer[1024];
+	if(gethostname(szBuffer, sizeof(szBuffer)) == -1)
+		return "";
+	struct hostent *host = gethostbyname(szBuffer);
+	if(host == NULL)
+		return "";
+	//Obtain the computer's IP
+	struct in_addr addr;
+	memcpy(&addr, host->h_addr_list[0], sizeof(struct in_addr));
+	std::string IP(inet_ntoa(addr));
+	return IP;
 }

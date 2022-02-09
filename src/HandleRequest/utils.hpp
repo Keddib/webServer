@@ -13,6 +13,8 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 typedef struct	FileInfo_s
 {
@@ -22,6 +24,7 @@ typedef struct	FileInfo_s
 	bool		keepAlive;
 }				FileInfo;
 
+std::string ConvertIPtoString(uint32_t IP);
 bool isFileAccessible(const std::string &path);
 int getFileInfo(const std::string &fileName, FileInfo &fileI);
 std::string getFileType(const std::string &path);
@@ -31,5 +34,6 @@ std::string getOsName();
 std::string getDate();
 std::string ListDirectory(const std::string &Dir, const std::string &name);
 std::string lookForIndexInDirectory(const std::string &Dir, const std::vector<std::string> &indexes, int &error);
+std::string getMyIP();
 
 #endif

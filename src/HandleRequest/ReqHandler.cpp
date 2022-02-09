@@ -29,6 +29,39 @@ struct ReqInfo
 	}
 };
 
+Response *getUnusedCodeResponse(int code, const std::string &body)
+{
+	Response *res = new Response;
+	size_t bsize = std::strlen(body.c_str());
+	res->setStartLine("HTTP/1.1", code, getErrorMessage(code));
+	res->setHeader("Content-Type: ", "application/octet-stream", 0);
+	res->setHeader("Content-Length: ", std::to_string(bsize), 0);
+	res->setBodySize(bsize);
+	res->setHeader("Connection: ", "close", 1);
+	res->setKeepAlive(0);
+	res->addBodyToBuffer(body);
+	return res;
+}
+
+Response *Redirect(ReqInfo &Rq, int code, std::string URI)
+{
+	//edit HostName
+	std::string Host = Rq.host_name;
+	if (Host.empty()) // convert to IP to X.X.X.X format
+			Host = getMyIP();
+	// edit URI
+	if (URI[0] == '/')
+		URI = std::string("http://") + Host + URI;
+	// if code not valid Redirect
+	if (code > 303 && code < 307)
+		return getUnusedCodeResponse(code, URI);
+
+	Rq.tmpHeader.reserve(1);
+	Rq.tmpHeader.push_back("Location: ");
+	Rq.tmpHeader[0] += URI + "\r\n";
+	return errorRespo.getResponse(Rq.com_srv_index, code, Rq.host_name, Rq.keepAlive, Rq.tmpHeader);
+}
+
 Response *MethodsErrors(ReqInfo &Rq, const Location &rLoc)
 {
 	Rq.tmpHeader.reserve(1);
@@ -156,6 +189,8 @@ Response* HandleRequest(const Request &req)
 		req.getMethod(),
 		req.getVersion()
 		);
+
+	// print start line
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
 	// set keepAlive
 
@@ -163,23 +198,28 @@ Response* HandleRequest(const Request &req)
 	if (!rLoc.isMethodAllowed(Rq.meth))
 		return MethodsErrors(Rq, rLoc);
 	Rq.indexon = rLoc.isAutoIndexOn();
-	// if redirect return redirect response
-	// return -> ??
-		// if exist and not CGI script open file and return response
-	// if (CGI) -> ??
+
 	// check connection
 	int ret = checkConnectionHeader(req.aHeaders);
 	if (ret == 2)
 		Rq.keepAlive = Rq.vers ? 1 : 0;
 	else
 		Rq.keepAlive = ret;
+	// if redirect return redirect response
+	// return -> ??
+	if (rLoc.isRedirect())
+		return Redirect(Rq, rLoc.getRedirectCode(), rLoc.getRedirectURI());
+	// if exist and not CGI script open file and return response
+	// if (CGI) -> ??
 
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
 
 	// concatinate root with resource
-	std::string PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
-
+	std::string root = rLoc.getRoute();
+	if (root.empty())
+		root = "../www";
+	std::string PATH = root + Rq.rsource_path.substr(0, pos);
 
 	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file

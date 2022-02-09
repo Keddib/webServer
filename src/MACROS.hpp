@@ -4,7 +4,6 @@
 
 	// check if the user defined an error page for the error accured
 
-#define _DARWIN_UNLIMITED_SELECT 1
 
 #define HTML1 "<!DOCTYPE html>\n<html>\n<head><title>"
 #define HTML2 "</title></head>\n<body><center><h1>"
