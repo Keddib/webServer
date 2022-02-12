@@ -164,8 +164,8 @@ void ConfigParser::addDirectiveToServer(int dir, std::vector<std::string> &token
 		// 1,024 – 49,151 registered ports.
 		// check if valid port
 		int port = std::atol(tokens[1].c_str());
-		if (port < 1024 || port > 49151)
-			throwException(tokens[0] + " Invalid port (1024–49151 registered ports only)\n");
+		// if (port < 1024 || port > 49151)
+			// throwException(tokens[0] + " Invalid port (1024–49151 registered ports only)\n");
 		_Vsrvs.back().setPortValue(port);
 	}
 	else if (dir == S_NAME)

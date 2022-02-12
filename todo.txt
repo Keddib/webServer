@@ -21,23 +21,32 @@ We splited the work into two parts:
 	- [x] implement response generator that generete responses based on status code
 	- [x] check if user defined error pages if not not use defualt ones instead.
 
-- [] handle requests
+- [x] handle requests
 	- [x] create a Response class
 	- [x] implement a Reqhandler class that takes request and create a response
 	based on configuation
-	- [] if the requested resource is a CGI script just print CGI on output.
+	- [x] if the requested resource is a CGI script just print CGI on output.
 	CGI will be handled later.
 	- [x] directory listing -> function that list content of a directory.
 
-- [] redirection
-	- [] 
+- [x] redirection
+	- [x] valid code redirection with Location header in response
+	- [x] invalid redirection codes hudnled based on NGINX behavoir.
 
 
 - [] handle CGI
+	- [] unchanged ENV. set once in the start of the server
 	- [] add request headers to envirment variables wih "setenv(n,v,or)"
 	- [] create a new process
 	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
-	- [] get out put and create a response
+	- [] get out put and parse it to create a response to the client
+
+CGI headers
+	- AUTH_TYPE:
+	if the client request required Authentication for external acess, then the server MUST set the value of this variable
+	from the 'auth-scheme' token in the request authorization header field.
+	!!! Authentication not implemented yet I think it's necessery for CGI
+	- 
 
 
 
@@ -73,3 +82,7 @@ ErrGen -> ResGenerator
 | 503  | Service Unavailable           |
 | 504  | Gateway Timeout               | -> cgi timeout
 | 505  | HTTP Version Not Supported    | -> http version other than 1.0/1.1
+
+testing
+
+ab -n 10000 -c 10 $scheme://host:port/resource

@@ -39,7 +39,7 @@ https://github.com/qingqingqingli/webserv/wiki
 - How nginx processes a request
 https://nginx.org/en/docs/http/request_processing.html
 
--  Dealing With and Getting Around Blocking Sockets 
+-  Dealing With and Getting Around Blocking Sockets
 http://dwise1.net/pgm/sockets/blocking.html
 
 - Understanding Nginx Server and Location Block Selection Algorithms
@@ -56,3 +56,24 @@ https://www.gta.ufrj.br/ensino/eel878/sockets/sockaddr_inman.html
 
 - HTTP Crash Course & Exploration
 https://www.youtube.com/watch?v=iYM2zFP3Zn0&ab_channel=TraversyMedia
+
+-CGI
+	https://www.tcl.tk/man/aolserver3.0/cgi-ch1.html
+	https://datatracker.ietf.org/doc/html/rfc3875
+	http://www.mnuwer.dbasedeveloper.co.uk/dlearn/web/session01.htm
+
+- test CGI with Apache2 CGI module
+	https://httpd.apache.org/docs/current/howto/cgi.html
+
+- UPLOAD
+	https://stackoverflow.com/questions/36429470/nginx-file-upload-with-client-body-in-file-only
+	https://stackoverflow.com/questions/6564643/copy-large-files-over-2-gb-in-php
+	https://stackoverflow.com/questions/44371643/nginx-php-failing-with-large-file-uploads-over-6-gb/44751210#44751210
+	https://github.com/ardinusawan/Nginx-direct-file-upload-without-passing-them-through-backend
+
+- USEFUL
+	Richardson Maturity Model
+	https://martinfowler.com/articles/richardsonMaturityModel.html
+
+subject
+	https://cdn.intra.42.fr/pdf/pdf/36819/en.subject.pdf
