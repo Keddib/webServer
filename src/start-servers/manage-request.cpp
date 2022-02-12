@@ -1,7 +1,17 @@
 #include "manage-request.hpp"
 
+std::fstream log_file;
+#include <signal.h>
+void	SIG_HANDL(int)
+{
+	log_file.close();
+}
+
+
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
+	signal(SIGABRT, SIG_HANDL);
+	log_file.open("./start-servers/test/log", std::fstream::out);
 	int fd;
 	std::map<int, int>::const_iterator first(aFdToIndex.begin()), last(aFdToIndex.end());
 	epoll_fd = epoll_create(1);
@@ -30,7 +40,6 @@ ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter_to_req)
 {
 	int	read_data;
-	// int	status;
 	int	tot = 0;
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
@@ -50,6 +59,7 @@ void	ManageRequest::EP_StartLIstening()
 	while (true)
 	{
 		curReady = FDS_That_ready_for_IO(newConnections);
+		epoll_struct_not_needed = 0;
 		for (int i = 0; i < curReady; ++i)
 		{
 			curFd = ready_fds[i].data.fd;
@@ -63,7 +73,6 @@ void	ManageRequest::EP_StartLIstening()
 			{
 				// means that data direct towards some rewuest
 				WorkOnRequest(curFd);
-				
 			}
 			else
 			{
@@ -71,6 +80,8 @@ void	ManageRequest::EP_StartLIstening()
 				WorkOnResponse(curFd);
 			}
 		}
+		// now i will remove ready_fds that are not needed
+		ready_fds.resize(ready_fds.size() - epoll_struct_not_needed);
 	}
 }
 
@@ -110,6 +121,7 @@ void	ManageRequest::WorkOnResponse(int curFd)
 		{
 			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, curFd, &event) == -1)
 			{
+				++epoll_struct_not_needed;
 				std::cout << "could not delete to epoll set the fd: " << curFd << "\n";
 				exit(1);
 			}
@@ -132,6 +144,7 @@ void	ManageRequest::WorkOnResponse(int curFd)
 
 void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnections)
 {
+	// i guess i will imporve here i will accept all connections at once maybe
 	++newConnections;
 	
 	tmpFd = accept(curFd, NULL, NULL);
@@ -145,144 +158,15 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 		std::cout << "could not add to epoll set the fd: " << tmpFd << "\n";
 		exit(1);
 	}
-	fdToRequest.insert(std::make_pair(tmpFd, Request(curFd, aFdToIndex[curFd])));
+	fdToRequest.insert(std::make_pair(tmpFd, Request(tmpFd, aFdToIndex[curFd])));
 	// give extra eye on aFdToIndex[curFd]
 }
 
 
 int	ManageRequest::FDS_That_ready_for_IO(int &newConnections)
 {
-	ready_fds.reserve(ready_fds.size() + newConnections);
+	ready_fds.reserve(ready_fds.capacity() + newConnections);
 	newConnections = 0;
 	return epoll_wait(epoll_fd, ready_fds.data(), ComFds.size(), -1); // -1 for block
 }
-
-
-
-
-
-
-
-
-
-
-/*
-void	ManageRequest::StartListening()
-{
-	// start accepting connections
-	while (true)
-	{
-		Select();
-		for (int i = 3; i < maxFd; ++i) // start i = 3 becaus 0 1 2 is defalut for read write error
-		{
-			if (TimeOut(i))
-				continue ;
-			if (FD_ISSET(i, &read_set))
-			{
-				ListeningOnReadEnd(i);
-			}
-			if (FD_ISSET(i, &write_set))
-			{
-				ListeningOnWriteEnd(i);
-			}
-		}
-	}
-}
-
-///////
-bool	ManageRequest::TimeOut(int curFd)
-{
-	iter_to_req = fdToRequest.find(curFd);
-	if (iter_to_req != fdToRequest.end())
-	{
-		if (!iter_to_req->second.isStillValid(std::time(NULL)))
-		{
-			FD_CLR(curFd, &all_fds);
-			close(curFd);
-			fdToRequest.erase(iter_to_req);
-			return true;
-		}
-	}
-	else
-	{
-		iter_to_res = fdToResponse.find(curFd);
-		if (iter_to_res != fdToResponse.end() &&  !iter_to_res->second.isStillValid(std::time(NULL)))
-		{
-			FD_CLR(curFd, &all_fds);
-			close(curFd);
-			fdToResponse.erase(iter_to_res);
-			return true;
-		}
-	}
-	return false;
-}
-///////
-void	ManageRequest::ListeningOnWriteEnd(int curFd)
-{
-	iter_to_res = fdToResponse.find(curFd);
-	if (iter_to_res != fdToResponse.end() &&  iter_to_res->second.SendingResponse(curFd, buffer, read_nb))
-	{
-		// if you are in this branch means that response is done
-		// it is time to to check keepalive so you can decide if you will close or not base on it
-		// and remove response from map
-		if (iter_to_res->second.CloseConnection())
-		{
-			FD_CLR(curFd, &all_fds);
-			close(curFd);
-		}
-		else
-		{
-			int srvFd = iter_to_res->second.getCommonSrvIndex();
-			fdToRequest.insert(std::make_pair(curFd, Request(curFd, srvFd))); // this aFdToIndex[i] returns bad number
-		}
-		fdToResponse.erase(curFd);
-	}
-}
-
-
-
-void	ManageRequest::ListeningOnReadEnd(int curFd)
-{
-	int tmpfd;
-	if (aFdToIndex.count(curFd)) // this means that this fd is one of servers sockets
-	{
-		// i nead to accept connection
-		tmpfd = accept(curFd, NULL, NULL);
-		if (tmpfd + 1 > maxFd)
-			maxFd = tmpfd + 1;
-		fcntl(tmpfd, F_SETFL, O_NONBLOCK);
-		FD_SET(tmpfd, &all_fds);
-		fdToRequest.insert(std::make_pair(tmpfd, Request(curFd, aFdToIndex[curFd]))); // this aFdToIndex[i] returns bad number
-		// the above line is saying in genral that this is tmpfd has relation with the request and in requset i store with sever should handel aka (i)
-	}
-	else
-	{
-		// means that client has sent some data
-		// find the requset at i and call on  it  AddToRequest
-		iter_to_req = fdToRequest.find(curFd);
-		Restmp = ConstructRequest(iter_to_req);
-		if (Restmp)
-		{
-			// if we got inside means that request is done
-			// start responding based on on the completed request
-			// by the way do not close (i variable) here maybe you close it in response end
-			fdToRequest.erase(curFd);
-			fdToResponse.insert(std::make_pair(curFd, ResponseWrapper(Restmp))); // this could leak if not deleted somewhere else just keep eye here
-		}
-	}
-}
-
-
-void	ManageRequest::Select()
-{
-	read_set = all_fds;
-	write_set = all_fds;
-	if (select(maxFd, &read_set, &write_set, NULL, NULL) < 0)
-	{
-		std::cout << "Error accured in select\n";
-		exit(2);
-	}
-}
-
-*/
 

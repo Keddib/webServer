@@ -30,4 +30,8 @@ clean:
 fclean: clean
 	rm -rf $(NAME)
 
+
+run: start-servers/manage-request.cpp start-servers/alloc.hpp
+	clang++ -ggdb3 -fsanitize=address  obj/*.o start-servers/manage-request.cpp -o run
+
 .PHONY: clean fclean re all

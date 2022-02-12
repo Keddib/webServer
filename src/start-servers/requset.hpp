@@ -10,6 +10,7 @@
 #include <cctype>
 #include <map>
 
+
 extern ErrorGen errorRespo;
 
 class	Request

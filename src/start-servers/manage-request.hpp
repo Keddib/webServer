@@ -5,6 +5,7 @@
 #include "response-wrapper.hpp"
 #include "../MACROS.hpp"
 #include <sys/epoll.h>
+#include "alloc.hpp"
 
 class	ManageRequest
 {
@@ -23,6 +24,7 @@ class	ManageRequest
 		int	FDS_That_ready_for_IO(int &newConnections);
 		void	WorkOnRequest(int curFd);
 		void	WorkOnResponse(int curFd);
+		int	epoll_struct_not_needed;
 	public:
 		void	EP_StartLIstening();
 
@@ -35,7 +37,10 @@ class	ManageRequest
 		const	static int	read_nb = BUFFER_SIZE; // this number will be used to read number of bytes at each time data is available
 		fd_set	read_set, write_set, all_fds;
 		std::map<int, int>	&aFdToIndex;
+
 		std::map<int, Request>	fdToRequest;
+
+
 		std::map<int, ResponseWrapper>	fdToResponse;
 		Response		*Restmp;
 		char			buffer[read_nb * 2];
