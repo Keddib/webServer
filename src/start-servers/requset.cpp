@@ -14,8 +14,10 @@ int	IndexOf(const char *str, char c);
 long	GetBodySize(const char *str);
 void	fillFileName(int num, char* str);
 
-Request::Request(int confd, int comServerIndex)
+Request::Request(int confd, int comServerIndex, const struct sockaddr_in &cl_inf)
 {
+	client_info.first = inet_ntoa(cl_inf.sin_addr);
+	client_info.second = cl_inf.sin_port;
 	INIT_AT_CONSTRUCTION(confd, comServerIndex);
 }
 
@@ -31,14 +33,20 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 	strcpy(fileName, "/tmp/.");
 	chunkedBodyState = true;
 	booltmp = false;
+	
 }
 
 
 void	Request::RESET()
 {
-//	INIT_AT_CONSTRUCTION();
-	bodyFileObj.close();
+	// i will pass the old comServerIndex and connFD 
+	INIT_AT_CONSTRUCTION(connFD, comServerIndex);
+	// until now i do not know what to do if file still open
 	bodyString.clear();
+	tmpStr.clear();
+	aResourcPath.clear();
+	aHostName.clear();
+	// and i do not know what to do with var methodHolder 
 	Restmp = NULL;
 	first = second = endStr = NULL;
 }
@@ -664,4 +672,9 @@ const std::fstream& Request::getBody(int) const
 bool Request::isBodyStr() const
 {
 	return bodyString.size();
+}
+
+const std::pair<std::string, in_port_t>	Request::GetClientInfo() const
+{
+	return client_info;
 }

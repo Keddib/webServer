@@ -13,6 +13,8 @@ class	ManageRequest
 
 	private:
 		// new stuff related to epoll
+		struct sockaddr_in	client_addr;
+		socklen_t			address_len;
 		struct epoll_event event;
 		int	epoll_fd;
 		std::vector<struct epoll_event> ready_fds;

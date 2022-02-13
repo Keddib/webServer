@@ -1,17 +1,8 @@
 #include "manage-request.hpp"
 
-std::fstream log_file;
-#include <signal.h>
-void	SIG_HANDL(int)
-{
-	log_file.close();
-}
-
 
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
-	signal(SIGABRT, SIG_HANDL);
-	log_file.open("./start-servers/test/log", std::fstream::out);
 	int fd;
 	std::map<int, int>::const_iterator first(aFdToIndex.begin()), last(aFdToIndex.end());
 	epoll_fd = epoll_create(1);
@@ -43,6 +34,7 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 	int	tot = 0;
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
+		// read_data heck it if 0 that means client has close connection so i will remove ongoing construcrion of request
 		if (read_data <= 0)
 			break ;
 		tot += read_data;
@@ -94,7 +86,7 @@ void	ManageRequest::WorkOnRequest(int curFd)
 		// if we got inside means that request is done
 		// start responding based on on the completed request
 		// by the way do not close (i variable) here maybe you close it in response end
-		fdToRequest.erase(curFd); // i will change this i will not remove it just call some rest on it and later decide if it will get removed or not  whene response is done if we would close connection i remove if not not removal required
+	//	fdToRequest.erase(curFd); // i will change this i will not remove it just call some rest on it and later decide if it will get removed or not  whene response is done if we would close connection i remove if not not removal required
 		fdToResponse.insert(std::make_pair(curFd, ResponseWrapper(Restmp))); // this could leak if not deleted somewhere else just keep eye here
 		event.data.ptr = NULL;
 		event.data.fd = curFd;
@@ -112,6 +104,7 @@ void	ManageRequest::WorkOnResponse(int curFd)
 	iter_to_res = fdToResponse.find(curFd);
 	if (iter_to_res != fdToResponse.end() &&  iter_to_res->second.SendingResponse(curFd, buffer, read_nb))
 	{
+		iter_to_req = fdToRequest.find(curFd);
 		// if you are in this branch means that response is done
 		// it is time to to check keepalive so you can decide if you will close or not base on it
 		// and remove response from map
@@ -125,12 +118,16 @@ void	ManageRequest::WorkOnResponse(int curFd)
 				std::cout << "could not delete to epoll set the fd: " << curFd << "\n";
 				exit(1);
 			}
+			fdToRequest.erase(iter_to_req); // line k1
 			close(curFd);
 		}
 		else
 		{
+			// look at line k1
+			// if i am at this branch that means we do not need to remove request from map
+			// so i will just rest the already insrted one
+			iter_to_req->second.RESET();
 			int srvFd = iter_to_res->second.getCommonSrvIndex();
-			fdToRequest.insert(std::make_pair(curFd, Request(curFd, srvFd))); // this aFdToIndex[i] returns bad number
 			if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, curFd, &event) == -1)
 			{
 				std::cout << "could not change some property  to epoll set the fd: " << curFd << "\n";
@@ -147,7 +144,7 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 	// i guess i will imporve here i will accept all connections at once maybe
 	++newConnections;
 	
-	tmpFd = accept(curFd, NULL, NULL);
+	tmpFd = accept(curFd, (struct sockaddr *)(&client_addr), &address_len);
 	fcntl(tmpFd, F_SETFL, O_NONBLOCK);
 	ComFds.push_back(tmpFd);
 	event.data.fd = tmpFd;
@@ -158,7 +155,7 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 		std::cout << "could not add to epoll set the fd: " << tmpFd << "\n";
 		exit(1);
 	}
-	fdToRequest.insert(std::make_pair(tmpFd, Request(tmpFd, aFdToIndex[curFd])));
+	fdToRequest.insert(std::make_pair(tmpFd, Request(tmpFd, aFdToIndex[curFd], client_addr)));
 	// give extra eye on aFdToIndex[curFd]
 }
 
