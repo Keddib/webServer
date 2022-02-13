@@ -26,6 +26,7 @@ class ErrorGen
 			bool keepAlive = 0,
 			const std::vector<std::string> &head = std::vector<std::string>()
 			);
+		Response *get304Respone(size_t server, const std::string &time, bool kAlive);
 	private:
 		void setDefaultErrorPage(Response *res, const char *errpage);
 };

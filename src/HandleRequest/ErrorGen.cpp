@@ -76,3 +76,19 @@ void ErrorGen::setDefaultErrorPage(Response *res, const char *errpage)
 	res->setHeader("Content-Length", std::to_string(lenght), 1);
 	res->addBodyToBuffer(errpage);
 }
+
+
+
+Response *ErrorGen::get304Respone(size_t server, const std::string &Time, bool kAlive)
+{
+	Response *res = new Response();
+	res->setCommonServerIndex(server);
+	res->setStartLine("HTTP/1.1", 304, "Not Modified");
+	if (!kAlive)
+	{
+		res->setHeader("Connection", "close");
+		res->setKeepAlive(false);
+	}
+	res->setHeader("Last-Modified", Time, 1);
+	return res;
+}

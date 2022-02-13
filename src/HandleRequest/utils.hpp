@@ -15,6 +15,7 @@
 #include <vector>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <algorithm>
 
 typedef struct	FileInfo_s
 {
@@ -35,5 +36,7 @@ std::string getDate();
 std::string ListDirectory(const std::string &Dir, const std::string &name);
 std::string lookForIndexInDirectory(const std::string &Dir, const std::vector<std::string> &indexes, int &error);
 std::string getMyIP();
+char asciitolower(char in);
+
 
 #endif

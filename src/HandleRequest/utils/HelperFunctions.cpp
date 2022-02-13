@@ -185,3 +185,10 @@ std::string getMyIP()
 	std::string IP(inet_ntoa(addr));
 	return IP;
 }
+
+char asciitolower(char in)
+{
+	if (in <= 'Z' && in >= 'A')
+		return in - ('Z' - 'z');
+	return in;
+}

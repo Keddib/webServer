@@ -13,14 +13,14 @@ struct ReqInfo
 	std::vector<std::string> tmpHeader;
 	const std::string 	&rsource_path;
 	const std::string 	&host_name;
+	std::string	cachHeader;
 	int					com_srv_index;
 	int					meth;
 	bool				vers;
 	bool				indexon;
 	bool				keepAlive;
-
-	ReqInfo(const std::string &rcp, const std::string &hn, int srvIndex, int mt, bool v) :
-	rsource_path(rcp), host_name(hn)
+	ReqInfo(const std::string &rcp, const std::string &hn, int srvIndex, int mt, bool v, const std::string &cache) :
+	rsource_path(rcp), host_name(hn), cachHeader(cache)
 	{
 		com_srv_index = srvIndex;
 		meth = mt;
@@ -91,6 +91,18 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 	return res;
 }
 
+bool isFileNotModified(ReqInfo &Rq, FileInfo& Fdata)
+{
+	if (Rq.meth == GET)
+	{
+		std::string tmpTime(Fdata.Mtime);
+		std::transform(tmpTime.begin(), tmpTime.end(), tmpTime.begin(), asciitolower);
+		if (!std::strcmp(Rq.cachHeader.c_str(), tmpTime.c_str()))
+			return true;
+	}
+	return false;
+}
+
 Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 {
 	/*
@@ -104,8 +116,9 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
 	{
-		// if Rq.method == GET && 	If-Modified-Since header is present
-		// and it's value equal to Fdata.Lmodified return 304 (redirect to cache)
+		// if file is cachable and not medified return 304 (redirect to cache)
+		if (isFileNotModified(Rq, Fdata)) // return true if file is not modified
+			return errorRespo.get304Respone(Rq.com_srv_index, Fdata.Mtime, Rq.keepAlive);
 		return FileFound200(PATH, Fdata, Rq.com_srv_index);
 	}
 	else if (ret == 1) // not found
@@ -185,6 +198,17 @@ int checkConnectionHeader(const std::vector<std::pair<std::string, std::string> 
 	return 2;
 }
 
+std::string getCacheHeader(const std::vector<std::pair<std::string, std::string> > &headers)
+{
+	size_t size = headers.size();
+	for (size_t i = 0; i < size; i++)
+	{
+		if (!strcmp(headers[i].first.c_str(), "If-Modified-Since"))
+			return headers[i].second;
+	}
+	return "";
+}
+
 Response* HandleRequest(const Request &req)
 {
 	ReqInfo Rq(
@@ -192,7 +216,8 @@ Response* HandleRequest(const Request &req)
 		req.getHost(),
 		req.getCommonServerIndex(),
 		req.getMethod(),
-		req.getVersion()
+		req.getVersion(),
+		getCacheHeader(req.aHeaders)
 		);
 
 	// print start line
