@@ -12,11 +12,12 @@ class Response
 		std::string _buffer;
 		int64_t _bSize;
 		bool _keepAlive;
+		bool _isFileUsed;
 	public:
 		Response();
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
-		void setHeader(const std::string&, const std::string&, bool end);
+		void setHeader(const std::string&, const std::string&, bool end = 0);
 		void setHeader(const std::vector<std::string> &headers);
 		void addBodyToBuffer(const std::string &);
 		void setBodyfile(const std::string &path);
@@ -26,7 +27,7 @@ class Response
 		unsigned int getBodySize() const;
 		const std::string& getBuffer()const ; // i have removed const from return
 		std::fstream	&getBody(); // i just added this function
-
+		bool isFileUsed() const;
 		int	getCommonServerIndex() const;
 		void	setCommonServerIndex(int s);
 		void display();

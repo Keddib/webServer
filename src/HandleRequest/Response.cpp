@@ -1,7 +1,7 @@
 #include "Response.hpp"
 
 Response::Response()
-: _bSize(0), _keepAlive(1)
+: _bSize(0), _keepAlive(1), _isFileUsed(0)
 {
 
 }
@@ -89,6 +89,11 @@ int	Response::getCommonServerIndex() const
 void	Response::setCommonServerIndex(int s)
 {
 	cmSrvFd = s;
+}
+
+bool Response::isFileUsed() const
+{
+	return _isFileUsed;
 }
 
 void Response::display()

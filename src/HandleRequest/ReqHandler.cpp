@@ -78,12 +78,13 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 	res->setStartLine("HTTP/1.1", 200, "OK");
 	if (!Fdata.keepAlive)
 	{
-		res->setHeader("Connection", "close", 0);
+		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
 	}
-	res->setHeader("Content-Type", Fdata.Ftype, 0);
-	res->setHeader("Content-Length", std::to_string(Fdata.size), 0);
+	res->setHeader("Content-Type", Fdata.Ftype);
+	res->setHeader("Content-Length", std::to_string(Fdata.size));
 	res->setBodySize(Fdata.size);
+	res->setHeader("Accept-Ranges", "none");
 	res->setHeader("Last-Modified", Fdata.Mtime, 1);
 	res->setBodyfile(PATH);
 	// res->display();
@@ -102,7 +103,11 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	//std::cout << PATH << '\n';
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
+	{
+		// if Rq.method == GET && 	If-Modified-Since header is present
+		// and it's value equal to Fdata.Lmodified return 304 (redirect to cache)
 		return FileFound200(PATH, Fdata, Rq.com_srv_index);
+	}
 	else if (ret == 1) // not found
 		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
 	else
@@ -117,10 +122,10 @@ Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 	res->setCommonServerIndex(Rq.com_srv_index);
 	if (!Rq.keepAlive)
 	{
-		res->setHeader("Connection", "close", 0);
+		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
 	}
-	res->setHeader("Content-Type", "text/html", 0);
+	res->setHeader("Content-Type", "text/html");
 	const std::string &s = ListDirectory(PATH, Rq.rsource_path);
 	size_t size = s.size();
 	res->setBodySize(size);
@@ -221,6 +226,7 @@ Response* HandleRequest(const Request &req)
 		root = "../www";
 	std::string PATH = root + Rq.rsource_path.substr(0, pos);
 
+	std::cout << PATH << '\n';
 	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file
 		return HandleFileResource(PATH, Rq);

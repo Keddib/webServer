@@ -40,14 +40,95 @@ We splited the work into two parts:
 	- [] create a new process
 	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
 	- [] get out put and parse it to create a response to the client
+	- [] CGI response parsing
+		- [] Document Response: Content-Type | Status = 200;
+		- [] Local Redirect Response : Location : local URI PATH // no other header field
+		- [] Client Redirect Response : Location : Absolute URI redirect with 302
+		- [] Client Redirect Response with Document : Location | Status (redirection code) | Content-Type;
+
 
 CGI headers
 	- AUTH_TYPE:
 	if the client request required Authentication for external acess, then the server MUST set the value of this variable
 	from the 'auth-scheme' token in the request authorization header field.
 	!!! Authentication not implemented yet I think it's necessery for CGI
-	- 
 
+	- CONTENT_LENGHT:
+	the server MUST set this meta-variable if and only if the request is accompanied
+	by a message body. the value must reflect the length of the body after removing any
+	transfer-codings or content-codings
+
+	- CONTENT_TYPE:
+	the server MUST set this meta-variable if an HTTP Content-Type field is present
+	in the client request header. If this header is not present and the request has a Payload.
+	the server MAY attempt to determine the correct content type, otherwise it sould omit this
+	meta-variable.
+
+	- GETAWAY_INTERFACE:
+	this variable MUST be set to the dialect of CGI being used by the server to communicate
+	with the secript. CGI/1.1
+
+	- PATH_INFO:
+	this variable specifies a path to be interpreted by the CGI script.
+	- PATH_TRANSLATED:
+	This is the file location that would be accessed by a request for
+	<scheme> "://" <server-name> ":" <server-port> <extra-path>
+	where <scheme> is the scheme for the original client request and
+	<extra-path> is a URL-encoded version of PATH_INFO, with ";", "=" and
+	"?" reserved. For example, a request such as the following:
+	http://somehost.com/cgi-bin/somescript/this%2eis%2epath%3binfo
+	would result in a PATH_INFO value of
+	/this.is.the.path;info
+	An internal URI is constructed from the scheme, server location and
+	the URL-encoded PATH_INFO:
+	http://somehost.com/this.is.the.path%3binfo
+	This would then be translated to a location in the server's document
+	repository, perhaps a filesystem path something like this:
+	/usr/local/www/htdocs/this.is.the.path;info
+	The value of PATH_TRANSLATED is the result of the translation.
+	The server SHOULD set this meta-variable if the request URI includes
+	a path-info component.  If PATH_INFO is NULL, then the
+	PATH_TRANSLATED variable MUST be set to NULL (or unset).
+
+	The server SHOULD set this meta-variable if the request URI includes
+	a path-info component.  If PATH_INFO is NULL, then the
+	PATH_TRANSLATED variable MUST be set to NULL (or unset).
+
+	- QUERY_STRING:
+	the server MUST set this variable; if the Scripy-URI doesn't include a query
+	component, the QUERY_STRING MUST be defined as an empty string ("").
+
+	- REMOTE_ADDR:
+	MUST be set to the network address of the client sending the request to the
+	server.
+
+	- REMOTE_USER:
+	if the client request required HTTP Authentication. AUTH_TYPE is set to "Basic"
+	ot "Digest", then the  REMOTE_USER MUST be set to the user-ID supplied
+
+	- REQUEST_METHOD:
+	MUST be set to the method which should be used by the script to process the
+	the request.
+
+	- SCRIPT_NAME:
+	the resource
+
+	- SERVER_NAME:
+	the host of the request
+
+	- SERVER_PORT:
+	the port of the tcp/ip port number on which this request is recieved from the
+	client. This value is used in the port part of the Script-URI.
+
+	- SERVER_PROTOCOL:
+	HTTP/1.1
+
+	- SERVER_SOFTWARE:
+	The SERVER_SOFTWARE meta-variable MUST be set to the name and version
+	of the information server software making the CGI request (and
+	running the gateway).  It SHOULD be the same as the server
+	description reported to the client, if any.
+	-
 
 
 -> [x] heade fields values lower-case !!!!

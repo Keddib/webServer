@@ -24,7 +24,7 @@ Response *ErrorGen::getResponse(
 	res->setHeader(head); // add bunch of header specific to an the error;
 	if (!keepAlive)
 	{
-		res->setHeader("Connection", "close", 0);
+		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
 	}
 	// check if the user defined an error page for the error accured
@@ -46,9 +46,9 @@ Response *ErrorGen::getResponse(
 	if (!errorPagePath.empty() && (getFileInfo(errorPagePath, fData) == 0))
 	{
 		// check file type and add content-type header
-		res->setHeader("Content-Type", fData.Ftype, 0);
+		res->setHeader("Content-Type", fData.Ftype);
 		// check file size and add content-lenght header
-		res->setHeader("Content-Length", std::to_string(fData.size), 0);
+		res->setHeader("Content-Length", std::to_string(fData.size));
 		res->setBodySize(fData.size);
 		res->setHeader("Last-Modified", fData.Mtime, 1);
 		// add file to body of request;
@@ -72,7 +72,7 @@ void ErrorGen::setDefaultErrorPage(Response *res, const char *errpage)
 	size_t lenght = std::strlen(errpage);
 	// add content-type header text/html;
 	// add content-lenght header ;
-	res->setHeader("Content-Type", "text/html", 0);
+	res->setHeader("Content-Type", "text/html");
 	res->setHeader("Content-Length", std::to_string(lenght), 1);
 	res->addBodyToBuffer(errpage);
 }

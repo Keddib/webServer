@@ -14,7 +14,7 @@
 
 #define	MAX_BACK_LOG	100
 #define CONFIG_FILE "./config/default.conf"
-#define DEFAULT_ROOT "../www"
+#define DEFAULT_ROOT "/src/www"
 #define ERROR_ROOT ""
 #define D_PORT 8000
 #define HOST 1
