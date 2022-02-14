@@ -46,6 +46,7 @@ We splited the work into two parts:
 		- [] Client Redirect Response : Location : Absolute URI redirect with 302
 		- [] Client Redirect Response with Document : Location | Status (redirection code) | Content-Type;
 
+Need to add HTTP_ headers
 
 CGI headers
 	- AUTH_TYPE:!!! Authentication not implemente
