@@ -163,6 +163,29 @@ std::string getFileType(const std::string &path)
 	return "application/octet-stream";
 }
 
+inline short count_num_of_digit(long long n)
+{
+	
+	short i = (n < 0); // start with 1 if number is negative
+	for (; n != 0; ++i)
+		n = n / 10;
+	return i;
+}
+
+std::string	to_string(long long n)
+{
+	if (n == 0)
+		return std::string("0");
+	short nd = count_num_of_digit(n);
+	std::string str(nd, '-');
+	n = (n < 0) ? (n * (-1)) : n;
+	for (short i = nd - 1; n != 0; --i)
+	{
+		str[i] = (n % 10) + 48;
+		n = n / 10;
+	}
+	return str;
+}
 
 
 //Example: b1 == 192, b2 == 168, b3 == 0, b4 == 100
