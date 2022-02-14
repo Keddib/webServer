@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 Location::Location( const std::string &prefix)
-: _prefix(prefix), _autoIndex(0)
+: _prefix(prefix), _autoIndex(0), _root(DEFAULT_ROOT)
 {
 }
 
@@ -53,8 +53,9 @@ void Location::setMethods( int method )
 	_methods.push_back(method);
 }
 
-void Location::setCGI( const std::string &CGIpath )
+void Location::setCGI( const std::string &CGIext,  const std::string &CGIpath)
 {
+	_CGIext = CGIext;
 	_CGI = CGIpath;
 }
 
@@ -93,7 +94,7 @@ bool Location::isMethodAllowed(int meth) const
 	for (size_t i = 0; i < size; i++)
 		if (meth == _methods[i])
 			return true;
-	return !size;
+	return (!size && meth != DELETE);
 }
 
 const std::string& Location::getRoute() const
@@ -124,6 +125,21 @@ int Location::getRedirectCode() const
 const std::string& Location::getRedirectURI() const
 {
 	return _ret.second;
+}
+
+const std::string& Location::getCGIext() const
+{
+	return _CGIext;
+}
+
+const std::string& Location::getCGIpath() const
+{
+	return _CGI;
+}
+
+bool Location::isCGI() const
+{
+	return !_CGI.empty();
 }
 
 void Location::Display() const

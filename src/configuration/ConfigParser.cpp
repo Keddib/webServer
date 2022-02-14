@@ -125,9 +125,9 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 	}
 	else if (dir == CGI)
 	{
-		if (tokens.size() != 2)
-			throwException(tokens[0] + " needs one value (path to CGI)\n");
-		_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1]);
+		if (tokens.size() != 3)
+			throwException(tokens[0] + " needs two values (extentions of CGI scripts and path to the interpreter)\n");
+		_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1], tokens[2]);
 
 	}
 	else if (dir == UPLD)
@@ -211,7 +211,7 @@ int ConfigParser::whichDirective(const std::string &dir) const
 		return (CMBS);
 	else if (dir == "error_page")
 		return (ERRPG);
-	else if (dir == "accepted_medthos")
+	else if (dir == "allow_methods")
 		return (ACCMETH);
 	else if (dir == "location")
 		return (LOCATION);

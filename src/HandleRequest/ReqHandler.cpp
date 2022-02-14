@@ -3,8 +3,10 @@
 #include "../configuration/confHeaders.hpp"
 #include "../start-servers/requset.hpp"
 #include "ErrorGen.hpp"
+#include "CGI/CGI.hpp"
 
 extern ServersInterface ServI;
+
 extern ErrorGen	errorRespo;
 
 struct ReqInfo
@@ -103,6 +105,23 @@ bool isFileNotModified(ReqInfo &Rq, FileInfo& Fdata)
 	return false;
 }
 
+Response *deleteFile(const std::string &PATH, ReqInfo &Rq)
+{
+	if (remove(PATH.c_str()) != 0)
+		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
+	Response *res = new Response();
+	res->setCommonServerIndex(Rq.com_srv_index);
+	res->setStartLine("HTTP/1.1", 204, "No Content");
+	if (!Rq.keepAlive)
+	{
+		res->setHeader("Connection", "close", 1);
+		res->setKeepAlive(false);
+	} else
+		res->setHeader("Connection", "keep-alive", 1);
+	// res->display();
+	return res;
+}
+
 Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 {
 	/*
@@ -116,6 +135,8 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
 	{
+		if (Rq.meth == DELETE)
+			return deleteFile(PATH, Rq);
 		// if file is cachable and not medified return 304 (redirect to cache)
 		if (isFileNotModified(Rq, Fdata)) // return true if file is not modified
 			return errorRespo.get304Respone(Rq.com_srv_index, Fdata.Mtime, Rq.keepAlive);
@@ -222,12 +243,10 @@ Response* HandleRequest(const Request &req)
 
 	// print start line
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
-	// set keepAlive
 
-	// check if req.method is accepted on location
-	if (!rLoc.isMethodAllowed(Rq.meth))
-		return MethodsErrors(Rq, rLoc);
-	Rq.indexon = rLoc.isAutoIndexOn();
+	// rLoc.Display();
+	// exit(1);
+	// set keepAlive
 
 	// check connection
 	int ret = checkConnectionHeader(req.aHeaders);
@@ -235,13 +254,27 @@ Response* HandleRequest(const Request &req)
 		Rq.keepAlive = Rq.vers ? 1 : 0;
 	else
 		Rq.keepAlive = ret;
+
+	// check if req.method is accepted on location
+	if (!rLoc.isMethodAllowed(Rq.meth))
+		return MethodsErrors(Rq, rLoc);
+	Rq.indexon = rLoc.isAutoIndexOn();
+
 	// if redirect return redirect response
 	// return -> ??
 	if (rLoc.isRedirect())
 		return Redirect(Rq, rLoc.getRedirectCode(), rLoc.getRedirectURI());
 	// if exist and not CGI script open file and return response
 	// if (CGI) -> ??
-
+	// if (rLoc.isCGI())
+	// {
+	// 	std::cout << "inside cgi\n";
+	// 	CGII cgiHundler(req);
+	// 	cgiHundler.setENV();
+	// 	// cgiHundler.display();
+	// 	exit(1);
+	// 	return NULL;
+	// }
 	// find position of query string so we don't concatinate it with root
 	size_t pos = Rq.rsource_path.find_last_of('?');
 
@@ -258,6 +291,8 @@ Response* HandleRequest(const Request &req)
 	else // is directory
 	{
 		// get indexes
+		if (Rq.meth == DELETE) // if method is delete return not found
+			return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
 		std::vector<std::string> indexes;
 		getLocationIndexes(rLoc, indexes);
 		return HandleDirResource(PATH, Rq, indexes);

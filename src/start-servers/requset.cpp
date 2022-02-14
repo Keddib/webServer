@@ -33,20 +33,20 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 	strcpy(fileName, "/tmp/.");
 	chunkedBodyState = true;
 	booltmp = false;
-	
+
 }
 
 
 void	Request::RESET()
 {
-	// i will pass the old comServerIndex and connFD 
+	// i will pass the old comServerIndex and connFD
 	INIT_AT_CONSTRUCTION(connFD, comServerIndex);
 	// until now i do not know what to do if file still open
 	bodyString.clear();
 	tmpStr.clear();
 	aResourcPath.clear();
 	aHostName.clear();
-	// and i do not know what to do with var methodHolder 
+	// and i do not know what to do with var methodHolder
 	Restmp = NULL;
 	first = second = endStr = NULL;
 }
@@ -677,4 +677,10 @@ bool Request::isBodyStr() const
 const std::pair<std::string, in_port_t>	Request::GetClientInfo() const
 {
 	return client_info;
+}
+
+
+long					Request::getBodySize() const
+{
+	return bodySize;
 }

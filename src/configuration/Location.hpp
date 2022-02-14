@@ -9,24 +9,13 @@
 #include <utility>
 #include <iostream>
 
-
-/*
-#directives specific to location;
-	index pop.hmlt index.html index.htm;
-	root /tmp/www;
-	accepted_medthos POST DELETE GET
-	autoindex off
-	return 301 127.0.0.1:9000/data
-	CGI /tmp/app/cgi_module.js
-	upload /tmp/upload
-*/
-
 class Location
 {
 	private:
 		std::string _prefix;
 		std::string _root;
 		std::string _CGI;
+		std::string _CGIext;
 		std::string _upload;
 		std::pair<int, std::string> _ret;
 		std::vector<std::string> _index;
@@ -40,7 +29,7 @@ class Location
 		void setReturn( int, const std::string& );
 		void setIndex( const std::string& );
 		void setMethods( int );
-		void setCGI( const std::string& );
+		void setCGI( const std::string&, const std::string& );
 		void setUpload( const std::string& );
 		void fillAllowedMethods(std::string &allow) const;
 		const std::string& getPrefix() const;
@@ -49,8 +38,11 @@ class Location
 		const std::vector<std::string>& getIndexes() const;
 		bool isAutoIndexOn() const;
 		bool isRedirect() const;
+		bool isCGI() const;
 		int getRedirectCode() const;
 		const std::string& getRedirectURI() const;
+		const std::string& getCGIext() const;
+		const std::string& getCGIpath() const;
 		void Display() const;
 
 };

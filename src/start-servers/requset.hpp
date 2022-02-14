@@ -70,6 +70,7 @@ class	Request
 		const std::string& 			getBody() const;
 		const std::fstream&			getBody(int) const;
 		bool					isBodyStr() const;
+		long					getBodySize() const;
 		const std::pair<std::string, in_port_t>	GetClientInfo() const;
 		std::vector<std::pair<std::string, std::string> >	aHeaders;
 };

@@ -1,18 +1,19 @@
 NAME	= Webserv
 
-GO		= clang++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 #-fsanitize=address
+GO		= clang++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
 
 OFILES	= CommonServers.o ErrorGen.o Location.o ServersInterface.o requset.o\
 		utils.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
-		response-wrapper.o ReqHandler.o main.o HandleDirectory.o
+		response-wrapper.o ReqHandler.o main.o HandleDirectory.o CGI.o
 
 ODIR=obj
 
 OBJ = $(patsubst %,$(ODIR)/%,$(OFILES))
 
-DEPS = MACROS.hpp configuration/*.hpp HandleRequest/*.hpp start-servers/*.hpp
+DEPS = MACROS.hpp configuration/*.hpp HandleRequest/*.hpp HandleRequest/CGI/*.hpp\
+	start-servers/*.hpp
 
-vpath %.cpp configuration HandleRequest HandleRequest/utils start-servers
+vpath %.cpp configuration HandleRequest HandleRequest/utils HandleRequest/CGI start-servers
 
 all: $(NAME)
 

@@ -2,7 +2,6 @@
 #define UTILS_07_HPP
 
 #include "../MACROS.hpp"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -16,6 +15,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <algorithm>
+#include <cstdlib>
 
 typedef struct	FileInfo_s
 {

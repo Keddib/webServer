@@ -35,8 +35,8 @@ We splited the work into two parts:
 
 
 - [] handle CGI
-	- [] unchanged ENV. set once in the start of the server
-	- [] add request headers to envirment variables wih "setenv(n,v,or)"
+	- [x] unchanged ENV. set once in the start of the server
+	- [x] add request headers to envirment variables wih "setenv(n,v,or)"
 	- [] create a new process
 	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
 	- [] get out put and parse it to create a response to the client
@@ -48,7 +48,7 @@ We splited the work into two parts:
 
 
 CGI headers
-	- AUTH_TYPE:
+	- AUTH_TYPE:!!! Authentication not implemente
 	if the client request required Authentication for external acess, then the server MUST set the value of this variable
 	from the 'auth-scheme' token in the request authorization header field.
 	!!! Authentication not implemented yet I think it's necessery for CGI
@@ -102,7 +102,7 @@ CGI headers
 	MUST be set to the network address of the client sending the request to the
 	server.
 
-	- REMOTE_USER:
+	- REMOTE_USER: !!! Authentication not implemented
 	if the client request required HTTP Authentication. AUTH_TYPE is set to "Basic"
 	ot "Digest", then the  REMOTE_USER MUST be set to the user-ID supplied
 
