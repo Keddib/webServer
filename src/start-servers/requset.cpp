@@ -23,6 +23,7 @@ Request::Request(int confd, int comServerIndex, const struct sockaddr_in &cl_inf
 
 void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 {
+	is_req_alive = true;
 	startTime = std::time(NULL);
 	this->comServerIndex = comServerIndex;
 	connFD = confd;
@@ -36,6 +37,17 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 
 }
 
+void	Request::DisableRequest()
+{
+	is_req_alive = false;
+}
+
+bool				Request::isStillValid(std::time_t cur_t)
+{
+	if (is_req_alive)
+		return (cur_t - startTime < TIMEOUT);
+	return true;
+}
 
 void	Request::RESET()
 {
@@ -45,6 +57,7 @@ void	Request::RESET()
 	bodyString.clear();
 	tmpStr.clear();
 	aResourcPath.clear();
+	aHeaders.clear();
 	aHostName.clear();
 	// and i do not know what to do with var methodHolder
 	Restmp = NULL;
@@ -69,11 +82,6 @@ Request&	Request::operator=(const Request &rhs)
 	chunkedBodyState = rhs.chunkedBodyState;
 	booltmp = rhs.booltmp;
 	return *this;
-}
-
-bool				Request::isStillValid(std::time_t cur_t)
-{
-	return (cur_t - startTime < RQ_RS_TIME_OUT);
 }
 
 

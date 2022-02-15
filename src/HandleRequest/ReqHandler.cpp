@@ -284,7 +284,7 @@ Response* HandleRequest(const Request &req)
 		root = "../www";
 	std::string PATH = root + Rq.rsource_path.substr(0, pos);
 
-	std::cout << PATH << '\n';
+	//std::cout << PATH << '\n';
 	// check if file or dir
 	if (PATH[PATH.size()-1] != '/') // is file
 		return HandleFileResource(PATH, Rq);

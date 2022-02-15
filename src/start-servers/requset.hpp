@@ -17,18 +17,19 @@ class	Request
 {
 	private:
 		std::pair<std::string, in_port_t>	client_info;
+		bool					is_req_alive;
 		std::time_t				startTime;
-		int					connFD;
+		int						connFD;
 		bool					chunkedBodyState;
-		std::fstream				bodyFileObj;
+		std::fstream			bodyFileObj;
 		long					hasBeenRead;
 		std::string				bodyString;
-		int					isChuncked; // -1 default 0 means that the header Transfer-Encoding has past but not value not chuncked 1 means chuncked
+		int						isChuncked; // -1 default 0 means that the header Transfer-Encoding has past but not value not chuncked 1 means chuncked
 		long					bodySize; // keep eye on this type mybe body size will exceeds
 		std::string				tmpStr;
-		int					status;
-		int					comServerIndex; // this wil  help to identify which servers should handel this request you will give this comServerIndex to map and you will get index to right commonServers class
-		int					method; // allowed are GET DELETE POST
+		int						status;
+		int						comServerIndex; // this wil  help to identify which servers should handel this request you will give this comServerIndex to map and you will get index to right commonServers class
+		int						method; // allowed are GET DELETE POST
 		std::string				aResourcPath;
 		bool					version; // false if HTTP/1.0 true if HTTP/1.1
 		std::string				aHostName;
@@ -39,7 +40,7 @@ class	Request
 		bool					booltmp;
 		Response				*Restmp;
 	private:
-		int					ProcessOneLine(char *str, long size);
+		int						ProcessOneLine(char *str, long size);
 		Response				*ProcessHeaders(char **str, int size);
 		Response				*ReserveSpaceForBody();
 		bool					IsHeadersDone(char **str);
@@ -47,7 +48,7 @@ class	Request
 		Response				*TakeInfoFromHeaders(char **str);
 		Response				*InitFromStartLine();
 		bool					ProcessBody(char *str, long size);
-		int					HowToReadBody() const;
+		int						HowToReadBody() const;
 		bool					ReadBody(char *str, long size);
 		bool					ReadByChunck(char *str, long size);
 		bool					BodyStringCase(char *str, long size);
@@ -60,6 +61,7 @@ class	Request
 		Request(int cf,int sFd, const struct sockaddr_in &);
 		Request&				operator=(const Request &rhs);
 		void					RESET();
+		void					DisableRequest();
 		bool					isStillValid(std::time_t);
 		Response 				*AddToRequest(char *str, int size);
 		int 					getCommonServerIndex() const;

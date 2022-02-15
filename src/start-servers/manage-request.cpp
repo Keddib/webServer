@@ -34,8 +34,7 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 	int	tot = 0;
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
-		// read_data heck it if 0 that means client has close connection so i will remove ongoing construcrion of request
-		if (read_data <= 0)
+		if (read_data <= 0) // and if client close fd it will removed by timeCheck function later so it does not matter here
 			break ;
 		tot += read_data;
 	}while (tot < read_nb);
@@ -73,9 +72,40 @@ void	ManageRequest::EP_StartLIstening()
 			}
 		}
 		// now i will remove ready_fds that are not needed
-		ready_fds.resize(ready_fds.size() - epoll_struct_not_needed);
+		timeCheck();
+		ready_fds.resize(ready_fds.capacity() - epoll_struct_not_needed);
 	}
 }
+
+// time check function
+void	ManageRequest::timeCheck()
+{
+	iter_to_req = fdToRequest.begin();
+	tmp2_req_iter = fdToRequest.end(); // end iterator
+
+	tmp1_req_iter = iter_to_req;
+
+	while (iter_to_req != tmp2_req_iter)
+	{
+		++tmp1_req_iter; // hold next valid node in map
+		if (!iter_to_req->second.isStillValid(std::time(NULL)))
+		{
+			++epoll_struct_not_needed;
+			event.data.fd = iter_to_req->first;
+			event.events = EPOLLIN;
+			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, iter_to_req->first, &event))
+			{
+				std::cout << "could not delet " << iter_to_req->first << "\n";
+				exit(1);
+			}
+			close(iter_to_req->first);
+			fdToRequest.erase(iter_to_req);
+		}
+		iter_to_req = tmp1_req_iter;
+	}
+}
+// end of time check function
+
 
 void	ManageRequest::WorkOnRequest(int curFd)
 {
@@ -86,7 +116,6 @@ void	ManageRequest::WorkOnRequest(int curFd)
 		// if we got inside means that request is done
 		// start responding based on on the completed request
 		// by the way do not close (i variable) here maybe you close it in response end
-	//	fdToRequest.erase(curFd); // i will change this i will not remove it just call some rest on it and later decide if it will get removed or not  whene response is done if we would close connection i remove if not not removal required
 		fdToResponse.insert(std::make_pair(curFd, ResponseWrapper(Restmp))); // this could leak if not deleted somewhere else just keep eye here
 		event.data.ptr = NULL;
 		event.data.fd = curFd;
@@ -96,6 +125,7 @@ void	ManageRequest::WorkOnRequest(int curFd)
 			std::cout << "could not change  to epoll set the fd: " << curFd << "\n";
 			exit(1);
 		}
+		iter_to_req->second.DisableRequest(); // it's like it does not exist in fdRequest map
 	}
 }
 
@@ -112,14 +142,14 @@ void	ManageRequest::WorkOnResponse(int curFd)
 		event.events = EPOLLIN;
 		if (iter_to_res->second.CloseConnection())
 		{
+			++epoll_struct_not_needed;
 			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, curFd, &event) == -1)
 			{
-				++epoll_struct_not_needed;
 				std::cout << "could not delete to epoll set the fd: " << curFd << "\n";
 				exit(1);
 			}
-			fdToRequest.erase(iter_to_req); // line k1
 			close(curFd);
+			fdToRequest.erase(iter_to_req); // line k1
 		}
 		else
 		{
@@ -164,6 +194,6 @@ int	ManageRequest::FDS_That_ready_for_IO(int &newConnections)
 {
 	ready_fds.reserve(ready_fds.capacity() + newConnections);
 	newConnections = 0;
-	return epoll_wait(epoll_fd, ready_fds.data(), ComFds.size(), -1); // -1 for block
+	return epoll_wait(epoll_fd, ready_fds.data(), ComFds.size(), timeout); // -1 for block
 }
 
