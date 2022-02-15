@@ -63,7 +63,7 @@ std::string getFileEntry(std::string PATH, char *name, bool isDir)
 	if (!strcmp(name, ".."))
 		return entry + '\n';
 	entry += buf;
-	entry += std::string("\t\t") + (isDir? "_" : std::to_string(size));
+	entry += std::string("\t\t") + (isDir? "_" : to_string(size));
 	entry += '\n';
 	return entry;
 }

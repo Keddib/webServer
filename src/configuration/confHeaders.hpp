@@ -12,6 +12,7 @@
 #include <string>
 
 #include "../MACROS.hpp"
+#include "../HandleRequest/utils.hpp"
 
 /*
 ** global object of serversInterface it's used by almost every peace of code

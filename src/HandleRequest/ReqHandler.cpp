@@ -9,35 +9,13 @@ extern ServersInterface ServI;
 
 extern ErrorGen	errorRespo;
 
-struct ReqInfo
-{
-	std::string tmpStr;
-	std::vector<std::string> tmpHeader;
-	const std::string 	&rsource_path;
-	const std::string 	&host_name;
-	std::string	cachHeader;
-	int					com_srv_index;
-	int					meth;
-	bool				vers;
-	bool				indexon;
-	bool				keepAlive;
-	ReqInfo(const std::string &rcp, const std::string &hn, int srvIndex, int mt, bool v, const std::string &cache) :
-	rsource_path(rcp), host_name(hn), cachHeader(cache)
-	{
-		com_srv_index = srvIndex;
-		meth = mt;
-		vers = v;
-		keepAlive = true;
-	}
-};
-
 Response *getUnusedCodeResponse(int code, const std::string &body)
 {
 	Response *res = new Response;
 	size_t bsize = std::strlen(body.c_str());
 	res->setStartLine("HTTP/1.1", code, getErrorMessage(code));
 	res->setHeader("Content-Type: ", "application/octet-stream", 0);
-	res->setHeader("Content-Length: ", std::to_string(bsize), 0);
+	res->setHeader("Content-Length: ", to_string(bsize), 0);
 	res->setBodySize(bsize);
 	res->setHeader("Connection: ", "close", 1);
 	res->setKeepAlive(0);
@@ -84,7 +62,7 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 		res->setKeepAlive(false);
 	}
 	res->setHeader("Content-Type", Fdata.Ftype);
-	res->setHeader("Content-Length", std::to_string(Fdata.size));
+	res->setHeader("Content-Length", to_string(Fdata.size));
 	res->setBodySize(Fdata.size);
 	res->setHeader("Accept-Ranges", "none");
 	res->setHeader("Last-Modified", Fdata.Mtime, 1);
@@ -130,8 +108,7 @@ Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
 	** if file not found return Not Found
 	*/
 	FileInfo Fdata;
-	Fdata.keepAlive = Rq.keepAlive;
-	//std::cout << PATH << '\n';
+	Fdata.keepAlive = Rq.keepAlive; // added for 304 response
 	int ret = getFileInfo(PATH, Fdata);
 	if (ret == 0) // found
 	{
@@ -163,7 +140,7 @@ Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 	const std::string &s = ListDirectory(PATH, Rq.rsource_path);
 	size_t size = s.size();
 	res->setBodySize(size);
-	res->setHeader("Content-Length", std::to_string(size), 1);
+	res->setHeader("Content-Length", to_string(size), 1);
 	res->addBodyToBuffer(s);
 	// content lenght
 	return res;
@@ -230,6 +207,35 @@ std::string getCacheHeader(const std::vector<std::pair<std::string, std::string>
 	return "";
 }
 
+
+Response *HundleCGI(const Request &req, const ReqInfo &Rq)
+{
+	// check file existence
+	// file should exist
+	FileInfo Fdata;
+	int ret = getFileInfo(Rq.PATH, Fdata);
+	if (ret == 0) // found
+	{
+		CGII CGIhundler(req, Rq);
+		try {
+			CGIhundler.setENV();
+			Response *res = CGIhundler.getResponse();
+			if (CGIhundler.ErrorCode == 502)
+				return errorRespo.getResponse(Rq.com_srv_index, 502, Rq.host_name, Rq.keepAlive);
+			if (CGIhundler.ErrorCode == 504)
+				return errorRespo.getResponse(Rq.com_srv_index, 504, Rq.host_name, Rq.keepAlive);
+			return res;
+		} catch ( ... ) {
+				return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
+		}
+	}
+	else if (ret == 1) // not found
+		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
+	else
+		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive));
+}
+
+
 Response* HandleRequest(const Request &req)
 {
 	ReqInfo Rq(
@@ -244,11 +250,8 @@ Response* HandleRequest(const Request &req)
 	// print start line
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
 
-	// rLoc.Display();
-	// exit(1);
-	// set keepAlive
-
 	// check connection
+	// check http version if 0 && Keep_alive not excite set connection to close/ KA to 0;
 	int ret = checkConnectionHeader(req.aHeaders);
 	if (ret == 2)
 		Rq.keepAlive = Rq.vers ? 1 : 0;
@@ -264,40 +267,37 @@ Response* HandleRequest(const Request &req)
 	// return -> ??
 	if (rLoc.isRedirect())
 		return Redirect(Rq, rLoc.getRedirectCode(), rLoc.getRedirectURI());
-	// if exist and not CGI script open file and return response
-	// if (CGI) -> ??
-	// if (rLoc.isCGI())
-	// {
-	// 	std::cout << "inside cgi\n";
-	// 	CGII cgiHundler(req);
-	// 	cgiHundler.setENV();
-	// 	// cgiHundler.display();
-	// 	exit(1);
-	// 	return NULL;
-	// }
+
+	Rq.isCGI = rLoc.isCGI();
+
 	// find position of query string so we don't concatinate it with root
-	size_t pos = Rq.rsource_path.find_last_of('?');
-
+	// to do file look up
 	// concatinate root with resource
-	std::string root = rLoc.getRoute();
-	if (root.empty())
-		root = "../www";
-	std::string PATH = root + Rq.rsource_path.substr(0, pos);
+	size_t pos = Rq.rsource_path.find_last_of('?');
+	Rq.PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
-	std::cout << PATH << '\n';
+	std::cout << Rq.PATH << '\n';
+
 	// check if file or dir
-	if (PATH[PATH.size()-1] != '/') // is file
-		return HandleFileResource(PATH, Rq);
+	if (Rq.PATH[Rq.PATH.size() - 1] != '/') // is file
+	{
+		// if exist and not CGI script open file and return response
+		// if (CGI) -> ??
+		if (Rq.isCGI && fileHasextension(Rq.PATH, rLoc.getCGIext())) // hundle CGI
+			return HundleCGI(req, Rq);
+		else //
+			return HandleFileResource(Rq.PATH, Rq);
+	}
 	else // is directory
 	{
 		// get indexes
-		if (Rq.meth == DELETE) // if method is delete return not found
+		if (Rq.isCGI) // don't support directory lookup on cgi location
+			return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
+		else if (Rq.meth == DELETE) // if method is delete return not found
 			return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
 		std::vector<std::string> indexes;
 		getLocationIndexes(rLoc, indexes);
-		return HandleDirResource(PATH, Rq, indexes);
+		return HandleDirResource(Rq.PATH, Rq, indexes);
 	}
-
-	// check http version if 0 && Keep_alive not excite set connection to close/ KA to 0;
 	return NULL;
 }

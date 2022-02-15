@@ -25,10 +25,10 @@ void	 VirtualServer::Display() const
 	std::cout << "server :\n";
 	std::cout << "\tHost :" << aServerInfo.first << " Port: " << aServerInfo.second << '\n';
 	std::cout << "\tserver name: " << _serverName + "\n" <<
-	"\t_MaxBodySize: " << std::to_string(_client_max_body_size) + "\n";
+	"\t_MaxBodySize: " << to_string(_client_max_body_size) + "\n";
 
 	for (size_t i = 0; i < _errorPages.size(); i++)
-		std::cout << "\t error_page : " << std::to_string(_errorPages[i].first) + " " << _errorPages[i].second + "\n";
+		std::cout << "\t error_page : " << to_string(_errorPages[i].first) + " " << _errorPages[i].second + "\n";
 	for (size_t i = 0; i < _locations.size(); i++)
 		_locations[i].Display();
 }

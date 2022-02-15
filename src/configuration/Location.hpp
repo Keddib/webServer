@@ -2,6 +2,7 @@
 #define LOCATION_001_HPP
 
 #include "../MACROS.hpp"
+#include "../HandleRequest/utils.hpp"
 #include <arpa/inet.h> //added
 #include <sys/socket.h> //added
 #include <string>

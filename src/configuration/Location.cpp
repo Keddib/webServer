@@ -148,7 +148,7 @@ void Location::Display() const
 	"\tPrefix : " << _prefix + "\n" <<
 	"\tRoot : " << _root + "\n" <<
 	"\tCGI : " << _CGI + "\n";
-	std::cout << "\tRet : " << std::to_string(_ret.first) + " " << _ret.second + "\n";
+	std::cout << "\tRet : " << to_string(_ret.first) + " " << _ret.second + "\n";
 	std::cout << "\tIndex: ";
 	for (size_t i = 0; i < _index.size(); i++)
 		std::cout << _index[i] << " | ";
@@ -157,6 +157,6 @@ void Location::Display() const
 	for (size_t i = 0; i < _methods.size(); i++)
 		std::cout << _methods[i] << " | ";
 	std::cout << "\n";
-	std::cout << "\tauto index : " << std::to_string(_autoIndex) + "\n";
+	std::cout << "\tauto index : " << to_string(_autoIndex) + "\n";
 
 }

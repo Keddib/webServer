@@ -48,7 +48,7 @@ Response *ErrorGen::getResponse(
 		// check file type and add content-type header
 		res->setHeader("Content-Type", fData.Ftype);
 		// check file size and add content-lenght header
-		res->setHeader("Content-Length", std::to_string(fData.size));
+		res->setHeader("Content-Length", to_string(fData.size));
 		res->setBodySize(fData.size);
 		res->setHeader("Last-Modified", fData.Mtime, 1);
 		// add file to body of request;
@@ -73,7 +73,7 @@ void ErrorGen::setDefaultErrorPage(Response *res, const char *errpage)
 	// add content-type header text/html;
 	// add content-lenght header ;
 	res->setHeader("Content-Type", "text/html");
-	res->setHeader("Content-Length", std::to_string(lenght), 1);
+	res->setHeader("Content-Length", to_string(lenght), 1);
 	res->addBodyToBuffer(errpage);
 }
 

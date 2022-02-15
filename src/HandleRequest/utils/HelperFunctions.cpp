@@ -35,7 +35,7 @@ int getFileInfo(const std::string &fileName, FileInfo &fileI)
 
 void getErrorPage(int error, std::string &page)
 {
-	std::string TOKEN = std::to_string(error) + " " + getErrorMessage(error);
+	std::string TOKEN = to_string(error) + " " + getErrorMessage(error);
 	page += std::string(HTML1) + TOKEN + HTML2 + TOKEN + HTML3;
 }
 
@@ -56,7 +56,10 @@ const char* getErrorMessage(int error)
 	else if (error == 408) return "Request Timeout";
 	else if (error == 411) return "Length Required";
 	else if (error == 413) return "Payload Too Large";
+	else if (error == 500) return "Internal Server Error";
 	else if (error == 501) return "Not Implemented";
+	else if (error == 502) return "Bad Gateway";
+	else if (error == 504) return "Gateway Timeout";
 	else if (error == 505) return "HTTP Version Not Supported";
 	return "";
 }
@@ -165,7 +168,7 @@ std::string getFileType(const std::string &path)
 
 inline short count_num_of_digit(long long n)
 {
-	
+
 	short i = (n < 0); // start with 1 if number is negative
 	for (; n != 0; ++i)
 		n = n / 10;
@@ -187,12 +190,17 @@ std::string	to_string(long long n)
 	return str;
 }
 
-
-//Example: b1 == 192, b2 == 168, b3 == 0, b4 == 100
-struct IPv4
+bool fileHasextension(const std::string &file, const std::string &exten)
 {
-	unsigned char b1, b2, b3, b4;
-};
+	size_t pos = file.find_last_of('.');
+	if (pos != std::string::npos)
+	{
+		std::string fileExten = file.substr(pos);
+		if (fileExten == exten)
+			return true;
+	}
+	return false;
+}
 
 std::string getMyIP()
 {
@@ -213,5 +221,14 @@ char asciitolower(char in)
 {
 	if (in <= 'Z' && in >= 'A')
 		return in - ('Z' - 'z');
+	return in;
+}
+
+char asciiToUpper(char in)
+{
+	if (in <= 'z' && in >= 'a')
+		return in - ('z' - 'Z');
+	else if (in == '-')
+		return ('_');
 	return in;
 }

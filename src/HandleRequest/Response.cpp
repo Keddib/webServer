@@ -15,7 +15,7 @@ void Response::setStartLine(
 	int code,
 	const std::string &message)
 {
-	_buffer += scheme + " " + std::to_string(code) + " " + message + "\r\n";
+	_buffer += scheme + " " + to_string(code) + " " + message + "\r\n";
 	// add to headers that are valid for all responses
 	// Date and Server
 	setHeader("Server", std::string("webserv/1.1 ") + getOsName(), 0);

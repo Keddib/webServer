@@ -119,7 +119,7 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 			if (meth)
 				_Vsrvs.back().getLocationsToEdit().back().setMethods(meth);
 			else
-				std::cout << "WebServ/1.0: [warn] " << std::to_string(_lineNum) << " [" <<
+				std::cout << "WebServ/1.0: [warn] " << to_string(_lineNum) << " [" <<
 					tokens[i] + "] not a supported method. ignored\n";
 		}
 	}
@@ -227,7 +227,7 @@ int ConfigParser::whichDirective(const std::string &dir) const
 
 void ConfigParser::throwException(std::string message) const
 {
-	throw std::string("ConfigFile: ") + std::to_string(_lineNum) +" : [" + message;
+	throw std::string("ConfigFile: ") + to_string(_lineNum) +" : [" + message;
 }
 
 void ConfigParser::removeSpacesFromStart(std::string &s)

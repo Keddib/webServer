@@ -2,6 +2,7 @@
 #define UTILS_07_HPP
 
 #include "../MACROS.hpp"
+#include "ReqInfo.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -37,6 +38,9 @@ std::string ListDirectory(const std::string &Dir, const std::string &name);
 std::string lookForIndexInDirectory(const std::string &Dir, const std::vector<std::string> &indexes, int &error);
 std::string getMyIP();
 char asciitolower(char in);
+char asciiToUpper(char in);
+std::string	to_string(long long n);
+bool fileHasextension(const std::string &file, const std::string &exten);
 
 
 #endif
