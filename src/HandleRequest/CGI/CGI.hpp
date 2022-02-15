@@ -3,6 +3,7 @@
 
 #include "../utils.hpp"
 #include "../Response.hpp"
+// #include "../ErrorGen.hpp"
 #include "../../start-servers/requset.hpp"
 
 extern ServersInterface ServI;
@@ -28,7 +29,8 @@ class CGII
 		std::string get_method(int method) const;
 		std::string getQueryString(std::string &resource) const;
 		bool isHeaderServerSpecific(const std::string &) const;
-		void *cgiError(int code);
+		Response *cgiError(int code);
+		int CGII::excuteChildProcess(int Rfd[], int Wfd[]);
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);

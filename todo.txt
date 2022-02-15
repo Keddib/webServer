@@ -35,11 +35,10 @@ We splited the work into two parts:
 
 
 - [] handle CGI
-	- [x] unchanged ENV. set once in the start of the server
-	- [x] add request headers to envirment variables wih "setenv(n,v,or)"
+	- [x] set all ENV variables needed to the cgi script including HTTP_ headers
 	- [] create a new process
 	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
-	- [] get out put and parse it to create a response to the client
+	- [] get the output and kill the process
 	- [] CGI response parsing
 		- [] Document Response: Content-Type | Status = 200;
 		- [] Local Redirect Response : Location : local URI PATH // no other header field

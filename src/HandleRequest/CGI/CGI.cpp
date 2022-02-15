@@ -54,25 +54,58 @@ void CGII::setENV()
 	getENV();
 }
 
+int CGII::excuteChildProcess(int Rfd[], int Wfd[])
+{
+	pid_t pid= pid = fork();
+	if (pid < 0)
+		return (0);
+	// if the pid is zero, this is the child process
+	if (pid == 0) // child
+	{
+		// Child. Start by closing descriptors we
+		//  don't need in this process
+		if (close(Rfd[READ]) || close(Wfd[WRITE]))
+			exit(500);
+		if (dup2(Rfd[WRITE], 1) == -1 || dup2(Wfd[READ], 0))
+			exit(500);
+		if (close(Wfd[READ]) || close(Rfd[WRITE]))
+			exit(500);
+		// execve(argv[0], argv, NULL);
+		exit(502);
+	}
+	// // Parent. close unneeded descriptors
+	close(Rfd[WRITE]);
+	close(Wfd[READ]);
+	return 0;
+}
+
 Response *CGII::getResponse()
 {
-	// const char *args[3];
-	// args[0] = _Loc.getCGIpath().c_str();
-	// args[1] = _PATH.c_str();
-	// args[2] = NULL;
-	// int pipefd[2];
-
-	// if (pipe(pipefd))
-	// 	return (Response *)cgiError(500);
-	// int pid = fork();
-	// if (pid == -1)
-	// 	return (Response *)cgiError(500);
-	// else if (pid == 0) // child process
-	// {
-
-	// }
-	// excuteScript(const char **args);
-	return NULL;
+	int Rfd[2]; // pipe for parent to read child output
+	int Wfd[2]; // pipe for child to read parent output
+	if (pipe(Rfd) < 0 || pipe(Wfd) < 0)
+		return cgiError(500);
+	if (!excuteChildProcess(Rfd, Wfd))
+		return cgiError(500);
+	// if request is post write body to Wfd[write], otherwise close the writing end of pipe
+	// send a value to the child
+	int wRet = write(Wfd[WRITE], "HELLO CHILD\n", 12);
+	if (wRet < 0)
+		return cgiError(500);
+	close(Wfd[WRITE]);
+	// now wait for a response
+	// before reading the response wait for child to finish
+	// wait for child termination
+	wait(NULL); // if child didn't finish in 60s , kill child and return time out response
+	// then read out put and parse it
+	char buffer[100];
+	int len = read(Rfd[READ], buffer, sizeof(buffer));
+	if (len < 0)
+		return cgiError(500);
+	// else if (len == 0) if no output is supplied check exit status code of child
+	close(Rfd[READ]); // close read end of pipe
+	// parse the CGI response
+	return NULL; // return ParseCGIresponse(buffer);
 }
 
 void CGII::addRequestHeaders()
@@ -156,8 +189,7 @@ char **CGII::getENV()
 
 
 
-void *CGII::cgiError(int code)
+Response *CGII::cgiError(int code)
 {
-	ErrorCode = code;
-	return NULL;
+	return errorRespo.getResponse(_Rq.com_srv_index, code, _Rq.host_name, _Rq.keepAlive);
 }

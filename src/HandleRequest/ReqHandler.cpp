@@ -216,15 +216,10 @@ Response *HundleCGI(const Request &req, const ReqInfo &Rq)
 	int ret = getFileInfo(Rq.PATH, Fdata);
 	if (ret == 0) // found
 	{
-		CGII CGIhundler(req, Rq);
 		try {
+			CGII CGIhundler(req, Rq);
 			CGIhundler.setENV();
-			Response *res = CGIhundler.getResponse();
-			if (CGIhundler.ErrorCode == 502)
-				return errorRespo.getResponse(Rq.com_srv_index, 502, Rq.host_name, Rq.keepAlive);
-			if (CGIhundler.ErrorCode == 504)
-				return errorRespo.getResponse(Rq.com_srv_index, 504, Rq.host_name, Rq.keepAlive);
-			return res;
+			return CGIhundler.getResponse();
 		} catch ( ... ) {
 				return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
 		}

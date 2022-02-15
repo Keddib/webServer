@@ -5,6 +5,8 @@
 #include "Response.hpp"
 #include "utils.hpp"
 
+#define	READ	0
+#define	WRITE	1
 
 extern ServersInterface ServI;
 
