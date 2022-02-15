@@ -62,6 +62,7 @@
 #define MAX_BODY_SWITCH  4096 //1048576 this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
 #define	RQ_RS_TIME_OUT 10 // change later
+#define TIMEOUT 50
 
 
 #endif
