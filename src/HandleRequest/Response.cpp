@@ -20,6 +20,7 @@ void Response::setStartLine(
 	// Date and Server
 	setHeader("Server", std::string("webserv/1.1 ") + getOsName(), 0);
 	setHeader("Date", getDate(), 0);
+	setHeader("Accept-Ranges", "none", 0);
 }
 
 void Response::setHeader(const std::string &key, const std::string &value, bool end)

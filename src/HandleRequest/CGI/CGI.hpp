@@ -5,15 +5,21 @@
 #include "../Response.hpp"
 // #include "../ErrorGen.hpp"
 #include "../../start-servers/requset.hpp"
+#include <signal.h>
+#include <sys/wait.h>
+
 
 extern ServersInterface ServI;
 
 extern ErrorGen	errorRespo;
 
+extern bool DONE;
+
 class CGII
 {
 	private:
 		/* data */
+		std::fstream _CGIres;
 		const Request &_req;
 		const Location &_Loc;
 		char **_ENV;
@@ -21,6 +27,10 @@ class CGII
 		const ReqInfo &_Rq;
 		std::string _PATH;
 		std::string _CGI;
+		time_t _sTime;
+		time_t CGItimeOut;
+		pid_t c_pid;
+		char _buff[BUFFER_SIZE];
 	private:
 		CGII& operator=(const CGII &){return *this;}
 		char **getENV();
@@ -31,6 +41,8 @@ class CGII
 		bool isHeaderServerSpecific(const std::string &) const;
 		Response *cgiError(int code);
 		int excuteChildProcess(int Rfd[], int Wfd[]);
+		int SendFile(int fd);
+		int ReadCGIresponse(int fd);
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);

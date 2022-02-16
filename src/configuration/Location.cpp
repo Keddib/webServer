@@ -1,7 +1,7 @@
 #include "Location.hpp"
 
 Location::Location( const std::string &prefix)
-: _prefix(prefix), _autoIndex(0), _root(DEFAULT_ROOT)
+: _prefix(prefix), _autoIndex(0), _root(DEFAULT_ROOT), _cgiTimeOut(60)
 {
 }
 
@@ -62,6 +62,11 @@ void Location::setCGI( const std::string &CGIext,  const std::string &CGIpath)
 void Location::setUpload( const std::string &UPpath )
 {
 	_upload = UPpath;
+}
+
+void Location::setCGItimeOut( unsigned int time)
+{
+	_cgiTimeOut = time;
 }
 
 void Location::fillAllowedMethods(std::string &allow) const
@@ -140,6 +145,11 @@ const std::string& Location::getCGIpath() const
 bool Location::isCGI() const
 {
 	return !_CGI.empty();
+}
+
+unsigned int Location::getCGItimeOut() const
+{
+	return _cgiTimeOut;
 }
 
 void Location::Display() const

@@ -5,5 +5,6 @@
 
 ServersInterface ServI;
 ErrorGen errorRespo;
+bool DONE;
 
 #endif

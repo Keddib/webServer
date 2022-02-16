@@ -101,6 +101,11 @@ const Location& VirtualServer::whichLocation( const std::string &Path) const
 	return _locations[index];
 }
 
+unsigned int VirtualServer::getClientMaxBodySize() const
+{
+	return _client_max_body_size;
+}
+
 const std::vector<std::pair<int, std::string> >& VirtualServer::getErrorPages() const
 {
 	return _errorPages;

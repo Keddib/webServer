@@ -130,6 +130,15 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 		_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1], tokens[2]);
 
 	}
+	else if (dir == CGI_TO)
+	{
+		if (tokens.size() != 2)
+			throwException(tokens[0] + " needs one values (time in seconds)\n");
+		int time = atoi(tokens[1].c_str());
+		if (time <= 0)
+			throwException(tokens[1] + " invalid time out\n");
+		_Vsrvs.back().getLocationsToEdit().back().setCGItimeOut(time);
+	}
 	else if (dir == UPLD)
 	{
 		if (tokens.size() != 2)
@@ -221,6 +230,8 @@ int ConfigParser::whichDirective(const std::string &dir) const
 		return (UPLD);
 	else if (dir == "CGI")
 		return (CGI);
+	else if (dir == "cgi_read_timeout")
+		return (CGI_TO);
 	return NONE;
 }
 

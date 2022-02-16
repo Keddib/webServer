@@ -85,8 +85,7 @@ bool isFileNotModified(ReqInfo &Rq, FileInfo& Fdata)
 
 Response *deleteFile(const std::string &PATH, ReqInfo &Rq)
 {
-	if (remove(PATH.c_str()) != 0)
-		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
+	remove(PATH.c_str());
 	Response *res = new Response();
 	res->setCommonServerIndex(Rq.com_srv_index);
 	res->setStartLine("HTTP/1.1", 204, "No Content");
@@ -221,6 +220,7 @@ Response *HundleCGI(const Request &req, const ReqInfo &Rq)
 			CGIhundler.setENV();
 			return CGIhundler.getResponse();
 		} catch ( ... ) {
+				std::cout << "exception \n";
 				return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
 		}
 	}

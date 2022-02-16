@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <cstdlib>
 
+extern bool DONE;
+
 typedef struct	FileInfo_s
 {
 	int64_t		size;

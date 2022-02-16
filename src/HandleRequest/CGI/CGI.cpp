@@ -3,12 +3,14 @@
 
 
 CGII::CGII(const Request &req, const ReqInfo &Rq)
-: _req(req),
+:
+_req(req),
 _Loc(ServI[req.getCommonServerIndex()].whichServer(req.getHost()).whichLocation(req.getResource())) ,
 _ENV(NULL),
 _Rq(Rq)
 {
 	_Headers.reserve(13);
+	CGItimeOut = _Loc.getCGItimeOut();
 
 }
 
@@ -51,16 +53,21 @@ void CGII::setENV()
 	if (_req.getMethod() == POST)
 		_Headers.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
 	addRequestHeaders();
+	std::cout << "before getENV\n";
 	getENV();
+	std::cout << "after getENV\n";
 }
 
 int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 {
-	pid_t pid= pid = fork();
-	if (pid < 0)
-		return (0);
+	std::cout << "inside excute child\n";
+	DONE = true;
+	c_pid = fork();
+	if (c_pid < 0)
+		return (-1);
+	_sTime = std::time(NULL);
 	// if the pid is zero, this is the child process
-	if (pid == 0) // child
+	if (c_pid == 0) // child
 	{
 		// Child. Start by closing descriptors we
 		//  don't need in this process
@@ -70,7 +77,7 @@ int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 			exit(500);
 		if (close(Wfd[READ]) || close(Rfd[WRITE]))
 			exit(500);
-		// execve(argv[0], argv, NULL);
+		// execve(CGI, script, _ENV);
 		exit(502);
 	}
 	// // Parent. close unneeded descriptors
@@ -81,32 +88,104 @@ int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 
 Response *CGII::getResponse()
 {
-/*	int Rfd[2]; // pipe for parent to read child output
+	std::cout << "inside get respo\n";
+	int status;
+	int Rfd[2]; // pipe for parent to read child output
 	int Wfd[2]; // pipe for child to read parent output
 	if (pipe(Rfd) < 0 || pipe(Wfd) < 0)
 		return cgiError(500);
-	if (!excuteChildProcess(Rfd, Wfd))
+	std::cout << "before child\n";
+	if (excuteChildProcess(Rfd, Wfd))
 		return cgiError(500);
+	std::cout << "line 95\n";
 	// if request is post write body to Wfd[write], otherwise close the writing end of pipe
 	// send a value to the child
-	int wRet = write(Wfd[WRITE], "HELLO CHILD\n", 12);
-	if (wRet < 0)
-		return cgiError(500);
+	if (_Rq.meth == POST)
+	{
+		if (_req.isBodyStr())
+		{
+			int wRet = write(Wfd[WRITE], _req.getBody().c_str(), _req.getBody().size());
+			if (wRet < 0)
+				return cgiError(500);
+		}
+		else
+		{
+			if (SendFile(Wfd[WRITE]) == -1)
+				return cgiError(500);
+			std::cout << "line send file 107\n";
+		}
+	}
 	close(Wfd[WRITE]);
-	// now wait for a response
-	// before reading the response wait for child to finish
-	// wait for child termination
-	wait(NULL); // if child didn't finish in 60s , kill child and return time out response
-	// then read out put and parse it
-	char buffer[100];
-	int len = read(Rfd[READ], buffer, sizeof(buffer));
-	if (len < 0)
-		return cgiError(500);
-	// else if (len == 0) if no output is supplied check exit status code of child
+	// check timeout
+	while (std::time(NULL) - _sTime < CGItimeOut && !DONE)
+		usleep(500);
+	if (!DONE) // if time ended and child didn't end yet return timeout
+	{
+		kill(c_pid, SIGKILL);
+		return cgiError(504);
+	}
+	waitpid(c_pid, &status , 0); // wait for child status code
+	status = WEXITSTATUS(status);
+	if ( status == 500 ||  status == 502) // if error return error
+	{
+		std::cout << "status = " << status << '\n';
+		return cgiError(status);
+	}
+	else // else read response and parse it
+	{
+		if (ReadCGIresponse(Wfd[READ]) == -1)
+			return cgiError(500);
+	}
 	close(Rfd[READ]); // close read end of pipe
+	//
+	exit(1);
+	// else if (len == 0) if no output is supplied check exit status code of child
 	// parse the CGI response
-	return NULL; // return ParseCGIresponse(buffer);*/
-	return NULL;
+	return NULL; // return ParseCGIresponse(buffer);
+}
+
+void putCharInFile(std::fstream &f, char *buff, size_t size)
+{
+		for (size_t i = 0; i < size; ++i)
+			f << buff[i];
+}
+
+int CGII::ReadCGIresponse(int fd)
+{
+	std::cout << "reead CGI RES\n";
+	// read data and store it on file
+	_CGIres.open("/tmp/.CGIres", std::fstream::out | std::fstream::in | std::fstream::binary);
+	std::cout << "is open : "<< _CGIres.is_open() << "\n";
+	int read_data;
+	do {
+		read_data = read(fd, _buff, BUFFER_SIZE);
+		if (read_data == -1)
+		{
+			std::cout << "read failed\n";
+			return -1;
+		}
+		_buff[read_data] = 0;
+		std::cout << _buff << '\n';
+		putCharInFile(_CGIres, _buff, read_data);
+	}while(read_data);
+	_CGIres.close();
+	return 0;
+}
+
+int CGII::SendFile(int fd)
+{
+	std::fstream &file= const_cast<std::fstream &>(_req.getBodyFile());
+	std::streamsize read_data;
+	do {
+		file.read(_buff, BUFFER_SIZE);
+		read_data = file.gcount();
+		if (read_data > BUFFER_SIZE)
+			break ;
+		_buff[read_data] = 0;
+		if (write(fd, _buff, read_data) == -1)
+			return -1;
+	}while(read_data);
+	return 0;
 }
 
 void CGII::addRequestHeaders()
@@ -176,14 +255,15 @@ void CGII::display() const
 char **CGII::getENV()
 {
 	size_t hSize = _Headers.size() + 1;
-	_ENV = new char*[hSize]();
-	for (size_t i = 0; i < hSize; i++)
+	_ENV = new char*[hSize];
+	for (size_t i = 0; i < hSize - 1; i++)
 	{
 		size_t size = _Headers[i].length();
 		_ENV[i] = new char[size + 1]();
-		std::memmove(_ENV[i], _Headers[i].c_str(), size);
+		std::memmove(_ENV[i], _Headers[i].c_str(), size + 1);
 		// mstrcpy(_ENV[i], _Headers[i].c_str());
 	}
+	_ENV[hSize - 2] = NULL;
 	_Headers.clear();
 	return _ENV;
 }

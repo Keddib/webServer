@@ -16,6 +16,8 @@ extern ErrorGen errorRespo;
 class	Request
 {
 	private:
+		unsigned int			max_client_size;
+		unsigned int			totalRead;
 		std::pair<std::string, in_port_t>	client_info;
 		bool					is_req_alive;
 		std::time_t				startTime;
@@ -72,7 +74,7 @@ class	Request
 		bool 					getVersion() const;
 		const std::string& 			getHost() const;
 		const std::string& 			getBody() const;
-		const std::fstream&			getBody(int) const;
+		const std::fstream&			getBodyFile() const;
 		bool					isBodyStr() const;
 		long					getBodySize() const;
 		const std::pair<std::string, in_port_t>	GetClientInfo() const;

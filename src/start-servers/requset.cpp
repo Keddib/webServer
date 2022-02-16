@@ -23,6 +23,7 @@ Request::Request(int confd, int comServerIndex, const struct sockaddr_in &cl_inf
 
 void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 {
+	totalRead = 0; // added
 	is_req_alive = true;
 	startTime = std::time(NULL);
 	this->comServerIndex = comServerIndex;
@@ -98,6 +99,7 @@ Request::Request(const Request &cp)
 
 Request&	Request::operator=(const Request &rhs)
 {
+	totalRead = rhs.totalRead; // added
 	is_req_alive = rhs.is_req_alive;
 	startTime = rhs.startTime;
 	comServerIndex = rhs.comServerIndex;
@@ -113,7 +115,7 @@ Request&	Request::operator=(const Request &rhs)
 	booltmp = rhs.booltmp;
 	bzero(methodHolder, LONGEST_METHOD + 1);
 	bodyString = rhs.bodyString;
-	tmpStr = tmpStr;
+	tmpStr = rhs.tmpStr;
 	aResourcPath = rhs.aResourcPath;
 	aHeaders = rhs.aHeaders;
 	aHostName = rhs.aHostName;
@@ -164,9 +166,12 @@ Response	*Request::AddToRequest(char *str, int size)
 			return Restmp;
 		if (ProcessBody(str, endStr - str))
 		{
-			bodyFileObj.close();
+			// bodyFileObj.close(); //changed
+			bodyFileObj.seekg(0);
 			return HandleRequest(*this); // this is here means request is done
 		}
+		if (totalRead > max_client_size) //// test this later
+			return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 	}
 	return NULL; // request not  done yet
 }
@@ -175,16 +180,18 @@ Response			*Request::ReserveSpaceForBody()
 {
 	if (!booltmp)
 	{
+		max_client_size = ServI[comServerIndex].whichServer(aHostName).getClientMaxBodySize(); // test here
 		booltmp = true;
 		// here make sure that this branch will only be excuted once
 		if (isChuncked == 1)
 		{
 			fillFileName(connFD, fileName);
-			bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
+			bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary); // creating file
 		}
 		else if (bodySize != -1)
 		{
-			if (bodySize > CLIENT_MAX_BODY_SIZE)
+			totalRead = bodySize; // added
+			if (bodySize > max_client_size)  // to be checked later
 				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
 			if (bodySize < MAX_BODY_SWITCH)
 				bodyString.reserve(bodySize);
@@ -289,6 +296,7 @@ bool	Request::ReadByChunck(char *str, long size)
 				// this almost always will be true
 				// and it means that number that need to be read is stored in tmpStr variable
 				bodySize = strtol(tmpStr.c_str(), NULL, 16);
+				totalRead += bodySize; // added
 				if (bodySize == 0)
 					return true; // which means that the body is done dealing with
 				tmpStr.clear();
@@ -709,7 +717,7 @@ const std::string& Request::getBody() const
 	return bodyString;
 }
 
-const std::fstream& Request::getBody(int) const
+const std::fstream& Request::getBodyFile() const
 {
 	return bodyFileObj;
 }
@@ -726,7 +734,7 @@ const std::pair<std::string, in_port_t>	Request::GetClientInfo() const
 }
 
 
-long					Request::getBodySize() const
+long	Request::getBodySize() const
 {
-	return bodySize;
+	return totalRead;
 }

@@ -16,7 +16,7 @@
 #define CONFIG_FILE "./config/default.conf"
 #define DEFAULT_ROOT "/APP/www"
 #define ERROR_ROOT ""
-#define D_PORT 8000
+#define D_PORT 80
 #define HOST 1
 #define PORT 2
 #define S_NAME 3
@@ -30,6 +30,7 @@
 #define RET 11
 #define UPLD 12
 #define CGI 13
+#define CGI_TO 18
 #define NONE -1
 
 #define	BUFFER_SIZE	4096 // make sure that this number is fiting in int type

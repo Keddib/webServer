@@ -22,6 +22,7 @@ class Location
 		std::vector<std::string> _index;
 		std::vector<int> _methods;
 		bool _autoIndex;
+		unsigned int _cgiTimeOut;
 	public:
 		Location( const std::string &prefix );
 		~Location();
@@ -32,6 +33,7 @@ class Location
 		void setMethods( int );
 		void setCGI( const std::string&, const std::string& );
 		void setUpload( const std::string& );
+		void setCGItimeOut( unsigned int time);
 		void fillAllowedMethods(std::string &allow) const;
 		const std::string& getPrefix() const;
 		bool isMethodAllowed(int meth) const;
@@ -44,6 +46,7 @@ class Location
 		const std::string& getRedirectURI() const;
 		const std::string& getCGIext() const;
 		const std::string& getCGIpath() const;
+		unsigned int getCGItimeOut() const;
 		void Display() const;
 
 };

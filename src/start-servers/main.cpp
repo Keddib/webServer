@@ -1,10 +1,16 @@
 #include "global.hpp"
 #include "../configuration/ConfigParser.hpp"
 #include "./manage-request.hpp"
+#include <signal.h>
+
+void OnChildExist(int )
+{
+	DONE = false;
+}
 
 int main()
 {
-
+	signal(SIGCHLD, OnChildExist);
 	// just for debugging
 	std::cout << getpid() << std::endl;
 
