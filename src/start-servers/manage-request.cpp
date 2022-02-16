@@ -3,6 +3,8 @@
 
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
+	int tmpMax;
+	numOfFds = 0;
 	int fd;
 	std::map<int, int>::const_iterator first(aFdToIndex.begin()), last(aFdToIndex.end());
 	epoll_fd = epoll_create(1);
@@ -13,8 +15,9 @@ ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 	}
 	while (first != last)
 	{
+		++numOfFds;
 		fd = first->first;
-		ComFds.push_back(fd);
+		tmpMax = first->first;
 		event.data.fd = fd;
 		event.events = EPOLLIN;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
@@ -24,8 +27,8 @@ ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 		}
 		++first;
 	}
-	MSFDN = 1 + ComFds.back();
-	ready_fds.reserve(ComFds.size() * 2); // just i'm assuming that could be all servers be accepting at the same time new connections so i need twice spac
+	MSFDN = 1 + tmpMax;
+	ready_fds.reserve(numOfFds * 2); // just i'm assuming that could be all servers be accepting at the same time new connections so i need twice spac
 }
 
 Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter_to_req)
@@ -73,6 +76,7 @@ void	ManageRequest::EP_StartLIstening()
 		}
 		// now i will remove ready_fds that are not needed
 		timeCheck();
+		cleanUnusedResponses();
 		ready_fds.resize(ready_fds.capacity() - epoll_struct_not_needed);
 	}
 }
@@ -95,9 +99,10 @@ void	ManageRequest::timeCheck()
 			event.events = EPOLLIN;
 			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, iter_to_req->first, &event))
 			{
-				std::cout << "could not delet " << iter_to_req->first << "\n";
+				std::cout << "could not delete " << iter_to_req->first << "\n";
 				exit(1);
 			}
+			--numOfFds;
 			close(iter_to_req->first);
 			fdToRequest.erase(iter_to_req);
 		}
@@ -105,6 +110,36 @@ void	ManageRequest::timeCheck()
 	}
 }
 // end of time check function
+// clean responses related fuctions
+void	ManageRequest::cleanUnusedResponses()
+{
+	// note maybe you will think if client send request then closed then by this logic i will hold fd for a littel while 
+	// so if he request again before i remove response he will get on the same index and cause problem bu he will never get
+	// on the same index because i still hold related fd 
+	iter_to_res = fdToResponse.begin();
+	tmp2_res_iter = fdToResponse.end();
+	tmp1_res_iter = iter_to_res;
+	event.events = EPOLLOUT;
+	while (iter_to_res != tmp2_res_iter)
+	{
+		++tmp1_res_iter;
+		if (!iter_to_res->second.isStillValid())
+		{
+			event.data.fd = iter_to_res->first;
+			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, iter_to_res->first, &event))
+			{
+				std::cout << "could not delete: " << iter_to_res->first << "\n";
+				exit(1);
+			}
+			--numOfFds;
+			close(iter_to_res->first);
+			fdToResponse.erase(iter_to_res);
+			fdToRequest.erase(iter_to_res->first);
+		}
+		iter_to_res = tmp1_res_iter;
+	}
+}
+
 
 
 void	ManageRequest::WorkOnRequest(int curFd)
@@ -140,6 +175,13 @@ void	ManageRequest::WorkOnResponse(int curFd)
 		// and remove response from map
 		event.data.fd = curFd;
 		event.events = EPOLLIN;
+		// should i remove file associeted with body
+		if (!iter_to_res->second.isFileUsed()){
+			std::cout << "in remove proccess\n";
+			int y;
+			std::cin >> y;
+			remove(iter_to_req->second.getFileName());
+		}
 		if (iter_to_res->second.CloseConnection())
 		{
 			++epoll_struct_not_needed;
@@ -148,6 +190,7 @@ void	ManageRequest::WorkOnResponse(int curFd)
 				std::cout << "could not delete to epoll set the fd: " << curFd << "\n";
 				exit(1);
 			}
+			--numOfFds;
 			close(curFd);
 			fdToRequest.erase(iter_to_req); // line k1
 		}
@@ -176,13 +219,18 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 	
 	tmpFd = accept(curFd, (struct sockaddr *)(&client_addr), &address_len);
 	fcntl(tmpFd, F_SETFL, O_NONBLOCK);
-	ComFds.push_back(tmpFd);
+	++numOfFds;
 	event.data.fd = tmpFd;
 	event.events = EPOLLIN;
 	
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, tmpFd, &event) == -1)
 	{
-		std::cout << "could not add to epoll set the fd: " << tmpFd << "\n";
+		std::cout << "could not add to epoll set the fd: " << tmpFd << " server fd: " << curFd << "\n";
+		exit(1);
+	}
+	if (fdToResponse.count(tmpFd))
+	{
+		std::cout << "request already here\n";
 		exit(1);
 	}
 	fdToRequest.insert(std::make_pair(tmpFd, Request(tmpFd, aFdToIndex[curFd], client_addr)));
@@ -194,6 +242,6 @@ int	ManageRequest::FDS_That_ready_for_IO(int &newConnections)
 {
 	ready_fds.reserve(ready_fds.capacity() + newConnections);
 	newConnections = 0;
-	return epoll_wait(epoll_fd, ready_fds.data(), ComFds.size(), timeout); // -1 for block
+	return epoll_wait(epoll_fd, ready_fds.data(), numOfFds, EPOLL_RETRY); // -1 for block
 }
 

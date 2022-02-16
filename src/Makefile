@@ -33,6 +33,6 @@ fclean: clean
 
 
 run: start-servers/manage-request.cpp
-	clang++ -ggdb3 -fsanitize=address  obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp -o run
+	clang++ -ggdb3 -O0   obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp start-servers/response-wrapper.cpp -o run
 
 .PHONY: clean fclean re all

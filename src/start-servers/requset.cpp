@@ -33,8 +33,24 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 	hasBeenRead = 0;
 	strcpy(fileName, "/tmp/.");
 	chunkedBodyState = true;
+	method = -1;
+	version = 0;
 	booltmp = false;
+	bzero(methodHolder, LONGEST_METHOD + 1);
+	bodyFileObj.close();
+	bodyString.clear();
+	tmpStr.clear();
+	aResourcPath.clear();
+	aHeaders.clear();
+	aHostName.clear();
+	Restmp = NULL;
+	first = second = endStr = NULL;
+	Restmp = NULL; //22
+}
 
+char	*Request::getFileName()
+{
+	return fileName;
 }
 
 void	Request::DisableRequest()
@@ -53,15 +69,26 @@ void	Request::RESET()
 {
 	// i will pass the old comServerIndex and connFD
 	INIT_AT_CONSTRUCTION(connFD, comServerIndex);
-	// until now i do not know what to do if file still open
-	bodyString.clear();
-	tmpStr.clear();
-	aResourcPath.clear();
-	aHeaders.clear();
-	aHostName.clear();
-	// and i do not know what to do with var methodHolder
-	Restmp = NULL;
-	first = second = endStr = NULL;
+}
+
+void	Request::DISPLAY()
+{
+	std::cout << "aHeaders size: " << aHeaders.size() << "\n";
+	std::cout << "body str: " << bodyString.size() << "\n";
+	std::cout << "tmpStr " << tmpStr.size() << "\n";
+	std::cout << "chunked body state: " << chunkedBodyState << "\n";
+	std::cout << "bodyFileObj: " << bodyFileObj.is_open() << "\n";
+	std::cout << "hasBeenRead: " << hasBeenRead << "\n";
+  	std::cout << "isChuncked: " << isChuncked << "\n";
+	std::cout << "status: " << status << "\n";
+	std::cout << "comServerIndex: " << comServerIndex << "\n";
+	std::cout << "method: " << method << "\n";
+	std::cout << "aResourcPath: " << aResourcPath << "\n";
+	std::cout << "version: " << version << "\n";
+	std::cout << "aHostName: " << aHostName << "\n";
+	std::cout << "methodHolder: " << methodHolder << "\n";
+	std::cout << "fileName: " << fileName << "\n";
+	std::cout << "booltmp: " << booltmp << "\n";
 }
 
 Request::Request(const Request &cp)
@@ -71,16 +98,28 @@ Request::Request(const Request &cp)
 
 Request&	Request::operator=(const Request &rhs)
 {
-	this->comServerIndex = rhs.comServerIndex;
+	is_req_alive = rhs.is_req_alive;
 	startTime = rhs.startTime;
+	comServerIndex = rhs.comServerIndex;
 	connFD = rhs.connFD;
 	status = rhs.status;
 	bodySize = rhs.bodySize;
 	isChuncked = rhs.isChuncked;
 	hasBeenRead = rhs.hasBeenRead;
-	strcpy(fileName, "/tmp/."); // stay like this not related here
+	strcpy(fileName, rhs.fileName);
 	chunkedBodyState = rhs.chunkedBodyState;
+	method = rhs.method;
+	version = rhs.version;
 	booltmp = rhs.booltmp;
+	bzero(methodHolder, LONGEST_METHOD + 1);
+	bodyString = rhs.bodyString;
+	tmpStr = tmpStr;
+	aResourcPath = rhs.aResourcPath;
+	aHeaders = rhs.aHeaders;
+	aHostName = rhs.aHostName;
+	Restmp = rhs.Restmp;
+	first = second = endStr = NULL;
+	Restmp = NULL;
 	return *this;
 }
 
@@ -126,7 +165,6 @@ Response	*Request::AddToRequest(char *str, int size)
 		if (ProcessBody(str, endStr - str))
 		{
 			bodyFileObj.close();
-			std::cout << "SIZE: " << bodyString.size();
 			return HandleRequest(*this); // this is here means request is done
 		}
 	}

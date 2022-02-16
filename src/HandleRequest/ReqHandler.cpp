@@ -271,7 +271,7 @@ Response* HandleRequest(const Request &req)
 	size_t pos = Rq.rsource_path.find_last_of('?');
 	Rq.PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
-	std::cout << Rq.PATH << '\n';
+//	std::cout << Rq.PATH << '\n';
 
 	// check if file or dir
 	if (Rq.PATH[Rq.PATH.size() - 1] != '/') // is file

@@ -40,6 +40,7 @@ class	Request
 		bool					booltmp;
 		Response				*Restmp;
 	private:
+		void					DISPLAY();
 		int						ProcessOneLine(char *str, long size);
 		Response				*ProcessHeaders(char **str, int size);
 		Response				*ReserveSpaceForBody();
@@ -67,6 +68,7 @@ class	Request
 		int 					getCommonServerIndex() const;
 		int 					getMethod() const ;
 		const 					std::string& getResource() const;
+		char					*getFileName();
 		bool 					getVersion() const;
 		const std::string& 			getHost() const;
 		const std::string& 			getBody() const;

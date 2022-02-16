@@ -1,7 +1,7 @@
 #include "Response.hpp"
 
 Response::Response()
-: _bSize(0), _keepAlive(1), _isFileUsed(0)
+: _bSize(0), _keepAlive(1), _isFileUsed(1)
 {
 
 }

@@ -30,7 +30,7 @@ class CGII
 		std::string getQueryString(std::string &resource) const;
 		bool isHeaderServerSpecific(const std::string &) const;
 		Response *cgiError(int code);
-		int CGII::excuteChildProcess(int Rfd[], int Wfd[]);
+		int excuteChildProcess(int Rfd[], int Wfd[]);
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);

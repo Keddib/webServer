@@ -4,7 +4,7 @@ ResponseWrapper::ResponseWrapper(Response *c_rsp) :
 _com_response(c_rsp), _body(c_rsp->getBody()),
 _buffer(c_rsp->getBuffer().c_str())
 {
-	startTime = std::time(NULL);
+	lasTimeWereHere = std::time(NULL);
 	bodySize = c_rsp->getBodySize();
 	hasBeenRead = 0;
 	_buffer_size = c_rsp->getBuffer().size();
@@ -13,6 +13,7 @@ _buffer(c_rsp->getBuffer().c_str())
 
 bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int required_size)
 {
+	lasTimeWereHere = std::time(NULL);
 	if (*_buffer)
 	{
 		// which means that header is not done sending yet
@@ -54,17 +55,15 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 	return false;
 }
 
-bool		ResponseWrapper::isStillValid(std::time_t cur_t)
-{
-	return (cur_t - startTime < RQ_RS_TIME_OUT);
-}
-
 bool		ResponseWrapper::CloseConnection() const
 {
 	return !_com_response->isKeepAlive();
 }
 
-
+bool	ResponseWrapper::isStillValid()
+{
+	return (std::time(NULL) - lasTimeWereHere < RS_TMOUT);
+}
 
 int		ResponseWrapper::getCommonSrvIndex() const
 {
@@ -76,4 +75,12 @@ void		ResponseWrapper::Free_Com_response()
 {
 	_com_response->getBody().close();
 	delete _com_response;
+}
+
+
+bool	ResponseWrapper::isFileUsed() const
+{
+	// should return false if body was store in file and not been used for upload porpuses
+	// else return true which indactes that either the file was and used or was not at first place
+	return _com_response->isFileUsed();
 }

@@ -81,7 +81,7 @@ int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 
 Response *CGII::getResponse()
 {
-	int Rfd[2]; // pipe for parent to read child output
+/*	int Rfd[2]; // pipe for parent to read child output
 	int Wfd[2]; // pipe for child to read parent output
 	if (pipe(Rfd) < 0 || pipe(Wfd) < 0)
 		return cgiError(500);
@@ -105,7 +105,8 @@ Response *CGII::getResponse()
 	// else if (len == 0) if no output is supplied check exit status code of child
 	close(Rfd[READ]); // close read end of pipe
 	// parse the CGI response
-	return NULL; // return ParseCGIresponse(buffer);
+	return NULL; // return ParseCGIresponse(buffer);*/
+	return NULL;
 }
 
 void CGII::addRequestHeaders()
