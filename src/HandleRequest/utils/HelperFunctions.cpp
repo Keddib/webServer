@@ -2,7 +2,7 @@
 
 bool isFileAccessible(const std::string &path)
 {
-	std::ifstream infile(path);
+	std::ifstream infile(path, std::fstream::in | std::fstream::binary);
 	return infile.good();
 }
 
@@ -161,6 +161,11 @@ std::string getFileType(const std::string &path)
 		else if (strcmp(last_dot, ".ogg") == 0) return "audio/ogg";
 		else if (strcmp(last_dot, ".m4a") == 0) return "audio/x-m4a";
 		else if (strcmp(last_dot, ".ra"	) == 0) return "audio/x-realaudio";
+		else if (strcmp(last_dot, ".pl"	) == 0) return "application/x-perl";
+		else if (strcmp(last_dot, ".py"	) == 0) return "application/x-python";
+		else if (strcmp(last_dot, ".php"	) == 0) return "application/x-php";
+		else if (strcmp(last_dot, ".cpp"	) == 0) return "application/x-c++";
+		else if (strcmp(last_dot, ".c"	) == 0) return "application/x-c";
 
 	}
 	return "application/octet-stream";

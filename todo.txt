@@ -45,6 +45,10 @@ We splited the work into two parts:
 		- [] Client Redirect Response : Location : Absolute URI redirect with 302
 		- [] Client Redirect Response with Document : Location | Status (redirection code) | Content-Type;
 
+
+!!!!! if autoindex off and index not setted and the resource is directory return 403 Forbidden
+
+
 Need to add HTTP_ headers
 
 CGI headers

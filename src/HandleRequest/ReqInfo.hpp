@@ -12,6 +12,8 @@ struct ReqInfo
 	const std::string 	&host_name;
 	std::string	cachHeader;
 	std::string	PATH;
+	std::string	cgiPATH;
+	std::string CGIfile;
 	int					com_srv_index;
 	int					meth;
 	bool				vers;

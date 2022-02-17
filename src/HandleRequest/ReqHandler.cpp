@@ -99,32 +99,6 @@ Response *deleteFile(const std::string &PATH, ReqInfo &Rq)
 	return res;
 }
 
-Response *HandleFileResource(const std::string &PATH, ReqInfo &Rq)
-{
-	/*
-	** if file and existe get file info and rerurn response with file in body
-	** if can't access file return forbiden
-	** if file not found return Not Found
-	*/
-	FileInfo Fdata;
-	Fdata.keepAlive = Rq.keepAlive; // added for 304 response
-	int ret = getFileInfo(PATH, Fdata);
-	if (ret == 0) // found
-	{
-		if (Rq.meth == DELETE)
-			return deleteFile(PATH, Rq);
-		// if file is cachable and not medified return 304 (redirect to cache)
-		if (isFileNotModified(Rq, Fdata)) // return true if file is not modified
-			return errorRespo.get304Respone(Rq.com_srv_index, Fdata.Mtime, Rq.keepAlive);
-		return FileFound200(PATH, Fdata, Rq.com_srv_index);
-	}
-	else if (ret == 1) // not found
-		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
-	else
-		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive));
-		// forbiden
-}
-
 Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 {
 	Response *res = new Response();
@@ -145,7 +119,46 @@ Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 	return res;
 }
 
-Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<std::string> &iVec)
+Response *HundleCGI(const Request &req, const ReqInfo &Rq)
+{
+	// file already execte
+	try {
+		CGII CGIhundler(req, Rq);
+		CGIhundler.setENV();
+		// CGIhundler.display();
+		return CGIhundler.getResponse();
+	} catch ( ... ) {
+			return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
+	}
+
+}
+
+Response *HandleFileResource(const Request &req, ReqInfo &Rq)
+{
+	FileInfo Fdata;
+	Fdata.keepAlive = Rq.keepAlive; // added for 304 response
+	int ret = getFileInfo(Rq.PATH, Fdata);
+	if (ret == 0) // found
+	{
+		if (Rq.isCGI && fileHasextension(Rq.PATH, Rq.cgiPATH)) // hundle CGI
+		{
+			Rq.CGIfile = Rq.PATH.substr(Rq.PATH.find_last_of('/') + 1);
+			return HundleCGI(req, Rq);
+		}
+		if (Rq.meth == DELETE)
+			return deleteFile(Rq.PATH, Rq);
+		// if file is cachable and not medified return 304 (redirect to cache)
+		if (isFileNotModified(Rq, Fdata)) // return true if file is not modified
+			return errorRespo.get304Respone(Rq.com_srv_index, Fdata.Mtime, Rq.keepAlive);
+		return FileFound200(Rq.PATH, Fdata, Rq.com_srv_index);
+	}
+	else if (ret == 1) // not found
+		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
+	return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive));
+}
+
+
+Response *HandleDirResource(const Request &req, ReqInfo &Rq, const std::vector<std::string> &iVec)
 {
 	/*
 	** if Dir and existe look for indexes within that file
@@ -156,26 +169,20 @@ Response *HandleDirResource(std::string &PATH, ReqInfo &Rq, const std::vector<st
 	** if Dir not found return Not Found
 	*/
 	int error(-1);
-	std::string index = lookForIndexInDirectory(PATH, iVec, error);
-	if (error == 1 || (index.empty() && !Rq.indexon)) // dir not found
+	std::string index = lookForIndexInDirectory(Rq.PATH, iVec, error);
+	if (index.empty() && !Rq.indexon) // index not found and no directory listing
 		return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
 	else if (error == 2) // dir forbiden
 		return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive);
-	else if (index.empty() && Rq.indexon) // dir listing
-		return GetDirListingResponse(PATH, Rq); // need to return a response with directory listing
-	return HandleFileResource(PATH += index, Rq); // found
+	else if ((index.empty() && Rq.indexon) || error == 1) // dir listing
+		return GetDirListingResponse(Rq.PATH, Rq); // need to return a response with directory listing
+	Rq.PATH += index;
+	return HandleFileResource(req, Rq); // found
 }
 
 void getLocationIndexes(const Location &loc, std::vector<std::string> &indexes)
 {
-	const std::vector<std::string> &vec = loc.getIndexes();
-	if (vec.empty())
-	{
-		indexes.push_back("index.html");
-		indexes.push_back("index.htm");
-		return;
-	}
-	indexes = vec;
+	indexes = loc.getIndexes();
 }
 
 
@@ -206,31 +213,6 @@ std::string getCacheHeader(const std::vector<std::pair<std::string, std::string>
 	return "";
 }
 
-
-Response *HundleCGI(const Request &req, const ReqInfo &Rq)
-{
-	// check file existence
-	// file should exist
-	FileInfo Fdata;
-	int ret = getFileInfo(Rq.PATH, Fdata);
-	if (ret == 0) // found
-	{
-		try {
-			CGII CGIhundler(req, Rq);
-			CGIhundler.setENV();
-			return CGIhundler.getResponse();
-		} catch ( ... ) {
-				std::cout << "exception \n";
-				return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
-		}
-	}
-	else if (ret == 1) // not found
-		return (errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive));
-	else
-		return (errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive));
-}
-
-
 Response* HandleRequest(const Request &req)
 {
 	ReqInfo Rq(
@@ -244,7 +226,8 @@ Response* HandleRequest(const Request &req)
 
 	// print start line
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
-
+	// rLoc.Display();
+	// exit(1);
 	// check connection
 	// check http version if 0 && Keep_alive not excite set connection to close/ KA to 0;
 	int ret = checkConnectionHeader(req.aHeaders);
@@ -257,6 +240,7 @@ Response* HandleRequest(const Request &req)
 	if (!rLoc.isMethodAllowed(Rq.meth))
 		return MethodsErrors(Rq, rLoc);
 	Rq.indexon = rLoc.isAutoIndexOn();
+	Rq.cgiPATH = rLoc.getCGIext();
 
 	// if redirect return redirect response
 	// return -> ??
@@ -271,28 +255,20 @@ Response* HandleRequest(const Request &req)
 	size_t pos = Rq.rsource_path.find_last_of('?');
 	Rq.PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
-//	std::cout << Rq.PATH << '\n';
+	std::cout << Rq.PATH << '\n';
 
 	// check if file or dir
 	if (Rq.PATH[Rq.PATH.size() - 1] != '/') // is file
-	{
-		// if exist and not CGI script open file and return response
-		// if (CGI) -> ??
-		if (Rq.isCGI && fileHasextension(Rq.PATH, rLoc.getCGIext())) // hundle CGI
-			return HundleCGI(req, Rq);
-		else //
-			return HandleFileResource(Rq.PATH, Rq);
-	}
+		return HandleFileResource(req, Rq);
 	else // is directory
 	{
-		// get indexes
-		if (Rq.isCGI) // don't support directory lookup on cgi location
-			return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
-		else if (Rq.meth == DELETE) // if method is delete return not found
+		if (Rq.meth == DELETE && !Rq.isCGI) // if method is delete return not found
 			return errorRespo.getResponse(Rq.com_srv_index, 404, Rq.host_name, Rq.keepAlive);
 		std::vector<std::string> indexes;
 		getLocationIndexes(rLoc, indexes);
-		return HandleDirResource(Rq.PATH, Rq, indexes);
+		if (indexes.empty() && !Rq.indexon)
+			return errorRespo.getResponse(Rq.com_srv_index, 403, Rq.host_name, Rq.keepAlive);
+		return HandleDirResource(req, Rq, indexes);
 	}
 	return NULL;
 }

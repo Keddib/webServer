@@ -25,12 +25,15 @@ class CGII
 		char **_ENV;
 		std::vector<std::string> _Headers;
 		const ReqInfo &_Rq;
+		char *_args[3];
 		std::string _PATH;
-		std::string _CGI;
 		time_t _sTime;
 		time_t CGItimeOut;
 		pid_t c_pid;
 		char _buff[BUFFER_SIZE];
+		std::string _CGIfile;
+		Response *res;
+
 	private:
 		CGII& operator=(const CGII &){return *this;}
 		char **getENV();
@@ -43,6 +46,7 @@ class CGII
 		int excuteChildProcess(int Rfd[], int Wfd[]);
 		int SendFile(int fd);
 		int ReadCGIresponse(int fd);
+		Response *ParseCGIresponse(const std::string &CGIfileRespone);
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);
