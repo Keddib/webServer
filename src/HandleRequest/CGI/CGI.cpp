@@ -1,7 +1,5 @@
 #include "CGI.hpp"
 
-
-
 CGII::CGII(const Request &req, const ReqInfo &Rq)
 :
 _req(req),
@@ -14,7 +12,7 @@ _Rq(Rq)
 	CGItimeOut = _Loc.getCGItimeOut();
 	_args[0] = (char *)_Loc.getCGIpath().c_str();
 	_args[2] = NULL;
-	_CGIfile = "/tmp/.102145";
+	_CGIfile = std::string("/tmp/.") + to_string((uintptr_t)this);
 }
 
 CGII::~CGII()
@@ -27,7 +25,7 @@ CGII::~CGII()
 		++i;
 	}
 	delete [] _ENV;
-	remove(_CGIfile.c_str());
+	// remove(_CGIfile.c_str());
 }
 
 void CGII::setENV()
@@ -109,14 +107,20 @@ Response *CGII::getResponse()
 	// send a value to the child
 	if (_Rq.meth == POST)
 	{
+		std::cout << "request is post\n";
 		if (_req.isBodyStr())
 		{
+			std::cout << "request has str body\n";
+			std::cout << _req.getBody() + "\n";
 			int wRet = write(Wfd[WRITE], _req.getBody().c_str(), _req.getBody().size());
 			if (wRet < 0)
 				return cgiError(500);
 		}
 		else
 		{
+			std::cout << "request has file body\n";
+			const std::fstream &file = _req.getBodyFile();
+			std::cout << file.is_open() << " | fp \n";
 			if (SendFile(Wfd[WRITE]) == -1)
 				return cgiError(500);
 		}
@@ -173,43 +177,79 @@ int hundleCGIheader(std::string &Line)
  }
 */
 // remove this overload
-std::ostream&	operator<<(std::ostream &os, std::vector<std::string> &v)
+// std::ostream&	operator<<(std::ostream &os, std::vector<std::string> &v)
+// {
+// 	for (auto &str : v)
+// 		os << str << "\n";
+// 	return os;
+// }
+
+Response	*CGII::DocumentResponse()
 {
-	for (auto &str : v)
-		os << str << "\n";
-	return os;
+	std::cout << "documment\n";
+	Response *res = new Response();
+	short code = _cgii_res_info.status.second;
+	res->setCommonServerIndex(_Rq.com_srv_index);
+	res->setStartLine("HTTP/1.1", code, getErrorMessage(code));
+	if (!_Rq.keepAlive)
+	{
+		res->setHeader("Connection", "close");
+		res->setKeepAlive(false);
+	}
+	res->setHeader(_CGIheaders);
+	unsigned int bsize = getFileSize(_CGIfile.c_str());
+	bsize -= bodySize;
+	res->setHeader("Content-Length", to_string(bsize), 1);
+	res->setBodySize(bsize);
+	res->setBodyfile(_CGIfile, bodySize);
+	std::cout << "docu end\n";
+	return res;
+}
+
+Response	*CGII::ClientRedirectResponse()
+{
+	std::cout << "clientRedirect\n";
+	Response *res = new Response();
+	short code = _cgii_res_info.status.second;
+	res->setCommonServerIndex(_Rq.com_srv_index);
+	res->setStartLine("HTTP/1.1", code, getErrorMessage(code));
+	if (!_Rq.keepAlive)
+	{
+		res->setHeader("Connection", "close");
+		res->setKeepAlive(false);
+	}
+	res->setHeader(_CGIheaders);
+	if (_cgii_res_info.bodyExist)
+	{
+		unsigned int bsize = getFileSize(_CGIfile.c_str());
+		bsize -= bodySize;
+		res->setHeader("Content-Length", to_string(bsize), 1);
+		res->setBodySize(bsize);
+		res->setBodyfile(_CGIfile, bodySize);
+	} else {
+		//set defualt defualt redirect page
+		std::string redirectPage;
+		getErrorPage(code, redirectPage);
+		size_t lenght = std::strlen(redirectPage.c_str());
+		// add content-lenght header ;
+		res->setHeader("Content-Length", to_string(lenght), 1);
+		res->addBodyToBuffer(redirectPage);
+	}
+	return res;
 }
 
 Response	*CGII::ResponseConstruction()
 {
-	std::cout << _Headers; // for debug
-	std::cout << "status: " << _cgii_res_info.status.second << "\n"; // for debug
-	if (_cgii_res_info.cont_type)
+	std::cout << "res const\n";
+	if (_cgii_res_info.location)
 	{
-		if (_cgii_res_info.location)
-		{
-			if (_cgii_res_info.status.first)
-			{
-				if (_cgii_res_info.bodyExist)
-				{
-					
-				}
-				else
-				{
-					
-				}
-			}
-			else
-			{
-				
-			}
-		}
-		else
-		{
-		}
+		std::cout << "location\n";
+		if (!_cgii_res_info.status.first)
+			_cgii_res_info.status.second = 302; // default redirect status
+		return ClientRedirectResponse();
 	}
-	/*else
-		i guess we should return error because most basic header does not exist in cgi response script (to be looked at later)*/	
+	else
+		return DocumentResponse();
 	return NULL;
 }
 
@@ -229,11 +269,12 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 	char *str;
 	if (_CGIres.is_open())
 	{
-		do
-		{
+		do {
 			_CGIres.getline(_buff, BUFFER_SIZE);
+			if (_CGIres.gcount() == 0)
+				return cgiError(502);
 			bodySize += _CGIres.gcount();
-			if (_buff[0] == '\r')
+			if (_buff[0] == '\r' || _buff[0] == '\0')
 				break ; // means that empty lines after header fields
 			if (_buff[0] == 'X')
 				continue ;
@@ -263,39 +304,19 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 				continue ;
 			}
 			_CGIheaders.push_back(_buff);
-			delm = _CGIheaders.back().size() - 1;
-			_CGIheaders[index][delm] = 0;
-			const char *s = _CGIheaders.back().c_str(); // just for debuging
+			_CGIheaders.back() += '\n';
 			++index;
 		}
 		while (_buff[0]); // it will break bec of empty line after headers
 		// after this loop file pointer will be at body if there's one
 		_CGIres.read(_buff, 10);
-		bodyExist = _CGIres.gcount();
-		_CGIres.seekg(bodySize - bodyExist);
+		_cgii_res_info.bodyExist = _CGIres.gcount();
+		_CGIres.close();
 		return ResponseConstruction();
 	}
 	else
 		return errorRespo.getResponse(_Rq.com_srv_index, 500, _Rq.host_name, _Rq.keepAlive);
 }
-
-// for refrence
-/*
-		std::string Line;
-		int isEmpty = 0;
-		while (std::getline(_CGIres, Line))
-		{
-			if (Line[0] == 'X') // cgi specific header should be removed
-				continue;
-			// we need to figure out how to hundle the 4 possible actions
-			// else if (hundleCGIheader(Line))
-				// continue;
-			// if (Line.empty())
-				//  add body to response;
-		}
-		if (!isEmpty)
-			return cgiError(504);
-*/
 
 void putCharInFile(std::fstream &f, char *buff, size_t size)
 {
@@ -325,6 +346,7 @@ int CGII::SendFile(int fd)
 	std::streamsize read_data;
 	do {
 		file.read(_buff, BUFFER_SIZE);
+		std::cout << _buff << "\n";
 		read_data = file.gcount();
 		if (read_data > BUFFER_SIZE)
 			break ;
@@ -386,15 +408,6 @@ std::string CGII::get_method(int meth) const
 	else if (meth == POST) return "POST";
 	else if (meth == DELETE) return "DELETE";
 	return "";
-}
-
-
-void CGII::display() const
-{
-	size_t s = _Headers.size();
-	std::cout << "size of header seted in CGI " << s << '\n';
-	for (size_t i = 0; i < s; i++)
-		std::cout << _Headers[i] << '\n';
 }
 
 

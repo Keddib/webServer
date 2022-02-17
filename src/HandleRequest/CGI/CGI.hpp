@@ -63,13 +63,15 @@ class CGII
 		int ReadCGIresponse(int fd);
 		Response *ParseCGIresponse(const std::string &CGIfileRespone);
 		Response	*ResponseConstruction();
+		Response	*DocumentResponse();
+		Response	*ClientRedirectResponse();
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);
 		~CGII();
 		void setENV();
 		Response *getResponse();
-		void display() const;
+		// void display() const;
 };
 
 #endif

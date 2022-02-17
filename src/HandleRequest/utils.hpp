@@ -43,6 +43,7 @@ char asciitolower(char in);
 char asciiToUpper(char in);
 std::string	to_string(long long n);
 bool fileHasextension(const std::string &file, const std::string &exten);
+unsigned int getFileSize(const char *file);
 
 
 #endif

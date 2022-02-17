@@ -64,7 +64,6 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 	res->setHeader("Content-Type", Fdata.Ftype);
 	res->setHeader("Content-Length", to_string(Fdata.size));
 	res->setBodySize(Fdata.size);
-	res->setHeader("Accept-Ranges", "none");
 	res->setHeader("Last-Modified", Fdata.Mtime, 1);
 	res->setBodyfile(PATH);
 	// res->display();
@@ -223,7 +222,7 @@ Response* HandleRequest(const Request &req)
 		req.getVersion(),
 		getCacheHeader(req.aHeaders)
 		);
-
+	
 	// print start line
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
 	// rLoc.Display();
@@ -255,7 +254,8 @@ Response* HandleRequest(const Request &req)
 	size_t pos = Rq.rsource_path.find_last_of('?');
 	Rq.PATH = rLoc.getRoute() + Rq.rsource_path.substr(0, pos);
 
-	std::cout << Rq.PATH << '\n';
+	std::cout <<"req.meth = " << Rq.meth << '\n';
+	std::cout <<"req.reso = " << Rq.PATH << '\n';
 
 	// check if file or dir
 	if (Rq.PATH[Rq.PATH.size() - 1] != '/') // is file

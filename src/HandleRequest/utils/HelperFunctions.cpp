@@ -32,6 +32,12 @@ int getFileInfo(const std::string &fileName, FileInfo &fileI)
 	return 2;
 }
 
+unsigned int getFileSize(const char *file)
+{
+	struct stat result;
+	stat(file, &result);
+	return result.st_size;
+}
 
 void getErrorPage(int error, std::string &page)
 {
@@ -42,7 +48,8 @@ void getErrorPage(int error, std::string &page)
 
 const char* getErrorMessage(int error)
 {
-	if (error == 301) return "Moved Permanently";
+	if (error == 200) return "OK";
+	else if (error == 301) return "Moved Permanently";
 	else if (error == 302) return "Found";
 	else if (error == 303) return "See Other";
 	else if (error == 304) return "Not Modified";

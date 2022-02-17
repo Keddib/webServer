@@ -113,9 +113,9 @@ void	ManageRequest::timeCheck()
 // clean responses related fuctions
 void	ManageRequest::cleanUnusedResponses()
 {
-	// note maybe you will think if client send request then closed then by this logic i will hold fd for a littel while 
+	// note maybe you will think if client send request then closed then by this logic i will hold fd for a littel while
 	// so if he request again before i remove response he will get on the same index and cause problem bu he will never get
-	// on the same index because i still hold related fd 
+	// on the same index because i still hold related fd
 	iter_to_res = fdToResponse.begin();
 	tmp2_res_iter = fdToResponse.end();
 	tmp1_res_iter = iter_to_res;
@@ -133,6 +133,7 @@ void	ManageRequest::cleanUnusedResponses()
 			}
 			--numOfFds;
 			close(iter_to_res->first);
+			iter_to_res->second.Free_Com_response();
 			fdToResponse.erase(iter_to_res);
 			fdToRequest.erase(iter_to_res->first);
 		}
@@ -216,13 +217,13 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 {
 	// i guess i will imporve here i will accept all connections at once maybe
 	++newConnections;
-	
+
 	tmpFd = accept(curFd, (struct sockaddr *)(&client_addr), &address_len);
 	fcntl(tmpFd, F_SETFL, O_NONBLOCK);
 	++numOfFds;
 	event.data.fd = tmpFd;
 	event.events = EPOLLIN;
-	
+
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, tmpFd, &event) == -1)
 	{
 		std::cout << "could not add to epoll set the fd: " << tmpFd << " server fd: " << curFd << "\n";
@@ -244,4 +245,3 @@ int	ManageRequest::FDS_That_ready_for_IO(int &newConnections)
 	newConnections = 0;
 	return epoll_wait(epoll_fd, ready_fds.data(), numOfFds, EPOLL_RETRY); // -1 for block
 }
-

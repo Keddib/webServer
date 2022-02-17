@@ -14,6 +14,8 @@ class Response
 		bool _keepAlive;
 		bool _isFileUsed;
 	public:
+		std::string deleteFile;
+	public:
 		Response();
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
@@ -21,6 +23,7 @@ class Response
 		void setHeader(const std::vector<std::string> &headers);
 		void addBodyToBuffer(const std::string &);
 		void setBodyfile(const std::string &path);
+		void setBodyfile(const std::string &path, unsigned int size);
 		void setKeepAlive(bool connection);
 		void setBodySize(int64_t bsize);
 		bool isKeepAlive() const;

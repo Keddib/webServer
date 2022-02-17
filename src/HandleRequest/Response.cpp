@@ -8,6 +8,8 @@ Response::Response()
 
 Response::~Response()
 {
+	// if (deleteFile.size())
+	// 	remove(deleteFile.c_str());
 }
 
 void Response::setStartLine(
@@ -45,6 +47,13 @@ void Response::addBodyToBuffer(const std::string &text)
 void Response::setBodyfile(const std::string &file)
 {
 	_body.open(file, std::fstream::in | std::fstream::binary);
+}
+
+void Response::setBodyfile(const std::string &file, unsigned int size)
+{
+	_body.open(file, std::fstream::in | std::fstream::binary);
+	_body.seekg(size);
+	deleteFile = file;
 }
 
 void Response::setKeepAlive(bool connection)

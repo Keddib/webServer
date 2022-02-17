@@ -1,5 +1,5 @@
 <?php
 
-	echo "HELLO CGI\n";
+	echo "HELLO CGI TEST\n";
 
 ?>
