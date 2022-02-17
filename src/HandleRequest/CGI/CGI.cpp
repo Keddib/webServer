@@ -9,6 +9,7 @@ _Loc(ServI[req.getCommonServerIndex()].whichServer(req.getHost()).whichLocation(
 _ENV(NULL),
 _Rq(Rq)
 {
+	bodySize = 0;
 	_Headers.reserve(13);
 	CGItimeOut = _Loc.getCGItimeOut();
 	_args[0] = (char *)_Loc.getCGIpath().c_str();
@@ -148,7 +149,7 @@ Response *CGII::getResponse()
 int hundleCGIheader(std::string &Line)
 {
 
-(CASE1)	content-type && (!status && !location) -> Document Response: (body)
+(CASE1)	content-type && (optional status && !location) -> Document Response: (body)
 		-> mains that we need to add connection header
 		-> content-lenght
 		-> return the response;
@@ -189,28 +190,22 @@ Response	*CGII::ResponseConstruction()
 		{
 			if (_cgii_res_info.status.first)
 			{
-				// CASE4
-				std::cout << "case 4\n";
-			}
-			else // which means !status
-			{
-				if (!strncmp(
-				_Headers[_cgii_res_info.loc_info.first].c_str() + 
-				_cgii_res_info.loc_info.second, "http", 4))
+				if (_cgii_res_info.bodyExist)
 				{
-					// CASE 2
-					std::cout << "case 2\n";
-				}else
+					
+				}
+				else
 				{
-					// CASE3
-					std::cout << "case 3\n";
+					
 				}
 			}
+			else
+			{
+				
+			}
 		}
-		else // means !location
+		else
 		{
-				// CASE 1
-				/* unknown response here means that !location and status */
 		}
 	}
 	/*else
@@ -237,6 +232,7 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 		do
 		{
 			_CGIres.getline(_buff, BUFFER_SIZE);
+			bodySize += _CGIres.gcount();
 			if (_buff[0] == '\r')
 				break ; // means that empty lines after header fields
 			if (_buff[0] == 'X')
@@ -274,6 +270,9 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 		}
 		while (_buff[0]); // it will break bec of empty line after headers
 		// after this loop file pointer will be at body if there's one
+		_CGIres.read(_buff, 10);
+		bodyExist = _CGIres.gcount();
+		_CGIres.seekg(bodySize - bodyExist);
 		return ResponseConstruction();
 	}
 	else

@@ -19,18 +19,20 @@ extern ErrorGen	errorRespo;
 extern bool DONE;
 
 struct CGIIresInfo{
-	CGIIresInfo() : cont_type(false), location(false) { status.first = false; }
+	CGIIresInfo() : cont_type(false), location(false) { status.first = false; status.second = 200; bodyExist = false;}
 
 	bool							cont_type;
 	bool							location;
 	std::pair<short, short>			loc_info;
-	std::pair<bool, short>	status;
+	std::pair<bool, short>			status;
+	short							bodyExist;
 };
 
 
 class CGII
 {
 	private:
+		unsigned int 	bodySize;
 		/* data */
 		std::fstream _CGIres;
 		const Request &_req;
