@@ -166,6 +166,8 @@ Response	*Request::AddToRequest(char *str, int size)
 			return Restmp;
 		if (ProcessBody(str, endStr - str))
 		{
+			if (totalRead > max_client_size) //// test this later
+				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 			// bodyFileObj.close(); //changed
 			bodyFileObj.seekg(0);
 			return HandleRequest(*this); // this is here means request is done

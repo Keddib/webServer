@@ -18,11 +18,14 @@ _Rq(Rq)
 
 CGII::~CGII()
 {
-	size_t size = _Headers.size();
-	for (int i = 0; i < size; i++)
-		if (_ENV[i])
-			delete _ENV[i];
-	delete _ENV;
+	int i = 0;
+	while (_ENV[i])
+	{
+		std::cout << _ENV[i] << "\n";
+		delete[] _ENV[i];
+		++i;
+	}
+	delete [] _ENV;
 	remove(_CGIfile.c_str());
 }
 
@@ -63,7 +66,7 @@ void CGII::setENV()
 
 int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 {
-	DONE = true;
+	DONE = false;
 	c_pid = fork();
 	if (c_pid < 0)
 		return (-1);
@@ -136,7 +139,7 @@ Response *CGII::getResponse()
 			return cgiError(500);
 	}
 	close(Rfd[READ]); // close read end of pipe
-	exit(1);
+//	exit(1);
 	// parse the CGI response
 	return ParseCGIresponse(_CGIfile);
 }
@@ -144,22 +147,23 @@ Response *CGII::getResponse()
 /*
 int hundleCGIheader(std::string &Line)
 {
-	content-type && (!status && !location) -> Document Response: (body)
+
+(CASE1)	content-type && (!status && !location) -> Document Response: (body)
 		-> mains that we need to add connection header
 		-> content-lenght
 		-> return the response;
 
-	content-type && location (!status) with $scheme(http(s)://) -> Client Redirect Response (may body)
+(CASE2)	content-type && location (!status) with $scheme(http(s)://) -> Client Redirect Response (may body)
 		-> mains that we need to add connection header
 		-> add status code 302
 		-> return the response;
 
-	content-type && location (!status) with local PATH -> Local Redirect Response (no body)
+(CASE3)	content-type && location (!status) with local PATH -> Local Redirect Response (no body)
 		-> look for the file in the location and return it with 200 ok
 		-> add header
 		-> return reponse;
 
-	content-type and status and location -> Client Redirect Response with Document: (body)
+(CASE4)	content-type and status and location -> Client Redirect Response with Document: (body)
 		-> mains that we need to add connection header
 		-> content-lenght
 		-> return the response;
@@ -167,11 +171,117 @@ int hundleCGIheader(std::string &Line)
 	return 1;
  }
 */
+// remove this overload
+std::ostream&	operator<<(std::ostream &os, std::vector<std::string> &v)
+{
+	for (auto &str : v)
+		os << str << "\n";
+	return os;
+}
+
+Response	*CGII::ResponseConstruction()
+{
+	std::cout << _Headers; // for debug
+	std::cout << "status: " << _cgii_res_info.status.second << "\n"; // for debug
+	if (_cgii_res_info.cont_type)
+	{
+		if (_cgii_res_info.location)
+		{
+			if (_cgii_res_info.status.first)
+			{
+				// CASE4
+				std::cout << "case 4\n";
+			}
+			else // which means !status
+			{
+				if (!strncmp(
+				_Headers[_cgii_res_info.loc_info.first].c_str() + 
+				_cgii_res_info.loc_info.second, "http", 4))
+				{
+					// CASE 2
+					std::cout << "case 2\n";
+				}else
+				{
+					// CASE3
+					std::cout << "case 3\n";
+				}
+			}
+		}
+		else // means !location
+		{
+				// CASE 1
+				/* unknown response here means that !location and status */
+		}
+	}
+	/*else
+		i guess we should return error because most basic header does not exist in cgi response script (to be looked at later)*/	
+	return NULL;
+}
+
+bool	my_strncmp(const char *s1, const char *s2, size_t n)
+{
+	for (size_t i = 0; i < n; ++i)
+		if (tolower(s1[i]) != tolower(s2[i]))
+			return false;
+	return true;
+}
+
 Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 {
 	_CGIres.open(_CGIfile, std::fstream::in | std::fstream::binary);
+	int delm;
+	int index = 0;
+	char *str;
 	if (_CGIres.is_open())
 	{
+		do
+		{
+			_CGIres.getline(_buff, BUFFER_SIZE);
+			if (_buff[0] == '\r')
+				break ; // means that empty lines after header fields
+			if (_buff[0] == 'X')
+				continue ;
+			delm = IndexOf(_buff, ':');
+			//if (delm == -1)
+				//means that header is not in good syntax
+			if (!_cgii_res_info.cont_type && my_strncmp(_buff, "Content-Type", delm))
+				_cgii_res_info.cont_type = true;
+			else if (!_cgii_res_info.location && my_strncmp(_buff, "Location", delm))
+			{
+				++delm;
+				while (_buff[delm] == ' ')
+					++delm;
+				_cgii_res_info.loc_info.first = index;
+				_cgii_res_info.loc_info.second = delm;
+				_cgii_res_info.location = true;
+			}
+			else if (!_cgii_res_info.status.first && my_strncmp(_buff, "Status", delm)) // myabe the status shuold be lower case
+			{
+				// if buf = Status: 200
+				// buf + index + 1  will be " 200"
+				str = _buff + delm + 1;
+				while (*str == ' ')
+					++str;
+				_cgii_res_info.status.first = true; // Status: 302 Found
+				_cgii_res_info.status.second = atoi(str); // if i need to take at as number write atoi(str)
+				continue ;
+			}
+			_CGIheaders.push_back(_buff);
+			delm = _CGIheaders.back().size() - 1;
+			_CGIheaders[index][delm] = 0;
+			const char *s = _CGIheaders.back().c_str(); // just for debuging
+			++index;
+		}
+		while (_buff[0]); // it will break bec of empty line after headers
+		// after this loop file pointer will be at body if there's one
+		return ResponseConstruction();
+	}
+	else
+		return errorRespo.getResponse(_Rq.com_srv_index, 500, _Rq.host_name, _Rq.keepAlive);
+}
+
+// for refrence
+/*
 		std::string Line;
 		int isEmpty = 0;
 		while (std::getline(_CGIres, Line))
@@ -186,9 +296,7 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 		}
 		if (!isEmpty)
 			return cgiError(504);
-	}
-	return errorRespo.getResponse(_Rq.com_srv_index, 500, _Rq.host_name, _Rq.keepAlive);
-}
+*/
 
 void putCharInFile(std::fstream &f, char *buff, size_t size)
 {
@@ -294,17 +402,16 @@ void CGII::display() const
 char **CGII::getENV()
 {
 	size_t hSize = _Headers.size() + 1;
-	_ENV = new char*[hSize];
+	_ENV = new char* [hSize];
 	for (size_t i = 0; i < hSize - 1; i++)
 	{
 		size_t size = _Headers[i].length();
-		_ENV[i] = new char[size + 1]();
+		_ENV[i] = new char[size + 1];
 		std::memmove(_ENV[i], _Headers[i].c_str(), size + 1);
 		// mstrcpy(_ENV[i], _Headers[i].c_str());
 	}
-	_ENV[hSize - 2] = NULL;
-	_Headers.clear();
-	return _ENV;
+	_ENV[hSize - 1] = NULL;
+	return _ENV; // maybe this return not needed since this var is in this obj
 }
 
 

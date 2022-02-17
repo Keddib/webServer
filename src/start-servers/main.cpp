@@ -5,7 +5,8 @@
 
 void OnChildExist(int )
 {
-	DONE = false;
+	std::cout << "child is done\n";
+	DONE = true;
 }
 
 int main()

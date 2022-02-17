@@ -7,13 +7,26 @@
 #include "../../start-servers/requset.hpp"
 #include <signal.h>
 #include <sys/wait.h>
+#include <cctype>
 
+int	IndexOf(const char *str, char c);
+bool	my_strncmp(const char *s1, const char *s2, size_t n);
 
 extern ServersInterface ServI;
 
 extern ErrorGen	errorRespo;
 
 extern bool DONE;
+
+struct CGIIresInfo{
+	CGIIresInfo() : cont_type(false), location(false) { status.first = false; }
+
+	bool							cont_type;
+	bool							location;
+	std::pair<short, short>			loc_info;
+	std::pair<bool, short>	status;
+};
+
 
 class CGII
 {
@@ -31,9 +44,9 @@ class CGII
 		time_t CGItimeOut;
 		pid_t c_pid;
 		char _buff[BUFFER_SIZE];
+		CGIIresInfo	_cgii_res_info;
 		std::string _CGIfile;
-		Response *res;
-
+		std::vector<std::string> _CGIheaders;
 	private:
 		CGII& operator=(const CGII &){return *this;}
 		char **getENV();
@@ -47,6 +60,7 @@ class CGII
 		int SendFile(int fd);
 		int ReadCGIresponse(int fd);
 		Response *ParseCGIresponse(const std::string &CGIfileRespone);
+		Response	*ResponseConstruction();
 	public:
 		int ErrorCode;
 		CGII(const Request &req, const ReqInfo &Rq);

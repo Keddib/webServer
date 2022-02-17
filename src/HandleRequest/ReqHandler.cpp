@@ -126,7 +126,7 @@ Response *HundleCGI(const Request &req, const ReqInfo &Rq)
 		CGII CGIhundler(req, Rq);
 		CGIhundler.setENV();
 		// CGIhundler.display();
-		return CGIhundler.getResponse();
+		return  CGIhundler.getResponse();
 	} catch ( ... ) {
 			return errorRespo.getResponse(Rq.com_srv_index, 500, Rq.host_name, Rq.keepAlive);
 	}
