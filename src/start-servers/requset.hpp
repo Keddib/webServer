@@ -33,6 +33,7 @@ class	Request
 		int						comServerIndex; // this wil  help to identify which servers should handel this request you will give this comServerIndex to map and you will get index to right commonServers class
 		int						method; // allowed are GET DELETE POST
 		std::string				aResourcPath;
+		std::string				tmpRSP;
 		bool					version; // false if HTTP/1.0 true if HTTP/1.1
 		std::string				aHostName;
 		const char				*first, *second;
@@ -43,6 +44,7 @@ class	Request
 		Response				*Restmp;
 	private:
 		void					DISPLAY();
+		void					ResourseDecoding();
 		int						ProcessOneLine(char *str, long size);
 		Response				*ProcessHeaders(char **str, int size);
 		Response				*ReserveSpaceForBody();

@@ -143,6 +143,30 @@ Response			*Request::StartLineParsing(char **str, int &size)
 	return NULL;
 }
 
+void	Request::ResourseDecoding()
+{
+	size_t size = aResourcPath.size();
+	const char *str;
+	char c;
+	tmpRSP.clear();
+	for (size_t i = 0; i < size; ++i)
+	{
+		if (aResourcPath[i] == '%') //example file%3Ahg
+		{
+			c = aResourcPath[i + 3];
+			aResourcPath[i + 3] = 0;
+			str = aResourcPath.c_str() + 1 + i;
+			// str now will be 3A in the above example
+			tmpRSP.push_back(strtol(str, NULL, 16));
+			aResourcPath[i + 3] = c; // return the previous character that was at this spot
+			i += 2;
+		}
+		else
+			tmpRSP.push_back(aResourcPath[i]);
+	}
+	aResourcPath = tmpRSP;
+}
+
 Response	*Request::AddToRequest(char *str, int size)
 {
 	endStr = str + size;
@@ -522,6 +546,7 @@ Response	*Request::InitFromStartLine()
 		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	// i need now to get resource path
 	InitRecoursePath(aResourcPath, tmpStr, start);
+	ResourseDecoding(); // i did not insert this function in InitRecoursePath bec it's not member of the Request class
 	start = GetHttpVersion(tmpStr, start);
 	if (start == HTTP_VERSION_NOT_SUPPORTED)
 		return errorRespo.getResponse(comServerIndex, HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE);
