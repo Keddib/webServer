@@ -119,8 +119,6 @@ Response *CGII::getResponse()
 		else
 		{
 			std::cout << "request has file body\n";
-			const std::fstream &file = _req.getBodyFile();
-			std::cout << file.is_open() << " | fp \n";
 			if (SendFile(Wfd[WRITE]) == -1)
 				return cgiError(500);
 		}
@@ -346,13 +344,14 @@ int CGII::ReadCGIresponse(int fd)
 int CGII::SendFile(int fd)
 {
 	std::fstream &file= const_cast<std::fstream &>(_req.getBodyFile());
+	file.seekg(0);
 	std::streamsize read_data;
 	do {
 		file.read(_buff, BUFFER_SIZE);
 		std::cout << _buff << "\n";
 		read_data = file.gcount();
 		if (read_data > BUFFER_SIZE)
-			break ;
+			break ; // possiblae error
 		_buff[read_data] = 0;
 		if (write(fd, _buff, read_data) == -1)
 			return -1;

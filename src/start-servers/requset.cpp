@@ -188,7 +188,9 @@ Response			*Request::ReserveSpaceForBody()
 		if (isChuncked == 1)
 		{
 			fillFileName(connFD, fileName);
-			bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary); // creating file
+			bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
+			bodyFileObj.close();
+			bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary);
 		}
 		else if (bodySize != -1)
 		{
@@ -199,7 +201,9 @@ Response			*Request::ReserveSpaceForBody()
 				bodyString.reserve(bodySize);
 			else {
 				fillFileName(connFD, fileName);
-				bodyFileObj.open(fileName, std::fstream::out); // creating file
+				bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
+				bodyFileObj.close();
+				bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary);
 			}
 		}
 		else if (method == POST)
