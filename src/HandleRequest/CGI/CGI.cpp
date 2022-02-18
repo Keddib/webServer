@@ -128,7 +128,10 @@ Response *CGII::getResponse()
 	close(Wfd[WRITE]);
 	// check timeout
 	while (std::time(NULL) - _sTime < CGItimeOut && !DONE)
-		usleep(500);
+	{
+		// std::cout << "sleeping....\n";
+		usleep(5000);
+	}
 	if (!DONE) // if time ended and child didn't end yet return timeout
 	{
 		kill(c_pid, SIGKILL);
