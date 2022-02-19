@@ -4,7 +4,7 @@
 void	STOP_HERE();
 
 
-const char	*remove_speces_at_end_start(char *str);
+const char	*remove_speces_at_end_start(char *str, bool);
 int	GetLocationOf(char *str, const char *target, long size);
 int	GetMethod(std::string &str, char *methodHolder, size_t &i);
 bool	str_cmp(const char *str, const char *against);
@@ -194,6 +194,10 @@ Response	*Request::AddToRequest(char *str, int size)
 				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 			// bodyFileObj.close(); //changed
 			bodyFileObj.seekg(0);
+			std::cout << "req start!=============================================\n";
+			for (auto &p : aHeaders)
+				std::cout << p.first << "--->: " << p.second << "\n";
+			std::cout << "req done!=============================================\n";
 			return HandleRequest(*this); // this is here means request is done
 		}
 		if (totalRead > max_client_size) //// test this later
@@ -491,13 +495,13 @@ Response	*Request::FirstSecondFromHeaderLine(bool &opfold)
 	if (tmpStr[tmp - 1] == ' ')
 		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	//second = first + tmp + 1;
-	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1));
+	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1), !strcmp(first, "Cookie"));
 
 	// IF YOU NEED TO CHECK THE SECOND VALUE OF HEADER TO GENRATE ERROR CHECK AT THIS LINE
 	return NULL;
 }
 
-const char	*remove_speces_at_end_start(char *str)
+const char	*remove_speces_at_end_start(char *str, bool co)
 {
 	int len = strlen(str) - 1;
 	while (*str == ' ')
@@ -506,8 +510,6 @@ const char	*remove_speces_at_end_start(char *str)
 		--len;
 	if (str[len  + 1] == ' ')
 		str[len + 1] = 0;
-	for (int i = 0; str[i]; ++i)
-		str[i] = std::tolower(str[i]);
 	return str;
 }
 

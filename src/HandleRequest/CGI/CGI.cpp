@@ -20,7 +20,6 @@ CGII::~CGII()
 	int i = 0;
 	while (_ENV[i])
 	{
-		std::cout << _ENV[i] << "\n";
 		delete[] _ENV[i];
 		++i;
 	}
@@ -39,7 +38,7 @@ void CGII::setENV()
 		resource += _Rq.CGIfile;
 	_PATH = _Loc.getRoute() + resource;
 	_args[1] = (char *)_PATH.c_str();
-	_Headers.push_back("SCRIPT_FILENAME=" + _PATH);
+	_Headers.push_back("SCRIPT_FILENAME=" + _Rq.PATH);
 	_Headers.push_back("PATH_TRANSLATED=" + _PATH);
 	_Headers.push_back("QUERY_STRING=" + QS);
 	_Headers.push_back("SERVER_NAME=" + _req.getHost());
@@ -85,7 +84,6 @@ int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 		if (close(Wfd[READ]) || close(Rfd[WRITE]))
 			exit(500);
 		execve(_args[0], _args, _ENV);
-		std::cout << "execve error: " << std::strerror(errno) << '\n';
 		exit(502);
 	}
 	// // Parent. close unneeded descriptors
@@ -107,18 +105,14 @@ Response *CGII::getResponse()
 	// send a value to the child
 	if (_Rq.meth == POST)
 	{
-		std::cout << "request is post\n";
 		if (_req.isBodyStr())
 		{
-			std::cout << "request has str body\n";
-			std::cout << _req.getBody() + "\n";
 			int wRet = write(Wfd[WRITE], _req.getBody().c_str(), _req.getBody().size());
 			if (wRet < 0)
 				return cgiError(500);
 		}
 		else
 		{
-			std::cout << "request has file body\n";
 			if (SendFile(Wfd[WRITE]) == -1)
 				return cgiError(500);
 		}
@@ -127,7 +121,6 @@ Response *CGII::getResponse()
 	// check timeout
 	while (std::time(NULL) - _sTime < CGItimeOut && !DONE)
 	{
-		// std::cout << "sleeping....\n";
 		usleep(5000);
 	}
 	if (!DONE) // if time ended and child didn't end yet return timeout
@@ -187,7 +180,6 @@ int hundleCGIheader(std::string &Line)
 
 Response	*CGII::DocumentResponse()
 {
-	std::cout << "documment\n";
 	Response *res = new Response();
 	short code = _cgii_res_info.status.second;
 	res->setCommonServerIndex(_Rq.com_srv_index);
@@ -203,13 +195,11 @@ Response	*CGII::DocumentResponse()
 	res->setHeader("Content-Length", to_string(bsize), 1);
 	res->setBodySize(bsize);
 	res->setBodyfile(_CGIfile, bodySize);
-	std::cout << "docu end\n";
 	return res;
 }
 
 Response	*CGII::ClientRedirectResponse()
 {
-	std::cout << "clientRedirect\n";
 	Response *res = new Response();
 	short code = _cgii_res_info.status.second;
 	res->setCommonServerIndex(_Rq.com_srv_index);
@@ -241,10 +231,8 @@ Response	*CGII::ClientRedirectResponse()
 
 Response	*CGII::ResponseConstruction()
 {
-	std::cout << "res const\n";
 	if (_cgii_res_info.location)
 	{
-		std::cout << "location\n";
 		if (!_cgii_res_info.status.first)
 			_cgii_res_info.status.second = 302; // default redirect status
 		return ClientRedirectResponse();
@@ -277,8 +265,8 @@ Response *CGII::ParseCGIresponse(const std::string &CGIfileRespone)
 			bodySize += _CGIres.gcount();
 			if (_buff[0] == '\r' || _buff[0] == '\0')
 				break ; // means that empty lines after header fields
-			if (_buff[0] == 'X')
-				continue ;
+		//	if (_buff[0] == 'X')
+		//		continue ;
 			delm = IndexOf(_buff, ':');
 			//if (delm == -1)
 				//means that header is not in good syntax
@@ -348,7 +336,6 @@ int CGII::SendFile(int fd)
 	std::streamsize read_data;
 	do {
 		file.read(_buff, BUFFER_SIZE);
-		std::cout << _buff << "\n";
 		read_data = file.gcount();
 		if (read_data > BUFFER_SIZE)
 			break ; // possiblae error
@@ -382,6 +369,7 @@ void CGII::trasferReqHeaderToCGIheader(const std::pair<std::string, std::string>
 	std::transform(FieldName.begin(), FieldName.end(), FieldName.begin(), asciiToUpper);
 	FieldName.push_back('=');
 	_Headers.push_back(FieldName + Hfield.second);
+	std::cout << _Headers.back() << "\n";
 }
 
 bool CGII::isHeaderServerSpecific(const std::string &hName) const

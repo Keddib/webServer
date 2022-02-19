@@ -1,0 +1,39 @@
+To store state, the origin server includes a Set-Cookie header in an
+HTTP response.  In subsequent requests, the user agent returns a
+Cookie request header to the origin server.  The Cookie header
+contains cookies the user agent received in previous Set-Cookie
+headers.  The origin server is free to ignore the Cookie header or
+use its contents for an application-defined purpose.
+
+
+Origin servers MAY send a Set-Cookie response header with any
+response.  User agents MAY ignore Set-Cookie headers contained in
+responses with 100-level status codes but MUST process Set-Cookie
+headers contained in other responses (including responses with 400-
+and 500-level status codes).  An origin server can include multiple
+Set-Cookie header fields in a single response.  The presence of a
+Cookie or a Set-Cookie header field does not preclude HTTP caches
+from storing and reusing a response.
+
+
+example 
+ == Server -> User Agent ==
+
+   Set-Cookie: SID=31d4d96e407aad42
+
+   == User Agent -> Server ==
+
+   Cookie: SID=31d4d96e407aad42
+
+The server can alter the default scope of the cookie using the Path
+and Domain attributes.  For example, the server can instruct the user
+agent to return the cookie to every path and every subdomain of
+example.com.
+
+== Server -> User Agent ==
+
+Set-Cookie: SID=31d4d96e407aad42; Path=/; Domain=example.com
+
+== User Agent -> Server ==
+
+Cookie: SID=31d4d96e407aad42
