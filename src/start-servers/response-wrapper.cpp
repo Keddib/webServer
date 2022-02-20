@@ -21,7 +21,12 @@ bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int requir
 			return true;
 	}
 	// if you got here means that there's body that need to be sent
-	return SendingBody(fd, storage_elment, required_size); // means response not done yet
+	if (!*_buffer){
+		if (!bodySize)
+			return true;
+		return SendingBody(fd, storage_elment, required_size); // means response not done yet
+	}
+	return false;
 }
 
 bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_size)
@@ -31,6 +36,7 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 		required_size = bodySize - hasBeenRead;
 	_body.read(storage_elment, required_size);
 	read_data = write(fd, storage_elment, required_size);
+	std::cout << "\033[32m sent: " << read_data << " total: " << bodySize << " obj: " << this <<  "\033[0m\n";
 	hasBeenRead += read_data;
 	_body.seekg(hasBeenRead); // this very important problem could arise here
 	return (hasBeenRead >= bodySize);

@@ -8,8 +8,8 @@ Response::Response()
 
 Response::~Response()
 {
-	// if (deleteFile.size())
-	// 	remove(deleteFile.c_str());
+	if (deleteFile.size())
+		remove(deleteFile.c_str());
 }
 
 void Response::setStartLine(

@@ -49,7 +49,7 @@ void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 	Restmp = NULL; //22
 }
 
-char	*Request::getFileName()
+const char	*Request::getFileName() const
 {
 	return fileName;
 }
@@ -99,6 +99,7 @@ Request::Request(const Request &cp)
 
 Request&	Request::operator=(const Request &rhs)
 {
+	client_info = rhs.client_info;
 	totalRead = rhs.totalRead; // added
 	is_req_alive = rhs.is_req_alive;
 	startTime = rhs.startTime;
@@ -446,19 +447,21 @@ Response	*Request::TakeInfoFromHeaders(char **str)
 	{
 		if (aHostName.empty())
 		{
+			char *s;
 			int tmp = IndexOf(second, ':'); // added
 			if (tmp != -1) //added
 			{
-				char *s = const_cast<char *>(second);
+				s = const_cast<char *>(second);
 				s[tmp] = 0; //added
 			}
 			aHostName = second;
+			if (tmp != -1)
+				s[tmp] = ':';
 		}
 		else
 			return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	}
-	else
-		aHeaders.push_back(std::make_pair(first, second));
+	aHeaders.push_back(std::make_pair(first, second));
 	if (isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
 	{
 		if (str_cmp(second, "chunked"))

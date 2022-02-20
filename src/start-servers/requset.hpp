@@ -72,7 +72,7 @@ class	Request
 		int 					getCommonServerIndex() const;
 		int 					getMethod() const ;
 		const 					std::string& getResource() const;
-		char					*getFileName();
+		const char				*getFileName() const;
 		bool 					getVersion() const;
 		const std::string& 			getHost() const;
 		const std::string& 			getBody() const;

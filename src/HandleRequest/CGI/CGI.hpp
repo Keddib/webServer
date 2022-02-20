@@ -49,6 +49,7 @@ class CGII
 		CGIIresInfo	_cgii_res_info;
 		std::string _CGIfile;
 		std::vector<std::string> _CGIheaders;
+		bool _Content_Type_set;
 	private:
 		CGII& operator=(const CGII &){return *this;}
 		char **getENV();
@@ -58,9 +59,9 @@ class CGII
 		std::string getQueryString(std::string &resource) const;
 		bool isHeaderServerSpecific(const std::string &) const;
 		Response *cgiError(int code);
-		int excuteChildProcess(int Rfd[], int Wfd[]);
-		int SendFile(int fd);
-		int ReadCGIresponse(int fd);
+		int excuteChildProcess(int Rfd, int Wfd);
+		// int SendFile(int fd);
+		// int ReadCGIresponse(int fd);
 		Response *ParseCGIresponse(const std::string &CGIfileRespone);
 		Response	*ResponseConstruction();
 		Response	*DocumentResponse();

@@ -1,4 +1,7 @@
-#include "CGI.hpp"
+	#include "CGI.hpp"
+
+
+// var_export($_SERVER)
 
 CGII::CGII(const Request &req, const ReqInfo &Rq)
 :
@@ -13,6 +16,8 @@ _Rq(Rq)
 	_args[0] = (char *)_Loc.getCGIpath().c_str();
 	_args[2] = NULL;
 	_CGIfile = std::string("/tmp/.") + to_string((uintptr_t)this);
+
+	_Content_Type_set = false;
 }
 
 CGII::~CGII()
@@ -24,45 +29,68 @@ CGII::~CGII()
 		++i;
 	}
 	delete [] _ENV;
-	// remove(_CGIfile.c_str());
 }
 
 void CGII::setENV()
 {
+	/*
+	'CONTENT_LENGTH' => '',
+  	'CONTENT_TYPE' => '',
+  	'REQUEST_METHOD' => 'GET',
+  	'QUERY_STRING' => 'php=1',
+  	'FCGI_ROLE' => 'RESPONDER',
+  	'PHP_SELF' => '/envs.php',
+	*/
 	std::string resource = _req.getResource();
 	_Headers.push_back("REQUEST_URI=" + resource);
 	std::string QS = getQueryString(resource); // this func remove the QS from resource
+	_Headers.push_back("DOCUMENT_URI=" + resource);
 	_Headers.push_back("SCRIPT_NAME=" + resource);
-	_Headers.push_back("PATH_INFO=" + resource);
+	// _Headers.push_back("PATH_INFO=" + resource);
 	if (resource[resource.size() - 1] == '/') // is directory there is a problem here
 		resource += _Rq.CGIfile;
 	_PATH = _Loc.getRoute() + resource;
 	_args[1] = (char *)_PATH.c_str();
-	_Headers.push_back("SCRIPT_FILENAME=" + _Rq.PATH);
+	_Headers.push_back("SCRIPT_FILENAME=" + _PATH);
 	_Headers.push_back("PATH_TRANSLATED=" + _PATH);
 	_Headers.push_back("QUERY_STRING=" + QS);
 	_Headers.push_back("SERVER_NAME=" + _req.getHost());
 	_Headers.push_back("REQUEST_METHOD=" + get_method(_req.getMethod()));
 	_Headers.push_back("GETAWAY_INTERFACE=CGI/1.1");
 	_Headers.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	_Headers.push_back("REDIRECT_STATUS=0");
+	_Headers.push_back("REDIRECT_STATUS=200");
+	_Headers.push_back("FCGI_ROLE=RESPONDER");
+	_Headers.push_back("REQUEST_SCHEME=http");
+	_Headers.push_back("DOCUMENT_ROOT=" + _Loc.getRoute());
+
 	_Headers.push_back("SERVER_SOFTWARE=webserv/1.1 " + getOsName());
 	int Port = ServI[_req.getCommonServerIndex()].GetIpPortCommonServer().second;
 	_Headers.push_back("SERVER_PORT=" + to_string(Port));
 	// remote client info
 	const std::pair<std::string, int> &remoteInfo = _req.GetClientInfo();
 	_Headers.push_back("REMOTE_ADDR=" + remoteInfo.first);
-	// _Headers.push_back("REMOTE_PORT=" + to_string(remoteInfo.second));
+	_Headers.push_back("REMOTE_PORT=" + to_string(remoteInfo.second));
 	if(const char* env_p = std::getenv("PATH"))
 		_Headers.push_back("PATH=" + std::string(env_p));
 	// need only content-type and content-lenght
-	if (_req.getMethod() == POST)
-		_Headers.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
+	_Headers.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
 	addRequestHeaders();
+	// {
+	// 	size_t size = _Headers.size();
+	// 	for (size_t i = 0; i < size; i++)
+	// 	{
+	// 		std::cout << _Headers[i] << '\n';
+	// 	}
+	// }
+	if (_Content_Type_set == false)
+		_Headers.push_back("CONTENT_TYPE=");
 	getENV();
+	int i = 0;
+	while (_ENV[i])
+		std::cout << _ENV[i++] << '\n';
 }
 
-int CGII::excuteChildProcess(int Rfd[], int Wfd[])
+int CGII::excuteChildProcess(int inFD, int outFD)
 {
 	DONE = false;
 	c_pid = fork();
@@ -72,57 +100,59 @@ int CGII::excuteChildProcess(int Rfd[], int Wfd[])
 	// if the pid is zero, this is the child process
 	if (c_pid == 0) // child
 	{
+		std::cerr << "inside child\n";
 		// change directory to the the scripte directory
 		chdir(_PATH.substr(0, _PATH.find_last_of('/')).c_str());
 
 		// Child. Start by closing descriptors we
 		//  don't need in this process
-		if (close(Rfd[READ]) || close(Wfd[WRITE]))
+		if (dup2(outFD, 1) == -1)
 			exit(500);
-		if (dup2(Rfd[WRITE], 1) == -1 || dup2(Wfd[READ], 0) == -1)
+		if (dup2(inFD, 0) == -1)
 			exit(500);
-		if (close(Wfd[READ]) || close(Rfd[WRITE]))
+		if (close(inFD) || close(outFD))
 			exit(500);
+		// fcntl(1, F_SETFL, O_NONBLOCK);
+		// fcntl(0, F_SETFL, O_NONBLOCK);
 		execve(_args[0], _args, _ENV);
 		exit(502);
 	}
-	// // Parent. close unneeded descriptors
-	close(Rfd[WRITE]);
-	close(Wfd[READ]);
 	return 0;
 }
 
 Response *CGII::getResponse()
 {
+	std::cout << "get respo cgi \n";
 	int status;
-	int Rfd[2]; // pipe for parent to read child output
-	int Wfd[2]; // pipe for child to read parent output
-	if (pipe(Rfd) < 0 || pipe(Wfd) < 0)
-		return cgiError(500);
-	if (excuteChildProcess(Rfd, Wfd))
-		return cgiError(500);
-	// if request is post write body to Wfd[write], otherwise close the writing end of pipe
-	// send a value to the child
-	if (_Rq.meth == POST)
-	{
-		if (_req.isBodyStr())
+	// int Rfd[2]; // pipe for parent to read child output
+	// int Wfd[2]; // pipe for child to read parent output
+	// if (pipe(Rfd) < 0 || pipe(Wfd) < 0)
+	// 	return cgiError(500);
+	int inFD = 0;
+	if (_Rq.meth == POST) {
+		inFD = open(_req.getFileName(), O_RDONLY);
+		if (inFD == -1)
 		{
-			int wRet = write(Wfd[WRITE], _req.getBody().c_str(), _req.getBody().size());
-			if (wRet < 0)
-				return cgiError(500);
-		}
-		else
-		{
-			if (SendFile(Wfd[WRITE]) == -1)
-				return cgiError(500);
+			std::cout << "failed\n";
+			return cgiError(500);
 		}
 	}
-	close(Wfd[WRITE]);
+	int outFD = open(_CGIfile.c_str(), O_RDWR | O_CREAT, 0666);
+	if (outFD == -1)
+	{
+		std::cout << "out not created\n";
+		return cgiError(500);
+	}
+	if (excuteChildProcess(inFD, outFD))
+		return cgiError(500);
+	if (inFD != 0)
+		if (close(inFD))
+			return cgiError(500);
+	if (close(outFD))
+		return cgiError(500);
 	// check timeout
 	while (std::time(NULL) - _sTime < CGItimeOut && !DONE)
-	{
 		usleep(5000);
-	}
 	if (!DONE) // if time ended and child didn't end yet return timeout
 	{
 		kill(c_pid, SIGKILL);
@@ -132,13 +162,6 @@ Response *CGII::getResponse()
 	status = WEXITSTATUS(status);
 	if ( status == 500 ||  status == 502) // if error return error
 		return cgiError(status);
-	else // else read response and parse it
-	{
-		if (ReadCGIresponse(Rfd[READ]) == -1)
-			return cgiError(500);
-	}
-	close(Rfd[READ]); // close read end of pipe
-//	exit(1);
 	// parse the CGI response
 	return ParseCGIresponse(_CGIfile);
 }
@@ -189,12 +212,15 @@ Response	*CGII::DocumentResponse()
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
 	}
+	else
+		res->setHeader("Connection", "keep-alive");
 	res->setHeader(_CGIheaders);
 	unsigned int bsize = getFileSize(_CGIfile.c_str());
 	bsize -= bodySize;
 	res->setHeader("Content-Length", to_string(bsize), 1);
 	res->setBodySize(bsize);
 	res->setBodyfile(_CGIfile, bodySize);
+	res->display();
 	return res;
 }
 
@@ -209,6 +235,8 @@ Response	*CGII::ClientRedirectResponse()
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
 	}
+	else
+		res->setHeader("Connection", "keep-alive");
 	res->setHeader(_CGIheaders);
 	if (_cgii_res_info.bodyExist)
 	{
@@ -226,6 +254,7 @@ Response	*CGII::ClientRedirectResponse()
 		res->setHeader("Content-Length", to_string(lenght), 1);
 		res->addBodyToBuffer(redirectPage);
 	}
+	res->display();
 	return res;
 }
 
@@ -313,38 +342,38 @@ void putCharInFile(std::fstream &f, char *buff, size_t size)
 			f << buff[i];
 }
 
-int CGII::ReadCGIresponse(int fd)
-{
-	// read data and store it on file
-	_CGIres.open(_CGIfile, std::fstream::out | std::fstream::binary);
-	int read_data;
-	do {
-		read_data = read(fd, _buff, BUFFER_SIZE);
-		if (read_data == -1)
-			return -1;
-		_buff[read_data] = 0;
-		putCharInFile(_CGIres, _buff, read_data);
-	}while(read_data);
-	_CGIres.close();
-	return 0;
-}
+// int CGII::ReadCGIresponse(int fd) // rethink of this
+// {
+// 	// read data and store it on file
+// 	_CGIres.open(_CGIfile, std::fstream::out | std::fstream::binary);
+// 	int read_data;
+// 	do {
+// 		read_data = read(fd, _buff, BUFFER_SIZE);
+// 		if (read_data == -1)
+// 			return -1;
+// 		_buff[read_data] = 0;
+// 		putCharInFile(_CGIres, _buff, read_data);
+// 	}while(read_data);
+// 	_CGIres.close();
+// 	return 0;
+// }
 
-int CGII::SendFile(int fd)
-{
-	std::fstream &file= const_cast<std::fstream &>(_req.getBodyFile());
-	file.seekg(0);
-	std::streamsize read_data;
-	do {
-		file.read(_buff, BUFFER_SIZE);
-		read_data = file.gcount();
-		if (read_data > BUFFER_SIZE)
-			break ; // possiblae error
-		_buff[read_data] = 0;
-		if (write(fd, _buff, read_data) == -1)
-			return -1;
-	}while(read_data);
-	return 0;
-}
+// int CGII::SendFile(int fd)
+// {
+// 	std::fstream &file= const_cast<std::fstream &>(_req.getBodyFile());
+// 	file.seekg(0);
+// 	std::streamsize read_data;
+// 	do {
+// 		file.read(_buff, BUFFER_SIZE);
+// 		read_data = file.gcount();
+// 		if (read_data > BUFFER_SIZE)
+// 			break ; // possiblae error
+// 		_buff[read_data] = 0;
+// 		if (write(fd, _buff, read_data) == -1)
+// 			return -1;
+// 	}while(read_data);
+// 	return 0;
+// }
 
 void CGII::addRequestHeaders()
 {
@@ -352,7 +381,10 @@ void CGII::addRequestHeaders()
 	for (size_t i = 0; i < size; i++)
 	{
 		if (_req.aHeaders[i].first == "Content-Type")
+		{
+			_Content_Type_set = true;
 			_Headers.push_back("CONTENT_TYPE=" + _req.aHeaders[i].second);
+		}
 		else if (isHeaderServerSpecific(_req.aHeaders[i].first))
 			continue;
 		else
@@ -364,17 +396,17 @@ void CGII::addRequestHeaders()
 void CGII::trasferReqHeaderToCGIheader(const std::pair<std::string, std::string> &Hfield)
 {
 	// transfer Hfeild name to UPPERCASE_ and add prefix HTTP_
+	std::cout << "HTTP_h\n";
 	std::string FieldName("HTTP_");
 	FieldName += Hfield.first;
 	std::transform(FieldName.begin(), FieldName.end(), FieldName.begin(), asciiToUpper);
 	FieldName.push_back('=');
 	_Headers.push_back(FieldName + Hfield.second);
-	std::cout << _Headers.back() << "\n";
 }
 
 bool CGII::isHeaderServerSpecific(const std::string &hName) const
 {
-	if (hName == "Authorization" || hName == "Content-Length" || hName == "Connection")
+	if (hName == "Authorization" || hName == "Content-Length")
 		return true;
 	return false;
 }
@@ -399,6 +431,7 @@ std::string CGII::get_method(int meth) const
 	else if (meth == DELETE) return "DELETE";
 	return "";
 }
+
 
 
 char **CGII::getENV()

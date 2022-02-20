@@ -20,6 +20,7 @@ Response *getUnusedCodeResponse(int code, const std::string &body)
 	res->setHeader("Connection: ", "close", 1);
 	res->setKeepAlive(0);
 	res->addBodyToBuffer(body);
+	res->display();
 	return res;
 }
 
@@ -60,13 +61,16 @@ Response *FileFound200(const std::string &PATH, FileInfo &Fdata, int server)
 	{
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
+	} else {
+		res->setHeader("Connecion", "keep-alive");
+		res->setKeepAlive(true);
 	}
 	res->setHeader("Content-Type", Fdata.Ftype);
 	res->setHeader("Content-Length", to_string(Fdata.size));
 	res->setBodySize(Fdata.size);
 	res->setHeader("Last-Modified", Fdata.Mtime, 1);
 	res->setBodyfile(PATH);
-	// res->display();
+	res->display();
 	return res;
 }
 
@@ -92,8 +96,10 @@ Response *deleteFile(const std::string &PATH, ReqInfo &Rq)
 	{
 		res->setHeader("Connection", "close", 1);
 		res->setKeepAlive(false);
-	} else
+	} else {
 		res->setHeader("Connection", "keep-alive", 1);
+		res->setKeepAlive(true);
+	}
 	// res->display();
 	return res;
 }
@@ -107,6 +113,9 @@ Response *GetDirListingResponse(const std::string &PATH, ReqInfo &Rq)
 	{
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
+	} else {
+		res->setHeader("Connecion", "keep-alive");
+		res->setKeepAlive(true);
 	}
 	res->setHeader("Content-Type", "text/html");
 	const std::string &s = ListDirectory(PATH, Rq.rsource_path);
@@ -176,7 +185,11 @@ Response *HandleDirResource(const Request &req, ReqInfo &Rq, const std::vector<s
 	else if ((index.empty() && Rq.indexon) || error == 1) // dir listing
 		return GetDirListingResponse(Rq.PATH, Rq); // need to return a response with directory listing
 	Rq.PATH += index;
-	return HandleFileResource(req, Rq); // found
+	std::string &resource = const_cast<std::string &>(req.getResource());
+	resource += index;
+	std::cout << "|->" << req.getResource() << '\n';
+	// exit(1);
+	return HandleRequest(req); // handle resource with the index as resource
 }
 
 void getLocationIndexes(const Location &loc, std::vector<std::string> &indexes)
@@ -222,8 +235,9 @@ Response* HandleRequest(const Request &req)
 		req.getVersion(),
 		getCacheHeader(req.aHeaders)
 		);
-	
+
 	// print start line
+	std::cout << "REQ RES = "<< req.getResource() << '\n';
 	const Location &rLoc = ServI[Rq.com_srv_index].whichServer(Rq.host_name).whichLocation(Rq.rsource_path);
 	// rLoc.Display();
 	// exit(1);

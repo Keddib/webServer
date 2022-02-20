@@ -9,9 +9,15 @@ void OnChildExist(int )
 	DONE = true;
 }
 
+void	onWriteFail(int)
+{
+	std::cout << "sig pipe\n";
+}
+
 int main()
 {
 	signal(SIGCHLD, OnChildExist);
+	signal(SIGPIPE, onWriteFail);
 	// just for debugging
 	std::cout << getpid() << std::endl;
 

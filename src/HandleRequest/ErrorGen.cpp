@@ -26,6 +26,9 @@ Response *ErrorGen::getResponse(
 	{
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
+	} else {
+		res->setHeader("Connection", "keep-alive");
+		res->setKeepAlive(true);
 	}
 	// check if the user defined an error page for the error accured
 	// if not we use out defualt error pages
@@ -88,6 +91,10 @@ Response *ErrorGen::get304Respone(size_t server, const std::string &Time, bool k
 	{
 		res->setHeader("Connection", "close");
 		res->setKeepAlive(false);
+	} else
+	{
+		res->setHeader("Connection", "keep-alive");
+		res->setKeepAlive(true);
 	}
 	res->setHeader("Last-Modified", Time, 1);
 	return res;
