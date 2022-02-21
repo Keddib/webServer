@@ -14,6 +14,7 @@ _buffer(c_rsp->getBuffer().c_str())
 bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int required_size)
 {
 	lasTimeWereHere = std::time(NULL);
+	g_client_closed = false;
 	if (*_buffer)
 	{
 		// which means that header is not done sending yet
@@ -29,14 +30,30 @@ bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int requir
 	return false;
 }
 
+/*
+ fd is connected to a pipe or socket whose reading end is
+closed.  When this happens the writing process will also
+receive a SIGPIPE signal.  (Thus, the write return value
+is seen only if the program catches, blocks or ignores
+this signal )
+ */
+
 bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_size)
 {
+	// if body done sending returns true
+	// if sigpipe happend which means that connection is closed by client do some modification and return true
+	// if still sending return false;
 	int read_data;
 	if (hasBeenRead + required_size > bodySize)
 		required_size = bodySize - hasBeenRead;
 	_body.read(storage_elment, required_size);
 	read_data = write(fd, storage_elment, required_size);
-	std::cout << "\033[32m sent: " << read_data << " total: " << bodySize << " obj: " << this <<  "\033[0m\n";
+	if (g_client_closed)
+	{
+		_com_response->setKeepAlive(false);
+		return true;
+	}
+//	std::cout << "\033[32m sent: " << read_data << " total: " << bodySize << " obj: " << this <<  "\033[0m\n";
 	hasBeenRead += read_data;
 	_body.seekg(hasBeenRead); // this very important problem could arise here
 	return (hasBeenRead >= bodySize);
@@ -50,6 +67,11 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 	if ((size_t)required_size > _buffer_size)
 	{
 		read_data = write(fd, _buffer, _buffer_size);
+		if (g_client_closed)
+		{
+			_com_response->setKeepAlive(false);
+			return true; // which indacte that response is done combined setKeepAlive to false result will remove request and response related this connection 
+		}
 		_buffer += read_data; // if header was all sent _buffer will be "" so we will get in this branch again
 		required_size -= read_data; // new size that we will try to send from body in case of heaader is done
 	}

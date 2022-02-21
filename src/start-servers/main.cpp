@@ -11,7 +11,8 @@ void OnChildExist(int )
 
 void	onWriteFail(int)
 {
-	std::cout << "sig pipe\n";
+	g_client_closed = true;
+	std::cerr << "CLIENT HAS closed connection before complete responsing\n";
 }
 
 int main()

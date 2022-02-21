@@ -1,6 +1,8 @@
 #include "../HandleRequest/Response.hpp"
 #include <ctime>
 #include "../MACROS.hpp"
+extern	bool	g_client_closed;
+
 class	ResponseWrapper
 {
 	private:

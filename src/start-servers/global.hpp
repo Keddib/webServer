@@ -6,5 +6,6 @@
 ServersInterface ServI;
 ErrorGen errorRespo;
 bool DONE;
+bool	g_client_closed;
 
 #endif

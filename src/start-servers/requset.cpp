@@ -195,10 +195,6 @@ Response	*Request::AddToRequest(char *str, int size)
 				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 			// bodyFileObj.close(); //changed
 			bodyFileObj.seekg(0);
-			std::cout << "req start!=============================================\n";
-			for (auto &p : aHeaders)
-				std::cout << p.first << "--->: " << p.second << "\n";
-			std::cout << "req done!=============================================\n";
 			return HandleRequest(*this); // this is here means request is done
 		}
 		if (totalRead > max_client_size) //// test this later

@@ -1,6 +1,6 @@
 NAME	= Webserv
 
-GO		= clang++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
+GO		= g++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
 
 OFILES	= CommonServers.o ErrorGen.o Location.o ServersInterface.o requset.o\
 		utils.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
@@ -33,9 +33,9 @@ fclean: clean
 
 
 run: start-servers/manage-request.cpp
-	clang++ -ggdb3 -O0   obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp start-servers/response-wrapper.cpp -o run
+	g++ -ggdb3 -O0   obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp start-servers/response-wrapper.cpp -o run
 
 cgi: HandleRequest/CGI/CGI.cpp start-servers/requset.cpp 
-	clang++ -ggdb3 obj/*.o HandleRequest/CGI/CGI.cpp  HandleRequest/ReqHandler.cpp   -o cgi
+	g++ -ggdb3 obj/*.o HandleRequest/CGI/CGI.cpp  HandleRequest/ReqHandler.cpp   -o cgi
 
 .PHONY: clean fclean re all

@@ -178,9 +178,6 @@ void	ManageRequest::WorkOnResponse(int curFd)
 		event.events = EPOLLIN;
 		// should i remove file associeted with body
 		if (!iter_to_res->second.isFileUsed()){
-			std::cout << "in remove proccess\n";
-			int y;
-			std::cin >> y;
 			remove(iter_to_req->second.getFileName());
 		}
 		if (iter_to_res->second.CloseConnection())

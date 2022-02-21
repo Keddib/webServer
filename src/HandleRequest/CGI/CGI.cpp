@@ -110,7 +110,9 @@ int CGII::excuteChildProcess(int inFD, int outFD)
 			exit(500);
 		if (dup2(inFD, 0) == -1)
 			exit(500);
-		if (close(inFD) || close(outFD))
+		if (inFD != 0 && close(inFD))
+			exit(500);
+		if (close(outFD))
 			exit(500);
 		// fcntl(1, F_SETFL, O_NONBLOCK);
 		// fcntl(0, F_SETFL, O_NONBLOCK);
