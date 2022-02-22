@@ -146,26 +146,26 @@ Response			*Request::StartLineParsing(char **str, int &size)
 
 void	Request::ResourseDecoding()
 {
-	size_t size = aResourcPath.size();
-	const char *str;
-	char c;
-	tmpRSP.clear();
-	for (size_t i = 0; i < size; ++i)
-	{
-		if (aResourcPath[i] == '%') //example file%3Ahg
-		{
-			c = aResourcPath[i + 3];
-			aResourcPath[i + 3] = 0;
-			str = aResourcPath.c_str() + 1 + i;
-			// str now will be 3A in the above example
-			tmpRSP.push_back(strtol(str, NULL, 16));
-			aResourcPath[i + 3] = c; // return the previous character that was at this spot
-			i += 2;
-		}
-		else
-			tmpRSP.push_back(aResourcPath[i]);
-	}
-	aResourcPath = tmpRSP;
+	// size_t size = aResourcPath.size();
+	// const char *str;
+	// char c;
+	// tmpRSP.clear();
+	// for (size_t i = 0; i < size; ++i)
+	// {
+	// 	if (aResourcPath[i] == '%') //example file%3Ahg
+	// 	{
+	// 		c = aResourcPath[i + 3];
+	// 		aResourcPath[i + 3] = 0;
+	// 		str = aResourcPath.c_str() + 1 + i;
+	// 		// str now will be 3A in the above example
+	// 		tmpRSP.push_back(strtol(str, NULL, 16));
+	// 		aResourcPath[i + 3] = c; // return the previous character that was at this spot
+	// 		i += 2;
+	// 	}
+	// 	else
+	// 		tmpRSP.push_back(aResourcPath[i]);
+	// }
+	// aResourcPath = tmpRSP;
 }
 
 Response	*Request::AddToRequest(char *str, int size)
@@ -192,13 +192,13 @@ Response	*Request::AddToRequest(char *str, int size)
 		if (ProcessBody(str, endStr - str))
 		{
 			if (totalRead > max_client_size) //// test this later
-				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
+				return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 			// bodyFileObj.close(); //changed
 			bodyFileObj.seekg(0);
 			return HandleRequest(*this); // this is here means request is done
 		}
 		if (totalRead > max_client_size) //// test this later
-			return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
+			return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 	}
 	return NULL; // request not  done yet
 }
@@ -221,7 +221,7 @@ Response			*Request::ReserveSpaceForBody()
 		{
 			totalRead = bodySize; // added
 			if (bodySize > max_client_size)  // to be checked later
-				return errorRespo.getResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
+				return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
 			if (bodySize < MAX_BODY_SWITCH)
 				bodyString.reserve(bodySize);
 			else {
@@ -232,7 +232,7 @@ Response			*Request::ReserveSpaceForBody()
 			}
 		}
 		else if (method == POST)
-			return errorRespo.getResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
+			return ResGen.getErrorResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
 		else
 			return HandleRequest(*this); // +++++++++++++++ in this case i should return complete response bec request is done processing
 	}
@@ -382,7 +382,7 @@ Response		*Request::ProcessHeaders(char **str, int size)
 		if (IsHeadersDone(str))
 		{
 			if (aHostName.empty() && version == true)
-				return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE); // HOST header does not exist
+				return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE); // HOST header does not exist
 			status = 1;
 			return NULL;
 		}
@@ -455,7 +455,7 @@ Response	*Request::TakeInfoFromHeaders(char **str)
 				s[tmp] = ':';
 		}
 		else
-			return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+			return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	}
 	aHeaders.push_back(std::make_pair(first, second));
 	if (isChuncked == -1 && str_cmp(first, "Transfer-Encoding"))
@@ -492,7 +492,7 @@ Response	*Request::FirstSecondFromHeaderLine(bool &opfold)
 	}
 	tmpStr[tmp] = 0;
 	if (tmpStr[tmp - 1] == ' ')
-		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+		return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	//second = first + tmp + 1;
 	second = remove_speces_at_end_start(const_cast<char *>(first + tmp + 1), !strcmp(first, "Cookie"));
 
@@ -542,17 +542,17 @@ Response	*Request::InitFromStartLine()
 	size_t	start;
 	method = GetMethod(tmpStr, methodHolder, start);
 	if (method == NOT_IMPLEMENTED)
-		return errorRespo.getResponse(comServerIndex, NOT_IMPLEMENTED_STATUS_CODE);
+		return ResGen.getErrorResponse(comServerIndex, NOT_IMPLEMENTED_STATUS_CODE);
 	if (method == UKNOWNMETHOD)
-		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+		return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	// i need now to get resource path
 	InitRecoursePath(aResourcPath, tmpStr, start);
 	ResourseDecoding(); // i did not insert this function in InitRecoursePath bec it's not member of the Request class
 	start = GetHttpVersion(tmpStr, start);
 	if (start == HTTP_VERSION_NOT_SUPPORTED)
-		return errorRespo.getResponse(comServerIndex, HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE);
+		return ResGen.getErrorResponse(comServerIndex, HTTP_VERSION_NOT_SUPPORTED_STATUS_CODE);
 	if (start == SYNTAX_ERROR)
-		return errorRespo.getResponse(comServerIndex, SYNTAX_STATUS_CODE);
+		return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE);
 	version = start;
 	return NULL;
 }

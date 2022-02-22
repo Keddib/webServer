@@ -1,11 +1,10 @@
 #ifndef __GLOBAL__
 #define __GLOBAL__
 #include "../configuration/ServersInterface.hpp"
-#include "../HandleRequest/ErrorGen.hpp"
+#include "../Response/ResGenerator.hpp"
 
 ServersInterface ServI;
-ErrorGen errorRespo;
-bool DONE;
+ResGenerator ResGen;
 bool	g_client_closed;
 
 #endif

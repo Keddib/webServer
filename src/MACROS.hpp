@@ -66,5 +66,8 @@
 #define TIMEOUT 3600
 #define EPOLL_RETRY 5
 
+#define	READ	0
+#define	WRITE	1
+
 
 #endif

@@ -1,8 +1,9 @@
 #include "manage-request.hpp"
 
-
+std::fstream file_obj;
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
+	file_obj.open("./backup", std::fstream::out);
 	int tmpMax;
 	numOfFds = 0;
 	int fd;
@@ -35,8 +36,10 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 {
 	int	read_data;
 	int	tot = 0;
+	bzero(buffer, BUFFER_SIZE);
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
+		file_obj << buffer << "|\n";
 		if (read_data <= 0) // and if client close fd it will removed by timeCheck function later so it does not matter here
 			break ;
 		tot += read_data;
@@ -216,6 +219,7 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 	++newConnections;
 
 	tmpFd = accept(curFd, (struct sockaddr *)(&client_addr), &address_len);
+	std::cout << tmpFd << "acc fd \n";
 	fcntl(tmpFd, F_SETFL, O_NONBLOCK);
 	++numOfFds;
 	event.data.fd = tmpFd;

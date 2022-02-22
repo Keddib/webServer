@@ -2,8 +2,8 @@
 #define __REQUEST__
 
 
-#include "../configuration/confHeaders.hpp"
-#include "../HandleRequest/ErrorGen.hpp"
+#include "../Includes.hpp"
+#include "../Response/ResGenerator.hpp"
 #include "../MACROS.hpp"
 #include <cstring>
 #include <ctime>
@@ -11,7 +11,7 @@
 #include <map>
 
 
-extern ErrorGen errorRespo;
+extern ResGenerator ResGen;
 
 class	Request
 {

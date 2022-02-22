@@ -3,11 +3,6 @@
 #include "./manage-request.hpp"
 #include <signal.h>
 
-void OnChildExist(int )
-{
-	std::cout << "child is done\n";
-	DONE = true;
-}
 
 void	onWriteFail(int)
 {
@@ -17,7 +12,6 @@ void	onWriteFail(int)
 
 int main()
 {
-	signal(SIGCHLD, OnChildExist);
 	signal(SIGPIPE, onWriteFail);
 	// just for debugging
 	std::cout << getpid() << std::endl;

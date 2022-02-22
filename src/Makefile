@@ -1,19 +1,18 @@
 NAME	= Webserv
 
-GO		= g++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
+GO		= clang++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
 
-OFILES	= CommonServers.o ErrorGen.o Location.o ServersInterface.o requset.o\
-		utils.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
-		response-wrapper.o ReqHandler.o main.o HandleDirectory.o CGI.o
+OFILES	= CommonServers.o ResGenerator.o Location.o ServersInterface.o requset.o\
+		StringManipulation.o HandleCGIresponse.o HandleFile.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\
+		response-wrapper.o ReqHandler.o  HandleRequest.o main.o HandleDirectory.o
 
 ODIR=obj
 
 OBJ = $(patsubst %,$(ODIR)/%,$(OFILES))
 
-DEPS = MACROS.hpp configuration/*.hpp HandleRequest/*.hpp HandleRequest/CGI/*.hpp\
-	start-servers/*.hpp
+DEPS = MACROS.hpp Includes.hpp configuration/*.hpp Response/*.hpp start-servers/*.hpp
 
-vpath %.cpp configuration HandleRequest HandleRequest/utils HandleRequest/CGI start-servers
+vpath %.cpp configuration Response start-servers utils
 
 all: $(NAME)
 
@@ -35,7 +34,7 @@ fclean: clean
 run: start-servers/manage-request.cpp
 	g++ -ggdb3 -O0   obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp start-servers/response-wrapper.cpp -o run
 
-cgi: HandleRequest/CGI/CGI.cpp start-servers/requset.cpp 
+cgi: HandleRequest/CGI/CGI.cpp start-servers/requset.cpp
 	g++ -ggdb3 obj/*.o HandleRequest/CGI/CGI.cpp  HandleRequest/ReqHandler.cpp   -o cgi
 
 .PHONY: clean fclean re all

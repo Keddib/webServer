@@ -147,9 +147,19 @@ bool Location::isCGI() const
 	return !_CGI.empty();
 }
 
+bool Location::isUPLOAD() const
+{
+	return !_upload.empty();
+}
+
 unsigned int Location::getCGItimeOut() const
 {
 	return _cgiTimeOut;
+}
+
+const std::string& Location::getUPLOADpath() const
+{
+	return _upload;
 }
 
 void Location::Display() const

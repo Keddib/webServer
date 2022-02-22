@@ -34,16 +34,19 @@ We splited the work into two parts:
 	- [x] invalid redirection codes hudnled based on NGINX behavoir.
 
 
-- [] handle CGI
+- [x] handle CGI
 	- [x] set all ENV variables needed to the cgi script including HTTP_ headers
-	- [] create a new process
-	- [] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
-	- [] get the output and kill the process
-	- [] CGI response parsing
-		- [] Document Response: Content-Type | Status = 200;
-		- [] Local Redirect Response : Location : local URI PATH // no other header field
-		- [] Client Redirect Response : Location : Absolute URI redirect with 302
-		- [] Client Redirect Response with Document : Location | Status (redirection code) | Content-Type;
+	- [x] create a new process
+	- [x] if method=GET add QUERY_STRING env if post open body file and dup to cgi-input
+	- [x] get the output and kill the process
+	- [x] CGI response parsing
+		- [x] Document Response: Content-Type | Status = 200;
+		- [x] Local Redirect Response : Location : local URI PATH // no other header field
+		- [x] Client Redirect Response : Location : Absolute URI redirect with 302
+		- [x] Client Redirect Response with Document : Location | Status (redirection code) | Content-Type;
+
+- [] upload
+	???
 
 
 !!!!! if autoindex off and index not setted and the resource is directory return 403 Forbidden

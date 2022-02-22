@@ -1,6 +1,8 @@
 #ifndef SERVERS_INTERFACE_001_HPP
 #define SERVERS_INTERFACE_001_HPP
 
+// #include "../Includes.hpp"
+#include <vector>
 #include "CommonServers.hpp"
 #include "../MACROS.hpp"
 #include <unistd.h>

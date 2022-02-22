@@ -2,7 +2,6 @@
 #define LOCATION_001_HPP
 
 #include "../MACROS.hpp"
-#include "../HandleRequest/utils.hpp"
 #include <arpa/inet.h> //added
 #include <sys/socket.h> //added
 #include <string>
@@ -42,13 +41,17 @@ class Location
 		bool isAutoIndexOn() const;
 		bool isRedirect() const;
 		bool isCGI() const;
+		bool isUPLOAD() const;
 		int getRedirectCode() const;
 		const std::string& getRedirectURI() const;
 		const std::string& getCGIext() const;
 		const std::string& getCGIpath() const;
+		const std::string& getUPLOADpath() const;
 		unsigned int getCGItimeOut() const;
 		void Display() const;
 
 };
+
+std::string	to_string(long long n);
 
 #endif

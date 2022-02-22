@@ -1,6 +1,5 @@
 #include <sys/socket.h>
 #include <fcntl.h>
-#include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstring>
@@ -11,28 +10,29 @@
 
 int main(int argc, char **argv)
 {
-	std::string str;
 	int port = std::stoi(argv[1]);
+	struct sockaddr_in srv_addr;
 	int srv_fd;
-	int read_fd;
-	char buffer[4096] = {
-		"GET / HTTP/1.0\r\nHost: host-name\r\nContent-Length: 89\r\nVAR3: value3\r\n\r\n"
-	};
-	struct sockaddr_in srv_info;
+	char *REQ = "GET / HTTP/1.0\r\n\r\n";
+	char RES[4096];
+
+	srv_addr.sin_family = AF_INET;
+	srv_addr.sin_port = htons(port);
+	inet_aton("10.12.6.12", &srv_addr.sin_addr);
+
+	srv_fd = socket(AF_INET, SOCK_STREAM, 0);
+	std::cout << connect(srv_fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) << "\n";
+
+	write (srv_fd, REQ, strlen(REQ));
+	std::cout << "request sent\n";
+	std::cout << "read?";
+	int y;
+	std::cin >> y;
+	RES[read(srv_fd, RES, 4096)] = 0;
+
+	std::cout << RES;
+
+	close(srv_fd);
 	
 
-	srv_info.sin_family = AF_INET;
-	srv_info.sin_port = htons(port);
-	if (argc == 3)
-		inet_aton(argv[2], &srv_info.sin_addr);
-	else
-		inet_aton("10.12.6.12", &srv_info.sin_addr);
-	srv_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-	read_fd = connect(srv_fd, (struct sockaddr*)&srv_info, sizeof(srv_info));
-	std::cout << read_fd << std::endl;
-	std::cout << "connection established\n";
-	std::cin >> str; // just for blocking
-	write(srv_fd, buffer, strlen(buffer));
-	close(read_fd);
 }

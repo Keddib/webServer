@@ -1,7 +1,9 @@
 #ifndef CONFIG_PARSER_HPP
 #define CONFIG_PARSER_HPP
 
-#include "confHeaders.hpp"
+#include "../Includes.hpp"
+#include "../MACROS.hpp"
+#include "ServersInterface.hpp"
 
 extern	ServersInterface ServI;
 

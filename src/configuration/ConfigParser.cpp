@@ -127,6 +127,9 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 	{
 		if (tokens.size() != 3)
 			throwException(tokens[0] + " needs two values (extentions of CGI scripts and path to the interpreter)\n");
+		if (_Vsrvs.back().getLocationsToEdit().back().isUPLOAD())
+			throwException(tokens[0] + " Not expected (CGI and UPLOAD can't be on the same loaction)\n");
+
 		_Vsrvs.back().getLocationsToEdit().back().setCGI(tokens[1], tokens[2]);
 
 	}
@@ -143,7 +146,9 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 	{
 		if (tokens.size() != 2)
 			throwException(tokens[0] + " needs one value (path to upload)\n");
-			_Vsrvs.back().getLocationsToEdit().back().setUpload(tokens[1]);
+		if (_Vsrvs.back().getLocationsToEdit().back().isCGI())
+			throwException(tokens[0] + " Not expected (CGI and UPLOAD can't be on the same loaction)\n");
+		_Vsrvs.back().getLocationsToEdit().back().setUpload(tokens[1]);
 	}
 	else if (dir == RET)
 	{

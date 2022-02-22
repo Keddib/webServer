@@ -1,18 +1,28 @@
 #include "response-wrapper.hpp"
 
 ResponseWrapper::ResponseWrapper(Response *c_rsp) :
-_com_response(c_rsp), _body(c_rsp->getBody()),
-_buffer(c_rsp->getBuffer().c_str())
+_com_response(c_rsp), _body(c_rsp->getBody())/*,
+_buffer(c_rsp->getBuffer().c_str())*/
 {
+	resIsDone = false;
 	lasTimeWereHere = std::time(NULL);
 	bodySize = c_rsp->getBodySize();
 	hasBeenRead = 0;
-	_buffer_size = c_rsp->getBuffer().size();
 }
 
 
 bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int required_size)
 {
+	if (!resIsDone)
+	{
+		resIsDone = _com_response->isReady();
+		if (resIsDone) {
+			_buffer = _com_response->getBuffer().c_str();
+			_buffer_size = _com_response->getBuffer().size();
+		}
+		else
+			return false;
+	}
 	lasTimeWereHere = std::time(NULL);
 	g_client_closed = false;
 	if (*_buffer)
@@ -70,7 +80,7 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 		if (g_client_closed)
 		{
 			_com_response->setKeepAlive(false);
-			return true; // which indacte that response is done combined setKeepAlive to false result will remove request and response related this connection 
+			return true; // which indacte that response is done combined setKeepAlive to false result will remove request and response related this connection
 		}
 		_buffer += read_data; // if header was all sent _buffer will be "" so we will get in this branch again
 		required_size -= read_data; // new size that we will try to send from body in case of heaader is done
