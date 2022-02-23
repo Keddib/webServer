@@ -31,10 +31,7 @@ fclean: clean
 	rm -rf $(NAME)
 
 
-run: start-servers/manage-request.cpp
-	g++ -ggdb3 -O0   obj/*.o start-servers/manage-request.cpp   start-servers/requset.cpp start-servers/response-wrapper.cpp -o run
-
-cgi: HandleRequest/CGI/CGI.cpp start-servers/requset.cpp
-	g++ -ggdb3 obj/*.o HandleRequest/CGI/CGI.cpp  HandleRequest/ReqHandler.cpp   -o cgi
+cgi: Response/HandleRequest.cpp Response/ReqHandler.cpp  Response/ResGenerator.cpp Response/Response.cpp utils/HandleCGIresponse.cpp
+	g++ -ggdb3 ./obj/*.o Response/HandleRequest.cpp Response/ReqHandler.cpp  Response/ResGenerator.cpp Response/Response.cpp utils/HandleCGIresponse.cpp  -o cgi
 
 .PHONY: clean fclean re all
