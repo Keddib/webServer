@@ -1,9 +1,9 @@
 #include "manage-request.hpp"
 
-std::fstream file_obj;
+// std::fstream file_obj;
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
-	file_obj.open("./backup", std::fstream::out);
+	// file_obj.open("./backup", std::fstream::out);
 	int tmpMax;
 	numOfFds = 0;
 	int fd;
@@ -39,7 +39,7 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 	bzero(buffer, BUFFER_SIZE);
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
-		file_obj << buffer << "|\n";
+		// file_obj << buffer << "|\n";
 		if (read_data <= 0) // and if client close fd it will removed by timeCheck function later so it does not matter here
 			break ;
 		tot += read_data;

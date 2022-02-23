@@ -6,7 +6,6 @@ _buffer(c_rsp->getBuffer().c_str())*/
 {
 	resIsDone = false;
 	lasTimeWereHere = std::time(NULL);
-	bodySize = c_rsp->getBodySize();
 	hasBeenRead = 0;
 }
 
@@ -19,6 +18,7 @@ bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int requir
 		if (resIsDone) {
 			_buffer = _com_response->getBuffer().c_str();
 			_buffer_size = _com_response->getBuffer().size();
+			bodySize = _com_response->getBodySize();
 		}
 		else
 			return false;
@@ -63,7 +63,6 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 		_com_response->setKeepAlive(false);
 		return true;
 	}
-//	std::cout << "\033[32m sent: " << read_data << " total: " << bodySize << " obj: " << this <<  "\033[0m\n";
 	hasBeenRead += read_data;
 	_body.seekg(hasBeenRead); // this very important problem could arise here
 	return (hasBeenRead >= bodySize);
