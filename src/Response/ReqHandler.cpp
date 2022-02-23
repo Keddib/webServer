@@ -15,21 +15,23 @@ ReqHandler::~ReqHandler()
 
 void ReqHandler::INIT()
 {
-	_childOut = std::string("/tmp/.") + to_string((uintptr_t)this);
 	_reqResource = _req.getResource();
 	_reqMethod = _req.getMethod();
 	_reqCMservers = _req.getCommonServerIndex();
 	_reqHttpVersion = _req.getVersion();
+	_hostName = _req.getHost();
+	_location = const_cast<Location &>(ServI[_req.getCommonServerIndex()].
+	whichServer(_hostName).whichLocation(_reqResource ));
 	_autoIndex = _location.isAutoIndexOn();
 	_root = _location.getRoute();
 	if ((_isCGI = _location.isCGI()))
 	{
 		_CGIpath = _location.getCGIpath();
 		_CGUextention = _location.getCGIext();
+		_cgiTimeOut = _location.getCGItimeOut();
 	}
 	if ((_isUPLOAD = _location.isUPLOAD()))
 		_UPLOADpath = _location.getUPLOADpath();
-	_hostName = _req.getHost();
 	size_t pos = _reqResource.find_first_of('?');
 	_resource = _reqResource.substr(0, pos);
 	if (pos != std::string::npos)
@@ -79,7 +81,6 @@ Response *ReqHandler::HandleFileResource()
 {
 	FileInfo Fdata;
 	int ret = getFileInfo(_hostPath, Fdata);
-	std::cout << "ret " <<'\n';
 	if (ret == 0) // found
 	{
 		if (_isCGI && fileHasextension(_hostPath, _location.getCGIext())) // hundle CGI
@@ -107,13 +108,10 @@ Response *ReqHandler::HandleDirResource()
 		return ResGen.GetDirListingResponse(_hostPath, _resource, _reqCMservers, _connection); // need to return a response with directory listing
 	else if (error == 1)
 		return ResGen.getErrorResponse(_reqCMservers, 404, _hostName, _connection);
-	std::string &resource = const_cast<std::string &>(_req.getResource());
-	resource += index;
-	std::cout << "|->" << _req.getResource() << '\n';
-	_location = ServI[_req.getCommonServerIndex()].whichServer(_hostName).
-	whichLocation(_req.getResource());
-	INIT();
-	return getResponse(); // handle resource with the index as resource
+	// std::string &resource = const_cast<std::string &>(_req.getResource());
+	_resource += index;
+	_hostPath = _root + _resource;
+	return HandleFileResource(); // handle resource with the index as resource
 
 }
 
@@ -169,15 +167,10 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 		std::cerr << "inside child\n";
 		// change directory to the the scripte directory
 		chdir(_hostPath.substr(0, _hostPath.find_last_of('/')).c_str());
-		// Child. Start by closing descriptors we
-		//  don't need in this process
-		if (dup2(outFD, 1) == -1)
+		// Child. Start by closing descriptors we don't need in this process
+		if (dup2(outFD, 1) == -1 || dup2(inFD, 0) == -1)
 			exit(500);
-		if (dup2(inFD, 0) == -1)
-			exit(500);
-		if (inFD != 0 && close(inFD))
-			exit(500);
-		if (close(outFD))
+		if ((inFD != 0 && close(inFD)) || close(outFD))
 			exit(500);
 		execve(args[0], args, ENV);
 		exit(502);
@@ -185,10 +178,18 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 	return 0;
 }
 
+#include <sys/time.h>
+std::string createFileName()
+{
+	struct timeval t;
+	gettimeofday(&t, NULL); // get current time
+	return std::string("/tmp/.") + to_string(1000000 * t.tv_sec + t.tv_usec);
+}
 
 Response *ReqHandler::HundleCGI()
 {
 	int PID;
+	_childOut = createFileName();
 	std::vector<std::string> envHeaders;
 	setENV(envHeaders);
 	char **ENV = getENV(envHeaders);
@@ -198,9 +199,9 @@ Response *ReqHandler::HundleCGI()
 		if (inFD == -1)
 			return ResGen.getErrorResponse(_reqCMservers, 500, _hostName, _connection);
 	}
-	int outFD = open(_childOut.c_str(), O_RDWR | O_CREAT, 0666);
+	int outFD = open(_childOut.c_str(), O_WRONLY | O_CREAT, 0666);
 	if (outFD == -1)
-			return ResGen.getErrorResponse(_reqCMservers, 500, _hostName, _connection);
+		return ResGen.getErrorResponse(_reqCMservers, 500, _hostName, _connection);
 	if (excuteChildProcess(ENV, inFD, outFD, PID))
 			return ResGen.getErrorResponse(_reqCMservers, 500, _hostName, _connection);
 	if (inFD != 0 && close(inFD))
@@ -241,6 +242,8 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("REMOTE_ADDR=" + remoteInfo.first);
 	envHeaders.push_back("REMOTE_PORT=" + to_string(remoteInfo.second));
 	addRequestHeaders(envHeaders);
+		// for (int i = 0; i < envHeaders.size(); i++)
+		// 	std::cout << envHeaders[i] + '\n';
 }
 
 void ReqHandler::addRequestHeaders(std::vector<std::string> &envHeaders)

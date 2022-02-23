@@ -182,19 +182,16 @@ void	Response::DocumentResponse( int code )
 	_bSize = getFileSize(_bodyFileName.c_str());
 	_bSize -= _headersSize;
 	setHeader("Content-Length", to_string(_bSize), 1);
-	setBodyfile(_bSize);
+	setBodyfile(_headersSize);
+	display();
 }
 
 void	Response::ClientRedirectResponse(CGIIresInfo &resInfo)
 {
-	std::cout << "BEFORE\n";
-	std::cout << _buffer << "\n";
 	_buffer.insert(0, "Accept-Ranges: none\r\n");
 	_buffer.insert(0, "Date: " + getDate() + "\r\n");
 	_buffer.insert(0, "Server: webserv/1.1 " + getOsName() + "\r\n");
 	_buffer.insert(0, "HTTP/1.1 " + to_string(resInfo.status.second) + " " + getErrorMessage(resInfo.status.second) + "\r\n");
-	std::cout << "AFTER\n";
-	std::cout << _buffer << "\n";
 	if (!_keepAlive)
 	{
 		setHeader("Connection", "close");
@@ -215,6 +212,7 @@ void	Response::ClientRedirectResponse(CGIIresInfo &resInfo)
 		// add content-lenght header ;
 		setHeader("Content-Length", to_string(length), 1);
 		addBodyToBuffer(redirectPage);
+		display();
 	}
 }
 
@@ -270,7 +268,6 @@ void	Response::getErrorResponse(int error)
 bool Response::setUserErrorPage(int error)
 {
 	std::string errorPagePath;
-	std::cout << cmSrvFd << '\n';
 	const std::vector<std::pair<int, std::string> > &Errors =
 	ServI[cmSrvFd].whichServer(_host).getErrorPages();
 	// loop over error pages and check if the server has error pages

@@ -12,6 +12,7 @@ class Response
 		/* data */
 		int	cmSrvFd;
 		std::fstream _body;
+		std::string _buffer;
 		std::string _bodyFileName;
 		std::string _host;
 		int64_t _bSize;
@@ -23,7 +24,6 @@ class Response
 		bool _isFileUsed;
 		bool _isReady;
 	public:
-		std::string _buffer;
 		Response();
 		~Response();
 		void setStartLine(const std::string&, int, const std::string &);
