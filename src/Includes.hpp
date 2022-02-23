@@ -37,8 +37,7 @@ struct CGIIresInfo{
 	bool							location;
 	std::pair<bool, short>			status;
 	short							bodyExist;
-	bool							error;
-
+	int								error;
 };
 
 
@@ -68,6 +67,5 @@ std::string getServerPort(size_t server);
 void freeArray(char **arr);
 int	IndexOf(const char *str, char c);
 bool	my_strncmp(const char *s1, const char *s2, size_t n);
-
 
 #endif
