@@ -12,8 +12,6 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 	if (_CGIres.is_open())
 	{
 		do {
-			// _buff = new char[BUFFER_SIZE];
-			bzero(_buff, BUFFER_SIZE);
 			_CGIres.getline(_buff, BUFFER_SIZE);
 			if (_CGIres.gcount() == 0)
 			{
@@ -21,12 +19,11 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 				return _cgii_res_info;
 			}
 			bytesRead += _CGIres.gcount();
-			_buff[_CGIres.gcount()] = '\n';
-			// _buff[_CGIres.gcount() + 1] = 0x00;
+			_buff[_CGIres.gcount() - 1] = '\n';
+			_buff[_CGIres.gcount()] = 0x00;
 			if (_buff[0] == '\r' || _buff[0] == '\0')
 				break ; // means that empty lines after header fields
 			delm = IndexOf(_buff, ':');
-			std::cout << "1 "<< _buff << "\n";
 			if (delm == -1)
 				continue;
 			if (!_cgii_res_info.cont_type && my_strncmp(_buff, "Content-Type", delm))
@@ -39,15 +36,7 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 				_cgii_res_info.status.second = atoi(_buff + delm + 1); // if i need to take at as number write atoi(str)
 				continue ;
 			}
-			res->_buffer = res->_buffer + std::string(_buff);
-			std::cout << res->_buffer << std::endl;
-			// std::string header(_buff);
-			// std::cout <<"before" <<"\n";
-			// std::cout << res->getBuffer() << "\n";
-			// res->setHeader(std::string(_buff, _CGIres.gcount()));
-			// std::cout << "res buff\n";
-			// std::cout << res->getBuffer() << "\n";
-			// delete _buff;
+			res->setHeader(_buff);
 		}
 		while (_buff[0]); // it will break bec of empty line after headers
 		// after this loop file pointer will be at body if there's one
@@ -57,6 +46,7 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 		res->setHeaderSize(bytesRead);
 		return _cgii_res_info;
 	}
+	std::cout << _CGIfile <<" file not opened \n";
 	_cgii_res_info.error = 500;
 	return _cgii_res_info;
 }
