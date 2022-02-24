@@ -24,4 +24,5 @@ class	ResponseWrapper
 		bool		CloseConnection() const;
 		bool		SendingResponse(int fd, char *storage_elment, int required_size);
 		ResponseWrapper(Response *rsp);
+		~ResponseWrapper();
 };

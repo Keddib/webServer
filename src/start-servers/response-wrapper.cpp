@@ -9,9 +9,15 @@ _buffer(c_rsp->getBuffer().c_str())*/
 	hasBeenRead = 0;
 }
 
+ResponseWrapper::~ResponseWrapper()
+{
+	_com_response = NULL;
+}
+
 
 bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int required_size)
 {
+	lasTimeWereHere = std::time(NULL);
 	if (!resIsDone)
 	{
 		resIsDone = _com_response->isReady();
@@ -23,7 +29,6 @@ bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int requir
 		else
 			return false;
 	}
-	lasTimeWereHere = std::time(NULL);
 	g_client_closed = false;
 	if (*_buffer)
 	{

@@ -2,15 +2,19 @@
 
 
 Response::Response()
-: _bSize(0), _keepAlive(1), _isFileUsed(1), _isReady(1)
+: _bSize(0), _keepAlive(1), _isFileUsed(1), _isReady(1), _PID(-1)
 {
 
 }
 
 Response::~Response()
 {
-	if (_bodyFileName.size())
+	if (_bodyFileName.size()) {
+		std::cout << "\033[31m removed: " << _bodyFileName << "\033[0m\n";
 		remove(_bodyFileName.c_str());
+	}
+	if (_PID != -1)
+		kill(_PID, SIGKILL);
 }
 
 void Response::setStartLine(
@@ -183,7 +187,6 @@ void	Response::DocumentResponse( int code )
 	_bSize -= _headersSize;
 	setHeader("Content-Length", to_string(_bSize), 1);
 	setBodyfile(_headersSize);
-	display();
 }
 
 void	Response::ClientRedirectResponse(CGIIresInfo &resInfo)
@@ -212,7 +215,6 @@ void	Response::ClientRedirectResponse(CGIIresInfo &resInfo)
 		// add content-lenght header ;
 		setHeader("Content-Length", to_string(length), 1);
 		addBodyToBuffer(redirectPage);
-		display();
 	}
 }
 
@@ -225,6 +227,7 @@ bool	Response::isReady()
 	{
 		if (waitpid(_PID, &status, WNOHANG))
 		{
+			_PID = -1;
 			std::cout << "child is done\n";
 			_isReady = true;
 			return getResponse(WEXITSTATUS(status));
@@ -233,6 +236,7 @@ bool	Response::isReady()
 			return false;
 	}
 	kill(_PID, SIGKILL);
+	_PID = -1;
 	getErrorResponse(504);
 	_isReady = true;
 	return true;
