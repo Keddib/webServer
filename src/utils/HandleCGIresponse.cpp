@@ -33,7 +33,7 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 			else if (!_cgii_res_info.status.first && my_strncmp(_buff, "Status", delm)) // myabe the status shuold be lower case
 			{
 				_cgii_res_info.status.first = true; // Status: 302 Found
-				_cgii_res_info.status.second = atoi(_buff + delm + 1); // if i need to take at as number write atoi(str)
+				_cgii_res_info.status.second = std::atoi(_buff + delm + 1); // if i need to take at as number write atoi(str)
 				continue ;
 			}
 			res->setHeader(_buff);
