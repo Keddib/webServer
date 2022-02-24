@@ -106,7 +106,6 @@ Response *ReqHandler::HandleDirResource()
 		return ResGen.GetDirListingResponse(_hostPath, _resource, _reqCMservers, _connection); // need to return a response with directory listing
 	else if (error == 1)
 		return ResGen.getErrorResponse(_reqCMservers, 404, _hostName, _connection);
-	// std::string &resource = const_cast<std::string &>(_req.getResource());
 	_resource += index;
 	_hostPath = _root + _resource;
 	return HandleFileResource(); // handle resource with the index as resource
