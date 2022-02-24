@@ -17,6 +17,7 @@ class ReqHandler {
 		Location &_location;
 		std::string _reqResource;
 		std::string _hostName;
+		std::string _portStr;
 		std::string _root;
 		std::string _resource; // resource without QueryString
 		std::string _hostPath;
