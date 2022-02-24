@@ -8,10 +8,7 @@ whichServer(req.getHost()).whichLocation(req.getResource())))
 	INIT();
 }
 
-ReqHandler::~ReqHandler()
-{
-
-}
+ReqHandler::~ReqHandler() {}
 
 void ReqHandler::INIT()
 {
@@ -20,6 +17,7 @@ void ReqHandler::INIT()
 	_reqCMservers = _req.getCommonServerIndex();
 	_reqHttpVersion = _req.getVersion();
 	_hostName = _req.getHost();
+	_portStr = _req.getPortStr();
 	_location = const_cast<Location &>(ServI[_req.getCommonServerIndex()].
 	whichServer(_hostName).whichLocation(_reqResource ));
 	_autoIndex = _location.isAutoIndexOn();
@@ -47,11 +45,11 @@ void ReqHandler::INIT()
 
 Response *ReqHandler::getResponse()
 {
-	std::cout << "REQ: "<< _reqMethod << ' ' << _reqResource << '\n';
-	std::cout << _hostPath << "\n";
-	std::cout << _resource << "\n";
-	std::cout << _reqResource << "\n";
-	std::cout << _queryString << "\n";
+	std::cout <<"REQ: "<< _reqMethod << ' ' << _reqResource << '\n';
+	std::cout <<"REQuri" <<_reqResource << "\n";
+	std::cout <<"Res" <<_resource << "\n";
+	std::cout <<"PATH" <<_hostPath << "\n";
+	std::cout <<"QS"<<_queryString << "\n";
 
 	// check if req.method is accepted on location
 	if (!_location.isMethodAllowed(_reqMethod))
@@ -227,6 +225,7 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("PATH_TRANSLATED=" + _hostPath);
 	envHeaders.push_back("QUERY_STRING=" + _queryString);
 	envHeaders.push_back("SERVER_NAME=" + _hostName);
+	envHeaders.push_back("SERVER_PORT=" + _portStr);
 	envHeaders.push_back("REQUEST_METHOD=" + get_method(_reqMethod));
 	envHeaders.push_back("DOCUMENT_ROOT=" + _root);
 	envHeaders.push_back("GETAWAY_INTERFACE=CGI/1.1");
@@ -236,7 +235,6 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("REQUEST_SCHEME=http");
 	envHeaders.push_back("SERVER_SOFTWARE=webserv/1.1 " + getOsName());
 	envHeaders.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
-	envHeaders.push_back("SERVER_PORT=" + getServerPort(_reqCMservers));
 	envHeaders.push_back("PATH=" + std::string(std::getenv("PATH")));
 	const std::pair<std::string, int> &remoteInfo = _req.GetClientInfo();
 	envHeaders.push_back("REMOTE_ADDR=" + remoteInfo.first);

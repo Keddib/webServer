@@ -16,6 +16,7 @@ extern ResGenerator ResGen;
 class	Request
 {
 	private:
+		std::string				portStr;
 		unsigned int			max_client_size;
 		unsigned int			totalRead;
 		std::pair<std::string, in_port_t>	client_info;
@@ -81,6 +82,7 @@ class	Request
 		long					getBodySize() const;
 		const std::pair<std::string, in_port_t>	GetClientInfo() const;
 		std::vector<std::pair<std::string, std::string> >	aHeaders;
+		const std::string		&getPortStr() const;
 };
 
 

@@ -23,6 +23,7 @@ Request::Request(int confd, int comServerIndex, const struct sockaddr_in &cl_inf
 
 void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 {
+	portStr = "80";
 	totalRead = 0; // added
 	is_req_alive = true;
 	startTime = std::time(NULL);
@@ -99,6 +100,7 @@ Request::Request(const Request &cp)
 
 Request&	Request::operator=(const Request &rhs)
 {
+	portStr = rhs.portStr;
 	client_info = rhs.client_info;
 	totalRead = rhs.totalRead; // added
 	is_req_alive = rhs.is_req_alive;
@@ -449,6 +451,7 @@ Response	*Request::TakeInfoFromHeaders(char **str)
 			{
 				s = const_cast<char *>(second);
 				s[tmp] = 0; //added
+				portStr = std::string(s + tmp + 1);
 			}
 			aHostName = second;
 			if (tmp != -1)
@@ -769,4 +772,9 @@ const std::pair<std::string, in_port_t>	Request::GetClientInfo() const
 long	Request::getBodySize() const
 {
 	return totalRead;
+}
+
+const std::string		&Request::getPortStr() const
+{
+	return portStr;
 }
