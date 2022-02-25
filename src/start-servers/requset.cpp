@@ -148,32 +148,32 @@ Response			*Request::StartLineParsing(char **str, int &size)
 
 void	Request::ResourseDecoding()
 {
-	// size_t size = aResourcPath.size();
-	// const char *str;
-	// char c;
-	// tmpRSP.clear();
-	// for (size_t i = 0; i < size; ++i)
-	// {
-	// 	if (aResourcPath[i] == '?')
-	// 	{
-	// 		 std::string strTmp = aResourcPath.c_str() + i; // copy query
-	// 		 aResourcPath = tmpRSP + strTmp; // need to be tested
-	// 		 return ;
-	// 	}
-	// 	else if (aResourcPath[i] == '%') //example file%3Ahg
-	// 	{
-	// 		c = aResourcPath[i + 3];
-	// 		aResourcPath[i + 3] = 0;
-	// 		str = aResourcPath.c_str() + 1 + i;
-	// 		// str now will be 3A in the above example
-	// 		tmpRSP.push_back(strtol(str, NULL, 16));
-	// 		aResourcPath[i + 3] = c; // return the previous character that was at this spot
-	// 		i += 2;
-	// 	}
-	// 	else
-	// 		tmpRSP.push_back(aResourcPath[i]);
-	// }
-	// aResourcPath = tmpRSP;
+	 size_t size = aResourcPath.size();
+	 const char *str;
+	 char c;
+	 tmpRSP.clear();
+	 for (size_t i = 0; i < size; ++i)
+	 {
+	 	if (aResourcPath[i] == '?')
+	 	{
+	 		 std::string strTmp = aResourcPath.c_str() + i; // copy query
+	 		 aResourcPath = tmpRSP + strTmp; // need to be tested
+	 		 return ;
+	 	}
+	 	else if (aResourcPath[i] == '%') //example file%3Ahg
+	 	{
+	 		c = aResourcPath[i + 3];
+	 		aResourcPath[i + 3] = 0;
+	 		str = aResourcPath.c_str() + 1 + i;
+	 		// str now will be 3A in the above example
+	 		tmpRSP.push_back(strtol(str, NULL, 16));
+	 		aResourcPath[i + 3] = c; // return the previous character that was at this spot
+	 		i += 2;
+	 	}
+	 	else
+	 		tmpRSP.push_back(aResourcPath[i]);
+	 }
+	 aResourcPath = tmpRSP;
 }
 
 Response	*Request::AddToRequest(char *str, int size)
@@ -227,16 +227,18 @@ Response			*Request::ReserveSpaceForBody()
 		}
 		else if (bodySize != -1)
 		{
-			totalRead = bodySize; // added
-			if (bodySize > max_client_size)  // to be checked later
-				return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
-			if (bodySize < MAX_BODY_SWITCH)
-				bodyString.reserve(bodySize);
-			else {
-				fillFileName(connFD, fileName);
-				bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
-				bodyFileObj.close();
-				bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary);
+			if (bodySize){
+				totalRead = bodySize; // added
+				if (bodySize > max_client_size)  // to be checked later
+					return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // keep eye on this line maybe i will change according to  defalut.conf file
+				if (bodySize < MAX_BODY_SWITCH)
+					bodyString.reserve(bodySize);
+				else {
+					fillFileName(connFD, fileName);
+					bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
+					bodyFileObj.close();
+					bodyFileObj.open(fileName, std::fstream::out | std::fstream::in | std::fstream::binary);
+				}
 			}
 		}
 		else if (method == POST)
@@ -340,14 +342,14 @@ bool	Request::ReadByChunck(char *str, long size)
 					return true; // which means that the body is done dealing with
 				tmpStr.clear();
 				str += tmp; // MOVING str after "\r\n"
-				size -= tmp; // this calc here is wrong-------------
+				size -= tmp;
 				chunkedBodyState = false;
 				hasBeenRead = 0;
 			}
 		}
 		if (!chunkedBodyState)
 		{
-			if (BodyFileCase(str, size)) // and this call here is getting wrong str
+			if (BodyFileCase(str, size)) 
 			{
 				//bodyFileObj<< "\n"; // i do not know now should add new line after or not
 				chunkedBodyState = true; // swith again to wait for other data

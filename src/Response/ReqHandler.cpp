@@ -157,11 +157,11 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 		return (-1);
 	if (pid == 0) // child
 	{
+		std::cerr << "inside child at: " << _hostPath.substr(0, _hostPath.find_last_of('/')).c_str() << "\n";
 		char *args[3];
 		args[0] = (char *)_CGIpath.c_str();
 		args[1] = (char *)_hostPath.c_str();
 		args[2] = NULL;
-		std::cerr << "inside child\n";
 		// change directory to the the scripte directory
 		chdir(_hostPath.substr(0, _hostPath.find_last_of('/')).c_str());
 		// Child. Start by closing descriptors we don't need in this process
@@ -233,7 +233,10 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("FCGI_ROLE=RESPONDER");
 	envHeaders.push_back("REQUEST_SCHEME=http");
 	envHeaders.push_back("SERVER_SOFTWARE=webserv/1.1 " + getOsName());
-	envHeaders.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
+	if (_req.getBodySize() >= 0) 
+		envHeaders.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
+	else
+		envHeaders.push_back("CONTENT_LENGTH=");
 	envHeaders.push_back("PATH=" + std::string(std::getenv("PATH")));
 	const std::pair<std::string, int> &remoteInfo = _req.GetClientInfo();
 	envHeaders.push_back("REMOTE_ADDR=" + remoteInfo.first);

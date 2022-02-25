@@ -13,12 +13,12 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 	{
 		do {
 			_CGIres.getline(_buff, BUFFER_SIZE);
-			if (_CGIres.gcount() == 0)
+			bytesRead += _CGIres.gcount();
+			if (_CGIres.gcount() > BUFFER_SIZE)
 			{
 				_cgii_res_info.error = 502;
 				return _cgii_res_info;
 			}
-			bytesRead += _CGIres.gcount();
 			_buff[_CGIres.gcount() - 1] = '\n';
 			_buff[_CGIres.gcount()] = 0x00;
 			if (_buff[0] == '\r' || _buff[0] == '\0')
