@@ -77,18 +77,27 @@ Response *ReqHandler::getResponse()
 
 Response *ReqHandler::uploadFile()
 {
+	bool isNotFile;
 	size_t pos = _resource.find_last_of('/');
 	std::string fileName = _resource.substr(pos + 1);
-	if (fileName.empty())
+	if ((isNotFile = fileName.empty()))
 		fileName = "file" + createFileName();
 	std::string oldname = _req.getFileName();
 	std::string newname = _location.getUPLOADpath() + fileName;
-	
-	if (rename(oldname, newname) != 0)
+	if (rename(oldname.c_str(), newname.c_str()) != 0)
 	{
-		// to do
+		int code = 404;
+		if (errno == EACCES)
+			code = 405;
+		return ResGen.getErrorResponse(_reqCMservers, code, _hostName, _connection);
 	}
-	return ResGen.getRedirectResponse(_);
+	std::string location("Location: ");
+	if (isNotFile)
+		location += _resource + fileName + "\r\n";
+	else
+		location += _resource + "\r\n";
+	std::cout << location;
+	return ResGen.getRedirecResponse(_reqCMservers, 201, location, _hostName, _connection);
 }
 
 Response *ReqHandler::HandleFileResource()
@@ -195,7 +204,7 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 Response *ReqHandler::HundleCGI()
 {
 	int PID;
-	_childOut = std::string("/tmp/.") + reateFileName();
+	_childOut = std::string("/tmp/.") + createFileName();
 	std::vector<std::string> envHeaders;
 	setENV(envHeaders);
 	char **ENV = getENV(envHeaders);

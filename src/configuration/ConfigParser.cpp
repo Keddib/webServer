@@ -148,6 +148,8 @@ void ConfigParser::addDirectiveToLocation(int dir, std::vector<std::string> &tok
 			throwException(tokens[0] + " needs one value (path to upload)\n");
 		if (_Vsrvs.back().getLocationsToEdit().back().isCGI())
 			throwException(tokens[0] + " Not expected (CGI and UPLOAD can't be on the same loaction)\n");
+		if (tokens[1][tokens[1].size() - 1] != '/')
+			tokens[1] += '/';
 		_Vsrvs.back().getLocationsToEdit().back().setUpload(tokens[1]);
 	}
 	else if (dir == RET)
