@@ -227,7 +227,7 @@ int ConfigParser::whichDirective(const std::string &dir) const
 		return (CMBS);
 	else if (dir == "error_page")
 		return (ERRPG);
-	else if (dir == "allow_methods")
+	else if (dir == "accepted_methods")
 		return (ACCMETH);
 	else if (dir == "location")
 		return (LOCATION);
