@@ -2,7 +2,7 @@
 
 
 Response::Response()
-: _bSize(0), _keepAlive(1), _isFileUsed(1), _isReady(1), _PID(-1)
+: _bSize(0), _keepAlive(1), _isFileUsed(0), _isReady(1), _PID(-1)
 {
 
 }
@@ -135,6 +135,10 @@ void	Response::setCommonServerIndex(int s)
 bool Response::isFileUsed() const
 {
 	return _isFileUsed;
+}
+void Response::setIsFileUsed( bool b)
+{
+	_isFileUsed = b;
 }
 
 void Response::setNotReady(time_t time, int PID, const std::string &file, bool ready)

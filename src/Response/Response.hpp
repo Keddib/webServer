@@ -3,7 +3,6 @@
 
 #include "../Includes.hpp"
 #include "../configuration/ServersInterface.hpp"
-#include <sys/epoll.h>
 
 extern ServersInterface ServI;
 
@@ -48,6 +47,7 @@ class Response
 		std::fstream	&getBody(); // i just added this function
 		const std::string &getBodyFile() const;
 		bool isFileUsed() const;
+		void setIsFileUsed( bool b = 1);
 		int	getCommonServerIndex() const;
 		void	setCommonServerIndex(int s);
 		bool	isReady();
