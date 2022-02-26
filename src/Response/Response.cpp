@@ -63,13 +63,17 @@ void Response::setHeaderSize(size_t size)
 
 void Response::setBodyfile(const std::string &file)
 {
-	_body.open(file, std::fstream::in | std::fstream::binary);
+	_seek_to = 0;
+	_file_name = file;
+	/*_body.open(file, std::fstream::in | std::fstream::binary);*/
 }
 
 void Response::setBodyfile(unsigned int size)
 {
-	_body.open(_bodyFileName, std::fstream::in | std::fstream::binary);
-	_body.seekg(size);
+	_seek_to = size;
+	_file_name = _bodyFileName;
+	/*_body.open(_bodyFileName, std::fstream::in | std::fstream::binary);
+	_body.seekg(size);*/
 }
 
 void Response::setKeepAlive(bool connection)
@@ -96,6 +100,8 @@ bool Response::isKeepAlive() const
 
 unsigned int Response::getBodySize() const
 {
+	// i will need to just return std::string with file name
+	// and where to start with seekg number
 	return _bSize;
 }
 
@@ -111,6 +117,10 @@ std::fstream &Response::getBody()
 	return _body;
 }
 
+std::pair<std::string, unsigned int>	Response::getBodyInfo()
+{
+	return std::make_pair(_file_name, _seek_to);
+}
 
 int	Response::getCommonServerIndex() const
 {

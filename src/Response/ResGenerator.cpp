@@ -92,7 +92,7 @@ bool ResGenerator::setUserErrorPage(Response *res, size_t server, const std::str
 		if (Errors[i].first == error)
 			errorPagePath = Errors[i].second;
 	}
-	FileInfo fData;
+	FileInfo fData; // MYAYBE THIS SHOULD SET KEELALIVE ACCORDING TO VERSION
 	// we check if a error page path is correct we use it as response body
 	if (!errorPagePath.empty() && (getFileInfo(errorPagePath, fData) == 0))
 	{

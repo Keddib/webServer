@@ -65,6 +65,7 @@
 #define RS_TMOUT 30
 #define TIMEOUT 3600
 #define EPOLL_RETRY 5
+#define MAX_READ_FAILS 10
 
 #define	READ	0
 #define	WRITE	1

@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 struct	FileInfo
 {
@@ -67,5 +68,6 @@ std::string getServerPort(size_t server);
 void freeArray(char **arr);
 int	IndexOf(const char *str, char c);
 bool	my_strncmp(const char *s1, const char *s2, size_t n);
+std::string createFileName();
 
 #endif

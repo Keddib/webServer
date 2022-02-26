@@ -3,12 +3,15 @@
 
 #include "../Includes.hpp"
 #include "../configuration/ServersInterface.hpp"
+#include <sys/epoll.h>
 
 extern ServersInterface ServI;
 
 class Response
 {
 	private:
+		unsigned	int	_seek_to;
+		std::string	_file_name;
 		/* data */
 		int	cmSrvFd;
 		std::fstream _body;
@@ -49,6 +52,7 @@ class Response
 		void	setCommonServerIndex(int s);
 		bool	isReady();
 		void display();
+		std::pair<std::string, unsigned int>	getBodyInfo();
 	private:
 		bool	getResponse(int status);
 		bool	getTimeoutResponse();

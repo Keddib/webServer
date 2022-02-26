@@ -49,6 +49,7 @@ class ReqHandler {
 		std::string getIfModifiedSinceTime();
 		Response *uploadFile();
 		Response *HundleCGI();
+		Response *uploadFile();
 		void setENV(std::vector<std::string> &);
 		char **getENV(std::vector<std::string> &);
 		void addRequestHeaders(std::vector<std::string> &envHeaders);

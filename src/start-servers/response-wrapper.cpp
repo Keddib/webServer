@@ -1,12 +1,33 @@
 #include "response-wrapper.hpp"
 
 ResponseWrapper::ResponseWrapper(Response *c_rsp) :
-_com_response(c_rsp), _body(c_rsp->getBody())/*,
-_buffer(c_rsp->getBuffer().c_str())*/
+_com_response(c_rsp)
 {
+	failAttempts = 0;
 	resIsDone = false;
 	lasTimeWereHere = std::time(NULL);
 	hasBeenRead = 0;
+}
+
+
+
+ResponseWrapper::ResponseWrapper(const ResponseWrapper &cp)
+{
+	*this = cp;
+}
+
+ResponseWrapper&	ResponseWrapper::operator=(const ResponseWrapper &rhs)
+{
+	failAttempts = rhs.failAttempts;
+	resIsDone = rhs.resIsDone;
+	lasTimeWereHere = rhs.lasTimeWereHere;
+	_com_response = rhs._com_response;
+	_body = rhs._body;
+	_buffer = rhs._buffer;
+	bodySize = rhs.bodySize;
+	hasBeenRead = rhs.hasBeenRead;
+	_buffer_size = rhs._buffer_size;
+	return *this;
 }
 
 ResponseWrapper::~ResponseWrapper()
@@ -22,8 +43,34 @@ bool		ResponseWrapper::SendingResponse(int fd, char *storage_elment,  int requir
 	{
 		resIsDone = _com_response->isReady();
 		if (resIsDone) {
+			std::pair<std::string, unsigned int> tmpPair = _com_response->getBodyInfo();
 			_buffer = _com_response->getBuffer().c_str();
 			_buffer_size = _com_response->getBuffer().size();
+			if (!tmpPair.first.empty())
+			{
+				_body = open(tmpPair.first.c_str(), O_RDONLY);
+				if (_body == -1)
+				{
+					_com_response->setKeepAlive(false);
+					return true;
+				}
+				if (lseek(_body, tmpPair.second, SEEK_SET) == -1)
+				{
+					_com_response->setKeepAlive(false);
+					return true;
+				}
+				if (fcntl(_body, F_SETFL, O_NONBLOCK) == -1)
+				{
+					_com_response->setKeepAlive(false);
+					return true;
+				}
+			}
+			else
+				_body = -3;
+			read_poll_fd.fd = _body;
+			read_poll_fd.events = POLLIN;
+			read_poll_fd.revents = 0;// JUST RESET
+			// i guess if some fail happend here just return true and set keep-alive to false to close connection just possiblty
 			bodySize = _com_response->getBodySize();
 		}
 		else
@@ -52,7 +99,7 @@ receive a SIGPIPE signal.  (Thus, the write return value
 is seen only if the program catches, blocks or ignores
 this signal )
  */
-
+/*
 bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_size)
 {
 	// if body done sending returns true
@@ -71,8 +118,46 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 	hasBeenRead += read_data;
 	_body.seekg(hasBeenRead); // this very important problem could arise here
 	return (hasBeenRead >= bodySize);
-}
+}*/
 
+bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_size)
+{
+	unsigned short	read_data, written_data;
+	
+	if (!(poll(&read_poll_fd, 1, 0)))
+		return false; // which indacte that file is not ready to read
+	if (hasBeenRead + required_size > bodySize)
+		required_size = bodySize - hasBeenRead;
+	read_data = read(_body, storage_elment, required_size);
+	if (read_data == -1)
+	{
+		// means not ready to read from file
+		if (failAttempts > MAX_READ_FAILS)
+		{
+				_com_response->setKeepAlive(false);
+				return true;
+		}
+		++failAttempts;
+		return false;
+	}
+	required_size = read_data;
+	written_data = write(fd, storage_elment, required_size);
+	if (g_client_closed)
+	{
+		_com_response->setKeepAlive(false);
+		return true;
+	}
+	hasBeenRead += written_data;
+	if (written_data != required_size)
+		lseek(_body, hasBeenRead, SEEK_SET);
+	if (hasBeenRead >= bodySize)
+	{
+		close(_body);
+		std::cout << "BODY IS DONE SENDING\n";
+		return  true;
+	}
+	return false;
+}
 
 bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 {
@@ -91,7 +176,7 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 	}
 	if (*_buffer == 0)
 	{
-		if (!_body.is_open())
+		if (_body == -3)
 			return true; // indactes that we are done with the response
 	}
 	return false;

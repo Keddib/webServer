@@ -59,9 +59,9 @@ Response *ReqHandler::getResponse()
 	if (!_isCGI && !_location.isUPLOAD()) // method not allowd for static serving
 		if (_reqMethod == POST)
 			return ResGen.getErrorResponse(_reqCMservers, 405, _hostName, _connection);
-	// if (_isUPLOAD) // if upload Post need to create new resource
-	// 	if (_reqMethod == POST)
-	// 		return uploadFile();
+	if (_isUPLOAD) // if upload Post need to create new resource
+	 	if (_reqMethod == POST)
+	 		return uploadFile();
 	if (_hostPath[_hostPath.size() - 1] != '/') // is file
 		return HandleFileResource();
 	else // directory
@@ -75,10 +75,27 @@ Response *ReqHandler::getResponse()
 	return NULL;
 }
 
+Response *ReqHandler::uploadFile()
+{
+	size_t pos = _resource.find_last_of('/');
+	std::string fileName = _resource.substr(pos + 1);
+	if (fileName.empty())
+		fileName = "file" + createFileName();
+	std::string oldname = _req.getFileName();
+	std::string newname = _location.getUPLOADpath() + fileName;
+	
+	if (rename(oldname, newname) != 0)
+	{
+		// to do
+	}
+	return ResGen.getRedirectResponse(_);
+}
+
 Response *ReqHandler::HandleFileResource()
 {
 	FileInfo Fdata;
 	int ret = getFileInfo(_hostPath, Fdata);
+	Fdata.keepAlive = _connection; /// added
 	if (ret == 0) // found
 	{
 		if (_isCGI && fileHasextension(_hostPath, _location.getCGIext())) // hundle CGI
@@ -175,18 +192,10 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 	return 0;
 }
 
-#include <sys/time.h>
-std::string createFileName()
-{
-	struct timeval t;
-	gettimeofday(&t, NULL); // get current time
-	return std::string("/tmp/.") + to_string(1000000 * t.tv_sec + t.tv_usec);
-}
-
 Response *ReqHandler::HundleCGI()
 {
 	int PID;
-	_childOut = createFileName();
+	_childOut = std::string("/tmp/.") + reateFileName();
 	std::vector<std::string> envHeaders;
 	setENV(envHeaders);
 	char **ENV = getENV(envHeaders);

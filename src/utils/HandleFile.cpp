@@ -6,6 +6,13 @@ bool isFileAccessible(const std::string &path)
 	return infile.good();
 }
 
+std::string createFileName()
+{
+	struct timeval t;
+	gettimeofday(&t, NULL); // get current time
+	return to_string(1000000 * t.tv_sec + t.tv_usec);
+}
+
 // if file dosn't existe return 1, if file existe and not accessible return 2
 // otherwise get file size, type and Lastmodification date and return 0;
 int getFileInfo(const std::string &fileName, FileInfo &fileI)
