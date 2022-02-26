@@ -13,9 +13,9 @@
 #define Dir2 "</pre><hr></body></html>"
 
 #define	MAX_BACK_LOG	100
-#define CONFIG_FILE "./config/default.conf"
+#define CONFIG_FILE "/APP/src/config/default.conf"
 #define DEFAULT_ROOT "/APP/www"
-#define ERROR_ROOT ""
+#define ERROR_ROOT "/var/www"
 #define D_PORT 80
 #define HOST 1
 #define PORT 2
