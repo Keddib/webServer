@@ -68,8 +68,6 @@ Response *ReqHandler::getResponse()
 	{
 		if (_reqMethod == DELETE && !_isCGI) // if method is delete return not found
 			return ResGen.getErrorResponse(_reqCMservers, 404, _hostName, _connection);
-		if (_location.getIndexes().empty() && !_autoIndex)
-			return ResGen.getErrorResponse(_reqCMservers, 403, _hostName, _connection);
 		return HandleDirResource();
 	}
 	return NULL;
@@ -97,7 +95,10 @@ Response *ReqHandler::uploadFile()
 	else
 		location += _resource + "\r\n";
 	std::cout << location;
-	return ResGen.getRedirecResponse(_reqCMservers, 201, location, _hostName, _connection);
+
+	Response *res = ResGen.getRedirecResponse(_reqCMservers, 201, location, _hostName, _connection);
+	res->setIsFileUsed(1);
+	return res;
 }
 
 Response *ReqHandler::HandleFileResource()
@@ -125,8 +126,9 @@ Response *ReqHandler::HandleFileResource()
 Response *ReqHandler::HandleDirResource()
 {
 	int error(-1);
+
 	std::string index = lookForIndexInDirectory(_hostPath, _location.getIndexes(), error);
-	if ((index.empty() && !_autoIndex) || (error == 2)) // index not found and no directory listing
+	if ((index.empty() && !_autoIndex && _resource == "/") || (error == 2)) // index not found and no directory listing
 		return ResGen.getErrorResponse(_reqCMservers, 403, _hostName, _connection);
 	else if (index.empty() && _autoIndex) // dir listing
 		return ResGen.GetDirListingResponse(_hostPath, _resource, _reqCMservers, _connection); // need to return a response with directory listing
@@ -251,7 +253,7 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("FCGI_ROLE=RESPONDER");
 	envHeaders.push_back("REQUEST_SCHEME=http");
 	envHeaders.push_back("SERVER_SOFTWARE=webserv/1.1 " + getOsName());
-	if (_req.getBodySize() >= 0) 
+	if (_req.getBodySize() >= 0)
 		envHeaders.push_back("CONTENT_LENGTH=" + to_string(_req.getBodySize()));
 	else
 		envHeaders.push_back("CONTENT_LENGTH=");
