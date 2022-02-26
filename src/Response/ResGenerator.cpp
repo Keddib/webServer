@@ -147,7 +147,7 @@ Response *ResGenerator::get204Response(size_t server, bool keepAlive)
 
 Response *ResGenerator::GetDirListingResponse(const std::string &PATH, const std::string &name,  size_t server, bool connection)
 {
-	Response *res = createResponse(server, 204);
+	Response *res = createResponse(server, 200);
 	setConnection(res, connection);
 	res->setHeader("Content-Type", "text/html");
 	const std::string &s = ListDirectory(PATH, name);
