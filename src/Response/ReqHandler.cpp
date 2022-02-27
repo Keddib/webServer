@@ -140,7 +140,7 @@ Response *ReqHandler::Redirect()
 	if (host.empty()) // appent host and port to redirect url
 			host = getMyIP();
 	if (URI[0] == '/')
-		URI = std::string("http://") + host + URI;
+		URI = std::string("http://") + host + ":" + _req.getPortStr() + URI;
 	std::string Header("Location: ");
 	Header += URI + "\r\n";
 	return ResGen.getRedirecResponse(_reqCMservers, code, Header, _hostName, _connection);
