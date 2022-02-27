@@ -1,9 +1,7 @@
 #include "manage-request.hpp"
 
-// std::fstream file_obj;
 ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 {
-	// file_obj.open("./backup", std::fstream::out);
 	int tmpMax;
 	numOfFds = 0;
 	int fd;
@@ -216,11 +214,16 @@ void	ManageRequest::WorkOnResponse(int curFd)
 void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnections)
 {
 	// i guess i will imporve here i will accept all connections at once maybe
-	++newConnections;
-
+	if (numOfFds > MAX_FDS)
+		return ; // which means just ignore the connection
 	tmpFd = accept(curFd, (struct sockaddr *)(&client_addr), &address_len);
-	std::cout << tmpFd << "acc fd \n";
-	fcntl(tmpFd, F_SETFL, O_NONBLOCK);
+	if (tmpFd == -1)
+		return ;
+	if (fcntl(tmpFd, F_SETFL, O_NONBLOCK) == -1)
+	{
+		close(tmpFd);
+		return ;
+	}
 	++numOfFds;
 	event.data.fd = tmpFd;
 	event.events = EPOLLIN;
@@ -228,15 +231,11 @@ void	ManageRequest::HandelNewConnection(int tmpFd, int curFd, int &newConnection
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, tmpFd, &event) == -1)
 	{
 		std::cout << "could not add to epoll set the fd: " << tmpFd << " server fd: " << curFd << "\n";
-		exit(1);
-	}
-	if (fdToResponse.count(tmpFd))
-	{
-		std::cout << "request already here\n";
-		exit(1);
+		close(tmpFd);
+		return ;
 	}
 	fdToRequest.insert(std::make_pair(tmpFd, Request(tmpFd, aFdToIndex[curFd], client_addr)));
-	// give extra eye on aFdToIndex[curFd]
+	++newConnections;
 }
 
 

@@ -134,6 +134,7 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 		// means not ready to read from file
 		if (failAttempts > MAX_READ_FAILS)
 		{
+				close(_body);
 				_com_response->setKeepAlive(false);
 				return true;
 		}
@@ -144,6 +145,7 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 	written_data = write(fd, storage_elment, required_size);
 	if (g_client_closed)
 	{
+		close(_body);
 		_com_response->setKeepAlive(false);
 		return true;
 	}
@@ -153,7 +155,6 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 	if (hasBeenRead >= bodySize)
 	{
 		close(_body);
-		std::cout << "BODY IS DONE SENDING\n";
 		return  true;
 	}
 	return false;
@@ -168,6 +169,8 @@ bool	ResponseWrapper::SendingHeader(int fd, int &required_size)
 		read_data = write(fd, _buffer, _buffer_size);
 		if (g_client_closed)
 		{
+			if (_body != -3)
+				close(_body);
 			_com_response->setKeepAlive(false);
 			return true; // which indacte that response is done combined setKeepAlive to false result will remove request and response related this connection
 		}

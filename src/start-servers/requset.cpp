@@ -194,6 +194,8 @@ Response	*Request::AddToRequest(char *str, int size)
 	}
 	if (status == 1)
 	{
+		if (method != POST)
+			return HandleRequest(*this);
 		Restmp = ReserveSpaceForBody();
 		if (Restmp)
 			return Restmp;
@@ -241,10 +243,8 @@ Response			*Request::ReserveSpaceForBody()
 				}
 			}
 		}
-		else if (method == POST)
-			return ResGen.getErrorResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
 		else
-			return HandleRequest(*this); // +++++++++++++++ in this case i should return complete response bec request is done processing
+			return ResGen.getErrorResponse(comServerIndex, LENGTH_REQUIRED_STATUS_CODE);
 	}
 	return NULL;
 }
@@ -407,7 +407,7 @@ Response		*Request::ProcessHeaders(char **str, int size)
 				if (Restmp)
 					return Restmp;
 			}
-			else
+			else if (aHeaders.size())
 			{
 				// by the way this entire branch has not been tested yet
 				std::string &opStr = aHeaders.back().second;
@@ -416,6 +416,8 @@ Response		*Request::ProcessHeaders(char **str, int size)
 				(*str) += tmpStr.size();
 				tmpStr.clear();
 			}
+			else
+				return ResGen.getErrorResponse(comServerIndex, SYNTAX_STATUS_CODE);
 		}
 		else
 			break ;
