@@ -12,6 +12,7 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 	if (_CGIres.is_open())
 	{
 		do {
+			bzero(_buff, 10);
 			_CGIres.getline(_buff, BUFFER_SIZE);
 			bytesRead += _CGIres.gcount();
 			if (_CGIres.gcount() > BUFFER_SIZE)
@@ -19,10 +20,10 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 				_cgii_res_info.error = 502;
 				return _cgii_res_info;
 			}
-			_buff[_CGIres.gcount() - 1] = '\n';
-			_buff[_CGIres.gcount()] = 0x00;
 			if (_buff[0] == '\r' || _buff[0] == '\0')
 				break ; // means that empty lines after header fields
+			_buff[_CGIres.gcount() - 1] = '\n';
+			_buff[_CGIres.gcount()] = 0x00;
 			delm = IndexOf(_buff, ':');
 			if (delm == -1)
 				continue;
@@ -46,7 +47,6 @@ CGIIresInfo ParseCGIresponse(Response *res, const std::string &_CGIfile)
 		res->setHeaderSize(bytesRead);
 		return _cgii_res_info;
 	}
-	std::cout << _CGIfile <<" file not opened \n";
 	_cgii_res_info.error = 500;
 	return _cgii_res_info;
 }

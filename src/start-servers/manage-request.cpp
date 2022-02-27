@@ -27,7 +27,7 @@ ManageRequest::ManageRequest(std::map<int, int> &fti) : aFdToIndex(fti)
 		++first;
 	}
 	MSFDN = 1 + tmpMax;
-	ready_fds.reserve(numOfFds * 2); // just i'm assuming that could be all servers be accepting at the same time new connections so i need twice spac
+	ready_fds.reserve(numOfFds * 2);
 }
 
 Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter_to_req)
@@ -37,7 +37,6 @@ Response	*ManageRequest::ConstructRequest(std::map<int, Request>::iterator &iter
 	bzero(buffer, BUFFER_SIZE);
 	do {
 		read_data = read(iter_to_req->first, buffer + tot, read_nb);
-		// file_obj << buffer << "|\n";
 		if (read_data <= 0) // and if client close fd it will removed by timeCheck function later so it does not matter here
 			break ;
 		tot += read_data;
@@ -58,7 +57,6 @@ void	ManageRequest::EP_StartLIstening()
 		for (int i = 0; i < curReady; ++i)
 		{
 			curFd = ready_fds[i].data.fd;
-			// i need first to check time out later!
 			if (curFd < MSFDN)
 			{
 				// means that now i should accept new connction
@@ -98,6 +96,10 @@ void	ManageRequest::timeCheck()
 			++epoll_struct_not_needed;
 			event.data.fd = iter_to_req->first;
 			event.events = EPOLLIN;
+			if (iter_to_req->second.fileExist()){
+				std::cout << "file removed\n";
+				remove(iter_to_req->second.getFileName());
+			}
 			if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, iter_to_req->first, &event))
 			{
 				std::cout << "could not delete " << iter_to_req->first << "\n";

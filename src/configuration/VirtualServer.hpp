@@ -4,30 +4,6 @@
 #include "Location.hpp"
 // i move header from here to location.hpp
 #include "../MACROS.hpp"
-/*
-
-server {
-	# directives specific to servers
-		host 0.0.0.0;
-		port 80;
-		server_name _;
-		error_page 404 /404.html
-		client_max_body_size 1000000 #bytes
-		root /tmp/www;
-		index pop.hmlt index.html index.htm;
-
-	#directives specific to location;
-		root /tmp/www;
-		index pop.hmlt index.html index.htm;
-		accepted_medthos POST DELETE GET
-		autoindex off
-		return 301 127.0.0.1:9000/data
-		CGI /tmp/app/cgi_module.js
-		upload /tmp/upload
-}
-
-*/
-
 
 class VirtualServer
 {

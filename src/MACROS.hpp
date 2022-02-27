@@ -63,12 +63,14 @@
 #define MAX_BODY_SWITCH  0 //1048576 this will be used if body of post Request is under this MAX_BODY_SWITCH i will store it as string if bigger i will store it as file
 
 #define RS_TMOUT 30
-#define TIMEOUT 3600
+#define TIMEOUT 60
 #define EPOLL_RETRY 5
 #define MAX_READ_FAILS 10
 
 #define	READ	0
 #define	WRITE	1
+
+#define MAX_FDS 524288
 
 
 #endif

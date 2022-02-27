@@ -1,6 +1,6 @@
 NAME	= Webserv
 
-GO		= clang++ -std=c++98 -Wall -Wextra -Werror  -ggdb3 -fsanitize=address
+GO		= clang++ -std=c++98 -Wall -Wextra -Werror  #-ggdb3 -fsanitize=address
 
 OFILES	= CommonServers.o ResGenerator.o Location.o ServersInterface.o requset.o\
 		StringManipulation.o HandleCGIresponse.o HandleFile.o ConfigParser.o HelperFunctions.o Response.o VirtualServer.o manage-request.o\

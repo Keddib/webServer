@@ -42,6 +42,7 @@ class	Request
 		char					methodHolder[LONGEST_METHOD + 1];
 		char					fileName[30];
 		bool					booltmp;
+		bool					_fileExist;
 		Response				*Restmp;
 	private:
 		void					DISPLAY();
@@ -67,6 +68,7 @@ class	Request
 		Request(int cf,int sFd, const struct sockaddr_in &);
 		Request&				operator=(const Request &rhs);
 		void					RESET();
+		bool					fileExist() const;
 		void					DisableRequest();
 		bool					isStillValid(std::time_t);
 		Response 				*AddToRequest(char *str, int size);

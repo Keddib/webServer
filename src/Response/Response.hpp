@@ -18,7 +18,7 @@ class Response
 		std::string _bodyFileName;
 		std::string _host;
 		int64_t _bSize;
-		int64_t _headersSize;
+		size_t _headersSize;
 		int _PID;
 		time_t _startTime;
 		time_t _cgiTO;

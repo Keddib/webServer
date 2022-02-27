@@ -122,8 +122,8 @@ bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_siz
 
 bool	ResponseWrapper::SendingBody(int fd, char *storage_elment, int required_size)
 {
-	unsigned short	read_data, written_data;
-	
+	short	read_data, written_data;
+
 	if (!(poll(&read_poll_fd, 1, 0)))
 		return false; // which indacte that file is not ready to read
 	if (hasBeenRead + required_size > bodySize)

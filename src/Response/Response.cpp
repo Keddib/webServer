@@ -9,10 +9,8 @@ Response::Response()
 
 Response::~Response()
 {
-	if (_bodyFileName.size()) {
-		std::cout << "\033[31m removed: " << _bodyFileName << "\033[0m\n";
+	if (_bodyFileName.size())
 		remove(_bodyFileName.c_str());
-	}
 	if (_PID != -1)
 		kill(_PID, SIGKILL);
 }
@@ -242,7 +240,6 @@ bool	Response::isReady()
 		if (waitpid(_PID, &status, WNOHANG))
 		{
 			_PID = -1;
-			std::cout << "child is done\n";
 			_isReady = true;
 			return getResponse(WEXITSTATUS(status));
 		}

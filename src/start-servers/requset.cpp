@@ -23,6 +23,7 @@ Request::Request(int confd, int comServerIndex, const struct sockaddr_in &cl_inf
 
 void				Request::INIT_AT_CONSTRUCTION(int confd, int comServerIndex)
 {
+	_fileExist = false;
 	portStr = "80";
 	totalRead = 0; // added
 	is_req_alive = true;
@@ -98,8 +99,13 @@ Request::Request(const Request &cp)
 	*this = cp;
 }
 
+bool	Request::fileExist() const{
+	return _fileExist;
+}
+
 Request&	Request::operator=(const Request &rhs)
 {
+	_fileExist = rhs._fileExist;
 	portStr = rhs.portStr;
 	client_info = rhs.client_info;
 	totalRead = rhs.totalRead; // added
@@ -178,6 +184,7 @@ void	Request::ResourseDecoding()
 
 Response	*Request::AddToRequest(char *str, int size)
 {
+	startTime = std::time(NULL);
 	endStr = str + size;
 	Restmp = NULL;
 	if (status == -1)
@@ -205,6 +212,7 @@ Response	*Request::AddToRequest(char *str, int size)
 				return ResGen.getErrorResponse(comServerIndex, PAYLOAD_TOO_LARGE_STATUS_CODE); // test this later
 			// bodyFileObj.close(); //changed
 			bodyFileObj.seekg(0);
+			_fileExist = false;
 			return HandleRequest(*this); // this is here means request is done
 		}
 		if (totalRead > max_client_size) //// test this later
@@ -222,6 +230,7 @@ Response			*Request::ReserveSpaceForBody()
 		// here make sure that this branch will only be excuted once
 		if (isChuncked == 1)
 		{
+			_fileExist = true;
 			fillFileName(connFD, fileName);
 			bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
 			bodyFileObj.close();
@@ -236,6 +245,7 @@ Response			*Request::ReserveSpaceForBody()
 				if (bodySize < MAX_BODY_SWITCH)
 					bodyString.reserve(bodySize);
 				else {
+					_fileExist = true;
 					fillFileName(connFD, fileName);
 					bodyFileObj.open(fileName, std::fstream::out | std::fstream::binary); // creating file
 					bodyFileObj.close();
@@ -324,6 +334,17 @@ bool	Request::ReadByChunck(char *str, long size)
 {
 	// working here ----------------------------------------------------------------------------
 	// chunked body will be stored in file
+
+	// str = ""
+	/*
+	5\r\n
+	aaaaa\r\n
+	3\r\n
+	mmm\
+	10\r\n
+	1234567890
+	0\r\n
+	0uy*/
 	int tmp;
 	while (*str)
 	{
@@ -337,6 +358,7 @@ bool	Request::ReadByChunck(char *str, long size)
 				// this almost always will be true
 				// and it means that number that need to be read is stored in tmpStr variable
 				bodySize = strtol(tmpStr.c_str(), NULL, 16);
+				std::cout << tmpStr << " size: " << bodySize<< "\n";
 				totalRead += bodySize; // added
 				if (bodySize == 0)
 					return true; // which means that the body is done dealing with
@@ -349,7 +371,7 @@ bool	Request::ReadByChunck(char *str, long size)
 		}
 		if (!chunkedBodyState)
 		{
-			if (BodyFileCase(str, size)) 
+			if (BodyFileCase(str, size))
 			{
 				//bodyFileObj<< "\n"; // i do not know now should add new line after or not
 				chunkedBodyState = true; // swith again to wait for other data

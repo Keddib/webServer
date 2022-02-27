@@ -45,12 +45,6 @@ void ReqHandler::INIT()
 
 Response *ReqHandler::getResponse()
 {
-	std::cout <<"REQ: "<< _reqMethod << ' ' << _reqResource << '\n';
-	std::cout <<"REQuri" <<_reqResource << "\n";
-	std::cout <<"Res" <<_resource << "\n";
-	std::cout <<"PATH" <<_hostPath << "\n";
-	std::cout <<"QS"<<_queryString << "\n";
-
 	// check if req.method is accepted on location
 	if (!_location.isMethodAllowed(_reqMethod))
 		return MethodNotAllowed();
@@ -94,8 +88,6 @@ Response *ReqHandler::uploadFile()
 		location += _resource + fileName + "\r\n";
 	else
 		location += _resource + "\r\n";
-	std::cout << location;
-
 	Response *res = ResGen.getRedirecResponse(_reqCMservers, 201, location, _hostName, _connection);
 	res->setIsFileUsed(1);
 	return res;
@@ -262,8 +254,6 @@ void ReqHandler::setENV(std::vector<std::string> &envHeaders)
 	envHeaders.push_back("REMOTE_ADDR=" + remoteInfo.first);
 	envHeaders.push_back("REMOTE_PORT=" + to_string(remoteInfo.second));
 	addRequestHeaders(envHeaders);
-		// for (int i = 0; i < envHeaders.size(); i++)
-		// 	std::cout << envHeaders[i] + '\n';
 }
 
 void ReqHandler::addRequestHeaders(std::vector<std::string> &envHeaders)
