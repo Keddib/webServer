@@ -1,3 +1,4 @@
+
 FROM ubuntu:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
