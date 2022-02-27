@@ -5,18 +5,19 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && apt install -yq curl telnet clang git vim make php-cgi php php-mysql mysql-server
 
-RUN curl -O https://wordpress.org/wordpress-5.7.2.tar.gz && tar xzvf wordpress-5.7.2.tar.gz
+RUN rm -rf /var/www/html
 
-RUN mv wordpress /var/www/ && rm /var/www/wordpress/wp-config-sample.php
+COPY examples/html /var/www/
 
-COPY test/wp-config.php /var/www/wordpress/
+COPY examples/wordpress /var/www/
+
+COPY examples/furn /var/www
+
+COPY examples/cgi-bin /var/www/
+
+RUN mkdir /var/www/upload
 
 #mysql -u root -e "CREATE DATABASE wordpress;CREATE USER 'wp-user'@'%' IDENTIFIED BY 'wp-pass';GRANT ALL PRIVILEGES ON *.* TO 'wp-user'@'%';FLUSH PRIVILEGES;"
-
-#CREATE DATABASE wordpress;
-#CREATE USER 'wp-user'@'%' IDENTIFIED BY 'wp-pass';
-#GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
-#FLUSH PRIVILEGES;
 
 WORKDIR /APP/
 
