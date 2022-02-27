@@ -45,6 +45,10 @@ void ReqHandler::INIT()
 
 Response *ReqHandler::getResponse()
 {
+	std::cout << "req = " << _reqResource << '\n';
+	std::cout << "res = " << _resource << '\n';
+	std::cout << "path = " << _hostPath << '\n';
+	_location.Display();
 	// check if req.method is accepted on location
 	if (!_location.isMethodAllowed(_reqMethod))
 		return MethodNotAllowed();
@@ -120,12 +124,13 @@ Response *ReqHandler::HandleDirResource()
 	int error(-1);
 
 	std::string index = lookForIndexInDirectory(_hostPath, _location.getIndexes(), error);
+	std::cout << "error = " << error << '\n';
 	if ((index.empty() && !_autoIndex && _resource == "/") || (error == 2)) // index not found and no directory listing
 		return ResGen.getErrorResponse(_reqCMservers, 403, _hostName, _connection);
-	else if (index.empty() && _autoIndex) // dir listing
-		return ResGen.GetDirListingResponse(_hostPath, _resource, _reqCMservers, _connection); // need to return a response with directory listing
 	else if (error == 1)
 		return ResGen.getErrorResponse(_reqCMservers, 404, _hostName, _connection);
+	else if (index.empty() && _autoIndex) // dir listing
+		return ResGen.GetDirListingResponse(_hostPath, _resource, _reqCMservers, _connection); // need to return a response with directory listing
 	_resource += index;
 	_hostPath = _root + _resource;
 	return HandleFileResource(); // handle resource with the index as resource

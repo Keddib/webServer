@@ -318,7 +318,7 @@ bool	Request::BodyFileCase(char *str, long size)
 		hasBeenRead += size;
 		return false;
 	}
-	// i am not adding to hasBeenRead here bec i do not care any  more at this point
+	// i am not adding to hasBeenRead here bec i do need the old value of hasBeenRead
 	InsertCharToFile(str, bodySize - hasBeenRead);
 	return true;
 }
@@ -332,22 +332,20 @@ void	Request::InsertCharToFile(char *str, long size)
 
 bool	Request::ReadByChunck(char *str, long size)
 {
-	// working here ----------------------------------------------------------------------------
 	// chunked body will be stored in file
 
-	// str = ""
-	/*
-	5\r\n
-	aaaaa\r\n
-	3\r\n
-	mmm\
-	10\r\n
-	1234567890
-	0\r\n
-	0uy*/
 	int tmp;
-	while (*str)
+	int mov;
+	int tot = 0;
+	static int counter;
+	++counter;
+	while (size > 0)
 	{
+		if (tot > 1)
+		{
+			std::cout << "when: " << counter << "\n";
+			exit(1);
+		}
 		if (chunkedBodyState)
 		{
 			// if chunkedBodyState true means that
@@ -358,7 +356,6 @@ bool	Request::ReadByChunck(char *str, long size)
 				// this almost always will be true
 				// and it means that number that need to be read is stored in tmpStr variable
 				bodySize = strtol(tmpStr.c_str(), NULL, 16);
-				std::cout << tmpStr << " size: " << bodySize<< "\n";
 				totalRead += bodySize; // added
 				if (bodySize == 0)
 					return true; // which means that the body is done dealing with
@@ -375,7 +372,11 @@ bool	Request::ReadByChunck(char *str, long size)
 			{
 				//bodyFileObj<< "\n"; // i do not know now should add new line after or not
 				chunkedBodyState = true; // swith again to wait for other data
-				str += (bodySize - hasBeenRead + 2); // this important
+				mov = bodySize - hasBeenRead + 2;
+				str += mov; // this important
+				std::cout << str[0] << str[1] << str[2] << str[3] << "|" <<  (int)str[4] << "| "  << (int)str[5] << "\n";
+			   	std::cout << "stored: " << hasBeenRead + (bodySize - hasBeenRead) << " and bz was: " << bodySize << "\n";	
+				size -= mov;
 				// example
 				// bodySize = 7 and hasBeenRead = 0
 				// BODY WAS "*******78544\r\n********"
@@ -385,6 +386,7 @@ bool	Request::ReadByChunck(char *str, long size)
 			else
 				break ;
 		}
+		++tot;
 	}
 	return false;
 }

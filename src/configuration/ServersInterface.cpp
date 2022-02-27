@@ -134,7 +134,8 @@ std::pair<int, int>	ServersInterface::StartServerAt(int index, bool &status) con
 		struct sockaddr_in sa;
 		sa.sin_addr.s_addr = aServers[index].GetIpPortCommonServer().first;
 		inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
-		print_on_error(2, "could not bind to: ", str);
+		print_on_error(4, "could not bind to: ", str, ":", to_string(ntohs(tmp_addr.sin_port)).c_str());
+		// ntohl
 		status = false;
 		return std::pair<int, int>();
 	}

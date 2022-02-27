@@ -3,7 +3,7 @@ FROM ubuntu:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt install -yq curl telnet clang git vim make php-cgi php php-mysql mysql-server
+RUN apt update && apt install -yq curl telnet clang git vim make php-cgi php php-mysql mysql-server python
 
 RUN rm -rf /var/www/html
 

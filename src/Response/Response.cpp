@@ -159,9 +159,14 @@ void Response::setTimeout(time_t time)
 
 bool	Response::getResponse(int status)
 {
-	if ( status == 500 ||  status == 502) // if error return error
+	if (status)
 	{
-		getErrorResponse(status);
+		if (status == 502) // if error return error
+		{
+			getErrorResponse(status);
+			return true;
+		}
+		getErrorResponse(500);
 		return true;
 	}
 	CGIIresInfo resInfo = ParseCGIresponse(this, _bodyFileName);

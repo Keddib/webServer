@@ -12,7 +12,7 @@
 #define Dir1 "<!DOCTYPE html><head><title>Index of</title></head><body><h1>Index of "
 #define Dir2 "</pre><hr></body></html>"
 
-#define	MAX_BACK_LOG	100
+#define	MAX_BACK_LOG	1000
 #define CONFIG_FILE "/APP/src/config/default.conf"
 #define DEFAULT_ROOT "/var/www/html"
 #define ERROR_ROOT "/var/www/html"

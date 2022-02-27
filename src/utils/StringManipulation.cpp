@@ -46,13 +46,11 @@ int isValidMethod(const std::string &meth)
 int findLocationURL(const std::string &path, const std::string &prefix)
 {
 	size_t psize = prefix.size();
-	if (path.size() < psize)
-		return -1;
 	size_t i = 0;
 	for (;i < psize; i++)
 	{
 		if (path[i] != prefix[i])
-			return -1;
+			return i;
 	}
 	return i;
 }

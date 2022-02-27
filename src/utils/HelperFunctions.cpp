@@ -13,6 +13,7 @@ void getErrorPage(int error, std::string &page)
 const char* getErrorMessage(int error)
 {
 	if (error == 200) return "OK";
+	else if (error == 201) return "Created";
 	else if (error == 204) return "No Content";
 	else if (error == 301) return "Moved Permanently";
 	else if (error == 302) return "Found";
