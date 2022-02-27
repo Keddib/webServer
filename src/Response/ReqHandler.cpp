@@ -45,10 +45,6 @@ void ReqHandler::INIT()
 
 Response *ReqHandler::getResponse()
 {
-	std::cout << "req = " << _reqResource << '\n';
-	std::cout << "res = " << _resource << '\n';
-	std::cout << "path = " << _hostPath << '\n';
-	_location.Display();
 	// check if req.method is accepted on location
 	if (!_location.isMethodAllowed(_reqMethod))
 		return MethodNotAllowed();
@@ -124,7 +120,6 @@ Response *ReqHandler::HandleDirResource()
 	int error(-1);
 
 	std::string index = lookForIndexInDirectory(_hostPath, _location.getIndexes(), error);
-	std::cout << "error = " << error << '\n';
 	if ((index.empty() && !_autoIndex && _resource == "/") || (error == 2)) // index not found and no directory listing
 		return ResGen.getErrorResponse(_reqCMservers, 403, _hostName, _connection);
 	else if (error == 1)
@@ -182,7 +177,6 @@ int ReqHandler::excuteChildProcess(char **ENV, int inFD, int outFD, int &pid)
 		return (-1);
 	if (pid == 0) // child
 	{
-		std::cerr << "inside child at: " << _hostPath.substr(0, _hostPath.find_last_of('/')).c_str() << "\n";
 		char *args[3];
 		args[0] = (char *)_CGIpath.c_str();
 		args[1] = (char *)_hostPath.c_str();

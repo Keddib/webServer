@@ -42,7 +42,6 @@ Response *ResGenerator::get200Response(size_t server, const std::string &fileNam
 	res->setBodySize(Fdata.size);
 	res->setHeader("Last-Modified", Fdata.Mtime, 1);
 	res->setBodyfile(fileName);
-	res->display();
 	return res;
 }
 

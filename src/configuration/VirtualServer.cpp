@@ -87,12 +87,10 @@ const Location& VirtualServer::whichLocation( const std::string &Path) const
 	int tmp_max(0);
 	int index(-1);
 
-	std::cout << Path << '\n';
 	size_t size = _locations.size();
 	for (size_t i = 0; i < size; i++)
 	{
 		tmp_max = findLocationURL(Path, _locations[i].getPrefix());
-		std::cout << "max = " << tmp_max << '\n';
 		if (tmp_max > max)
 		{
 			max = tmp_max;

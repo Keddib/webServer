@@ -375,7 +375,7 @@ bool	Request::ReadByChunck(char *str, long size)
 				mov = bodySize - hasBeenRead + 2;
 				str += mov; // this important
 				std::cout << str[0] << str[1] << str[2] << str[3] << "|" <<  (int)str[4] << "| "  << (int)str[5] << "\n";
-			   	std::cout << "stored: " << hasBeenRead + (bodySize - hasBeenRead) << " and bz was: " << bodySize << "\n";	
+			   	std::cout << "stored: " << hasBeenRead + (bodySize - hasBeenRead) << " and bz was: " << bodySize << "\n";
 				size -= mov;
 				// example
 				// bodySize = 7 and hasBeenRead = 0

@@ -7,7 +7,6 @@
 void	onWriteFail(int)
 {
 	g_client_closed = true;
-	std::cerr << "CLIENT HAS closed connection before complete responsing\n";
 }
 
 void __Error()
@@ -77,17 +76,8 @@ int main(int argc, char **argv)
 		std::cout << "START WAS SUCCESSFULL\n";
 	else
 		exit(1);
-
-
-	// ErrorGen p;
-
-	// Response *l = p.getResponse(0, 405);
-	// l->display();
 	ManageRequest manage(FdToIndex);
-
-
 	//manage.StartListening();
 	manage.EP_StartLIstening();
-
 	return 0;
 }
