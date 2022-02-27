@@ -7,13 +7,13 @@ RUN apt update && apt install -yq curl telnet clang git vim make php-cgi php php
 
 RUN rm -rf /var/www/html
 
-COPY examples/html /var/www/
+COPY examples/html /var/www/html
 
-COPY examples/wordpress /var/www/
+COPY examples/wordpress /var/www/wordpress
 
-COPY examples/furn /var/www
+COPY examples/furn/ /var/www/furn
 
-COPY examples/cgi-bin /var/www/
+COPY examples/cgi-bin/ /var/www/cgi-bin
 
 RUN mkdir /var/www/upload
 
