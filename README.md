@@ -96,6 +96,8 @@ server
 		index index.html index.htm
 		accepted_methods GET POST
 		CGI .py /usr/bin/python
+```
+
 
 ## Authors
 
