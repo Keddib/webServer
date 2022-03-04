@@ -19,7 +19,7 @@ make
 - [config_file]``` : run with this config_file
 - webserv```       : run with default condig
 ```
-$ ./webserv -h
+$ ./webserv --help
 
 Usage: webserv [options] [config_file]
 
